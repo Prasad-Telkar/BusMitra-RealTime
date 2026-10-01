@@ -71,7 +71,6 @@ def search_routes():
     limit = int(request.args.get("limit", 50))
     
     if query:
-        # Simple regex search on shortName, longName, or routeName
         import re
         routes = list(routes_col.find({
             "$or": [
@@ -81,10 +80,8 @@ def search_routes():
             ]
         }).limit(limit))
     elif from_query or to_query:
-        # Search by from/to
         import re
         
-        # Alias mapping for common places in Goa
         aliases = {
             "panjim": "panaji",
             "madgaon": "margao",
@@ -101,28 +98,74 @@ def search_routes():
                     q_lower = q_lower.replace(k, v)
             return q_lower
             
-        from_query = apply_aliases(from_query)
-        to_query = apply_aliases(to_query)
+        from_q = apply_aliases(from_query)
+        to_q = apply_aliases(to_query)
         
         and_conditions = []
-        if from_query:
+        if from_q:
             and_conditions.append({
                 "$or": [
-                    {"longName": {"$regex": from_query, "$options": "i"}},
-                    {"routeName": {"$regex": from_query, "$options": "i"}}
+                    {"longName": {"$regex": from_q, "$options": "i"}},
+                    {"routeName": {"$regex": from_q, "$options": "i"}}
                 ]
             })
-        if to_query:
+        if to_q:
             and_conditions.append({
                 "$or": [
-                    {"longName": {"$regex": to_query, "$options": "i"}},
-                    {"routeName": {"$regex": to_query, "$options": "i"}}
+                    {"longName": {"$regex": to_q, "$options": "i"}},
+                    {"routeName": {"$regex": to_q, "$options": "i"}}
                 ]
             })
             
-        print("QUERY COND:", and_conditions)
-        routes = list(routes_col.find({"$and": and_conditions}).limit(limit))
-        print("FOUND:", len(routes))
+        routes = list(routes_col.find({"$and": and_conditions}))
+        
+        # Filter by direction
+        if from_q and to_q:
+            valid_routes = []
+            for r in routes:
+                name = (r.get("routeName") or r.get("longName") or "").lower()
+                
+                # Split by via
+                parts = name.split(" via ")
+                main_part = parts[0]
+                via_part = parts[1] if len(parts) > 1 else ""
+                
+                if " to " in main_part:
+                    main_places = main_part.split(" to ")
+                else:
+                    main_places = main_part.split("-")
+                    
+                main_places = [p.strip() for p in main_places]
+                main_places = [re.sub(r"^\d+\s*", "", p) for p in main_places]
+                
+                if len(main_places) >= 2:
+                    start = main_places[0]
+                    end = main_places[-1]
+                    vias = [v.strip() for v in via_part.replace(" and ", ",").split(",")] if via_part else []
+                    
+                    seq = [start] + vias + [end]
+                    
+                    from_idx = -1
+                    to_idx = -1
+                    
+                    for i, place in enumerate(seq):
+                        if from_q in place:
+                            from_idx = i
+                        if to_q in place:
+                            to_idx = i
+                            
+                    if from_idx != -1 and to_idx != -1:
+                        if from_idx < to_idx:
+                            valid_routes.append(r)
+                    else:
+                        valid_routes.append(r)
+                else:
+                    valid_routes.append(r)
+                    
+            routes = valid_routes[:limit]
+        else:
+            routes = routes[:limit]
+            
     else:
         return jsonify([])
         
