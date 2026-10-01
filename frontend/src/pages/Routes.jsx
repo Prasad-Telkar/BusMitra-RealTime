@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Bus, Map as MapIcon, Bookmark, Search, ChevronRight } from "lucide-react";
+import { Bus, Map as MapIcon, Bookmark, Search, ChevronRight, Crosshair, X, ArrowUpDown, Clock, ChevronDown } from "lucide-react";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5001";
 
 export default function RoutesPage() {
   const [routes, setRoutes] = useState([]);
-  const [query, setQuery] = useState("");
+  const [fromQuery, setFromQuery] = useState("");
+  const [toQuery, setToQuery] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -15,17 +16,22 @@ export default function RoutesPage() {
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      fetchRoutes(query);
+      fetchRoutes(fromQuery, toQuery);
     }, 300);
     return () => clearTimeout(delayDebounceFn);
-  }, [query]);
+  }, [fromQuery, toQuery]);
 
-  const fetchRoutes = async (searchQuery = "") => {
+  const fetchRoutes = async (from = "", to = "") => {
     setLoading(true);
     try {
-      const url = searchQuery 
-        ? `${API_BASE}/api/search/routes?q=${encodeURIComponent(searchQuery)}&limit=50`
-        : `${API_BASE}/api/routes?limit=50`;
+      let url = `${API_BASE}/api/routes?limit=50`;
+      if (from || to) {
+        const params = new URLSearchParams();
+        if (from) params.append("from", from);
+        if (to) params.append("to", to);
+        params.append("limit", "50");
+        url = `${API_BASE}/api/search/routes?${params.toString()}`;
+      }
       
       const res = await fetch(url);
       if (res.ok) {
@@ -42,21 +48,77 @@ export default function RoutesPage() {
   return (
     <div className="home-screen bg-light">
       <div className="routes-content">
-        <h1 className="page-title">Find your bus route</h1>
+        <h1 className="page-title">Find your bus</h1>
 
-        <div className="route-search-card" style={{ padding: "16px" }}>
-          <div className="search-row" style={{ alignItems: "center" }}>
-            <Search size={20} color="var(--teal-800)" />
-            <div className="search-input-group" style={{ flex: 1, marginLeft: "12px" }}>
-              <input 
-                type="text"
-                placeholder="Search route number or destination..."
-                className="search-value-input"
-                style={{ width: "100%", border: "none", outline: "none", fontSize: "16px", background: "transparent" }}
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-              />
+        <div className="route-search-card" style={{ padding: "16px", borderRadius: "12px", border: "1px solid #eaeaea", backgroundColor: "#fff", marginBottom: "16px", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>
+          <div style={{ display: "flex", alignItems: "flex-start" }}>
+            {/* Icons column */}
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginRight: "16px", paddingTop: "8px" }}>
+              <div style={{ width: "12px", height: "12px", borderRadius: "50%", backgroundColor: "var(--teal-800)", marginBottom: "4px" }}></div>
+              <div style={{ width: "2px", height: "30px", backgroundColor: "#eaeaea", margin: "2px 0" }}></div>
+              <div style={{ width: "12px", height: "12px", borderRadius: "50%", border: "2px solid var(--teal-800)", marginTop: "4px", backgroundColor: "white" }}></div>
             </div>
+            
+            {/* Inputs column */}
+            <div style={{ flex: 1 }}>
+              {/* FROM Input */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: "12px", borderBottom: "1px solid #eaeaea" }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: "10px", fontWeight: "bold", color: "#888", letterSpacing: "1px", marginBottom: "4px" }}>FROM</div>
+                  <input 
+                    type="text"
+                    placeholder="Enter origin..."
+                    style={{ width: "100%", border: "none", outline: "none", fontSize: "18px", fontWeight: "600", color: "#333", background: "transparent" }}
+                    value={fromQuery}
+                    onChange={(e) => setFromQuery(e.target.value)}
+                  />
+                </div>
+                <div style={{ padding: "4px", color: "var(--teal-800)", cursor: "pointer" }}>
+                  <Crosshair size={18} />
+                </div>
+              </div>
+              
+              {/* TO Input */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: "12px" }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: "10px", fontWeight: "bold", color: "#888", letterSpacing: "1px", marginBottom: "4px" }}>TO</div>
+                  <input 
+                    type="text"
+                    placeholder="Enter destination..."
+                    style={{ width: "100%", border: "none", outline: "none", fontSize: "18px", fontWeight: "600", color: "#333", background: "transparent" }}
+                    value={toQuery}
+                    onChange={(e) => setToQuery(e.target.value)}
+                  />
+                </div>
+                {toQuery && (
+                  <div style={{ padding: "4px", color: "#888", cursor: "pointer" }} onClick={() => setToQuery('')}>
+                    <X size={18} />
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {/* Swap icon */}
+            <div 
+              style={{ marginLeft: "12px", alignSelf: "center", padding: "8px", color: "var(--teal-800)", cursor: "pointer" }}
+              onClick={() => {
+                const temp = fromQuery;
+                setFromQuery(toQuery);
+                setToQuery(temp);
+              }}
+            >
+              <ArrowUpDown size={20} />
+            </div>
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div style={{ display: "flex", gap: "12px", marginBottom: "24px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px", backgroundColor: "#f0fdf4", color: "var(--teal-800)", padding: "8px 16px", borderRadius: "20px", fontSize: "14px", fontWeight: "500", border: "1px solid #bbf7d0", cursor: "pointer" }}>
+            <Clock size={16} /> Leave now <ChevronDown size={16} />
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px", backgroundColor: "#fff", color: "var(--teal-800)", padding: "8px 16px", borderRadius: "20px", fontSize: "14px", fontWeight: "500", border: "1px solid #eaeaea", cursor: "pointer" }}>
+            <Bus size={16} /> Direct buses <ChevronDown size={16} />
           </div>
         </div>
 
