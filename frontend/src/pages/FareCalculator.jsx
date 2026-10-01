@@ -66,18 +66,32 @@ export default function FareCalculator() {
     setFareResult(null);
 
     try {
-      const res = await fetch(`${API_BASE}/api/fare/calculate?originStopId=${fromStop.stopId}&destinationStopId=${toStop.stopId}&passengerCategory=${passengerType}`);
-      const data = await res.json();
+      const url = `${API_BASE}/api/fare/calculate?originStopId=${fromStop.stopId}&destinationStopId=${toStop.stopId}&passengerCategory=${passengerType}`;
+      console.log("FareCalc Request URL:", url);
+      
+      const res = await fetch(url);
+      console.log("FareCalc Response Status:", res.status);
+      
+      const text = await res.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+        console.log("FareCalc Response JSON:", data);
+      } catch (parseErr) {
+        console.error("FareCalc Failed to parse JSON. Raw response:", text);
+        throw new Error(`Invalid server response (Status: ${res.status})`);
+      }
       
       if (!res.ok) {
-        setError(data.error || "Unable to calculate the fare right now. Please try again.");
+        setError(data.error || `Server error: ${res.status}`);
       } else if (data.directServiceAvailable === false) {
         setError("No direct scheduled bus found for these stops.");
       } else {
         setFareResult(data);
       }
     } catch (err) {
-      setError("Unable to calculate the fare right now. Please try again.");
+      console.error("Fare calculation failed:", err);
+      setError(`Error: ${err.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -99,16 +113,16 @@ export default function FareCalculator() {
             <input 
               type="text" 
               placeholder="Search starting stop" 
-              value={fromQuery}
+              value={fromStop ? fromStop.name : fromQuery}
               onChange={(e) => {
-                setFromQuery(e.target.value);
                 setFromStop(null);
+                setFromQuery(e.target.value);
                 setActiveSearch('from');
                 fetchStops(e.target.value, 'from');
               }}
               onFocus={() => {
                 setActiveSearch('from');
-                if (fromQuery) fetchStops(fromQuery, 'from');
+                if (!fromStop && fromQuery) fetchStops(fromQuery, 'from');
               }}
             />
           </div>
@@ -118,7 +132,8 @@ export default function FareCalculator() {
                 <div 
                   key={stop.stopId} 
                   className="fc-autocomplete-item"
-                  onClick={() => {
+                  onMouseDown={(e) => {
+                    e.preventDefault();
                     setFromStop(stop);
                     setFromQuery(stop.name);
                     setFromResults([]);
@@ -147,16 +162,16 @@ export default function FareCalculator() {
             <input 
               type="text" 
               placeholder="Search destination" 
-              value={toQuery}
+              value={toStop ? toStop.name : toQuery}
               onChange={(e) => {
-                setToQuery(e.target.value);
                 setToStop(null);
+                setToQuery(e.target.value);
                 setActiveSearch('to');
                 fetchStops(e.target.value, 'to');
               }}
               onFocus={() => {
                 setActiveSearch('to');
-                if (toQuery) fetchStops(toQuery, 'to');
+                if (!toStop && toQuery) fetchStops(toQuery, 'to');
               }}
             />
           </div>
@@ -166,7 +181,8 @@ export default function FareCalculator() {
                 <div 
                   key={stop.stopId} 
                   className="fc-autocomplete-item"
-                  onClick={() => {
+                  onMouseDown={(e) => {
+                    e.preventDefault();
                     setToStop(stop);
                     setToQuery(stop.name);
                     setToResults([]);
