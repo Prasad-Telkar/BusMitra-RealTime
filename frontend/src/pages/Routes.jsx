@@ -187,9 +187,9 @@ export default function RoutesPage() {
                 >
                   <div className="r-card-top">
                     <div className="r-title-area" style={{ flex: 1 }}>
-                      <div className="bus-badge">{route.shortName || "BUS"}</div>
+                      <div className="bus-badge">{route.routeNumber || route.shortName || "BUS"}</div>
                       <div className="r-route-info" style={{ marginLeft: "12px", paddingRight: "16px" }}>
-                        <h4 style={{ lineHeight: "1.3" }}>{route.longName}</h4>
+                        <h4 style={{ lineHeight: "1.3" }}>{route.routeName || route.longName}</h4>
                       </div>
                     </div>
                   </div>

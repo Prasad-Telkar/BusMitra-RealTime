@@ -351,6 +351,7 @@ export default function Admin() {
             </table>
           </div>
         </section>
+        </>
         )}
 
         <p className="admin-footer">

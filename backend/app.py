@@ -75,9 +75,9 @@ def search_routes():
         import re
         routes = list(routes_col.find({
             "$or": [
-                {"shortName": re.compile(query, re.IGNORECASE)},
-                {"longName": re.compile(query, re.IGNORECASE)},
-                {"routeName": re.compile(query, re.IGNORECASE)}
+                {"shortName": {"$regex": query, "$options": "i"}},
+                {"longName": {"$regex": query, "$options": "i"}},
+                {"routeName": {"$regex": query, "$options": "i"}}
             ]
         }).limit(limit))
     elif from_query or to_query:
@@ -108,15 +108,15 @@ def search_routes():
         if from_query:
             and_conditions.append({
                 "$or": [
-                    {"longName": re.compile(from_query, re.IGNORECASE)},
-                    {"routeName": re.compile(from_query, re.IGNORECASE)}
+                    {"longName": {"$regex": from_query, "$options": "i"}},
+                    {"routeName": {"$regex": from_query, "$options": "i"}}
                 ]
             })
         if to_query:
             and_conditions.append({
                 "$or": [
-                    {"longName": re.compile(to_query, re.IGNORECASE)},
-                    {"routeName": re.compile(to_query, re.IGNORECASE)}
+                    {"longName": {"$regex": to_query, "$options": "i"}},
+                    {"routeName": {"$regex": to_query, "$options": "i"}}
                 ]
             })
             
