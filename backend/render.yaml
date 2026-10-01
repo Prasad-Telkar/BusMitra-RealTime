@@ -3,7 +3,7 @@ services:
     name: busmitra-backend
     env: python
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "gunicorn -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 app:app"
+    startCommand: "gunicorn -w 1 --threads 100 app:app"
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.0
