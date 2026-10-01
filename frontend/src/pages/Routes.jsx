@@ -61,7 +61,7 @@ export default function RoutesPage() {
         </div>
 
         <div className="results-header">
-          <h3>{routes.length} routes found</h3>
+          <h3>{loading ? 'Searching...' : `${routes.length} routes found`}</h3>
           <span>GTFS Schedule</span>
         </div>
 
@@ -70,7 +70,7 @@ export default function RoutesPage() {
             <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
               Loading routes...
             </div>
-          ) : routes.length === 0 ? (
+          ) : !loading && routes.length === 0 ? (
             <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
               No routes match your search.
             </div>
