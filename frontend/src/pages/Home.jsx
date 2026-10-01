@@ -82,11 +82,8 @@ export default function Home() {
       <div className="home-content">
         <header className="home-header">
           <div className="header-top">
-            <div className="brand-logo">
-              <div style={{ background: 'var(--teal-800)', borderRadius: '8px', padding: '4px' }}>
-                <Bus size={20} color="white" />
-              </div>
-              <h2>BusMitra</h2>
+            <div className="user-profile">
+              <div className="profile-img"></div>
             </div>
             <div className="location-dropdown">
               Goa <ChevronDown size={16} />

@@ -22,7 +22,7 @@ function MapUpdater({ center }) {
   return null;
 }
 
-export default function LiveMap({ center, busPosition, destination, stopLabel }) {
+export default function LiveMap({ center, busPosition, destination, stopLabel, passengerPosition }) {
   return (
     <MapContainer center={center} zoom={13} style={{ height: "100%", width: "100%" }} zoomControl={false}>
       <MapUpdater center={center} />
@@ -55,6 +55,16 @@ export default function LiveMap({ center, busPosition, destination, stopLabel })
           <Popup>{name}</Popup>
         </Polyline>
       ))}
+
+      {passengerPosition && (
+        <CircleMarker 
+          center={passengerPosition} 
+          radius={8} 
+          pathOptions={{ color: 'white', fillColor: '#3b82f6', fillOpacity: 1, weight: 3 }}
+        >
+          <Popup>You are here</Popup>
+        </CircleMarker>
+      )}
 
       {busPosition && (
         <Marker position={busPosition} icon={busIcon}>

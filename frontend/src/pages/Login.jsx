@@ -11,6 +11,7 @@ export default function Login() {
   const handlePublicLogin = (e) => {
     e.preventDefault();
     // Simulate login for public user
+    localStorage.setItem("isLoggedIn", "true");
     navigate("/passenger");
   };
 

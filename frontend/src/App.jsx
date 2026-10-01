@@ -6,6 +6,8 @@ import Driver from "./pages/Driver";
 import Home from "./pages/Home";
 import RoutesPage from "./pages/Routes";
 import RouteDetail from "./pages/RouteDetail";
+import JourneyPlanner from "./pages/JourneyPlanner";
+import FareCalculator from "./pages/FareCalculator";
 import TripDetail from "./pages/TripDetail";
 import Saved from "./pages/Saved";
 import StopDetail from "./pages/StopDetail";
@@ -25,6 +27,8 @@ export default function App() {
         {/* Passenger Routes with Shared Navigation */}
         <Route element={<PassengerLayout />}>
           <Route path="/passenger" element={<Home />} />
+          <Route path="/journey-planner" element={<JourneyPlanner />} />
+          <Route path="/fare-calculator" element={<FareCalculator />} />
           <Route path="/routes" element={<RoutesPage />} />
           <Route path="/route-detail/:busId" element={<RouteDetail />} />
           <Route path="/trip/:tripId" element={<TripDetail />} />
