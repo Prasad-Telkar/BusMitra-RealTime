@@ -1,0 +1,7 @@
+category,product,fare_multiplier,discount,source_status
+GENERAL,Single intrastate journey,1.0,100%,PUBLISHED
+STUDENT,Single intrastate journey,0.5,50%,PUBLISHED
+SENIOR_CITIZEN,Single intrastate journey,0.5,50%,PUBLISHED
+GENERAL,Monthly pass,0.6,40% discount,PUBLISHED
+STUDENT,Monthly pass,0.3,70% discount,PUBLISHED
+SENIOR_CITIZEN,Monthly pass,0.3,70% discount,PUBLISHED

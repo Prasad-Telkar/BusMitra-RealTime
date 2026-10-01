@@ -1,0 +1,7 @@
+fare_type,band,min_km,max_km,amount_inr,source_status,notes
+STAGE_CARRIAGE,0-3 km,0.0,3.0,10.0,PUBLISHED,Maximum tariff
+STAGE_CARRIAGE,3.1-8 km,3.0,8.0,15.0,PUBLISHED,Maximum tariff
+STAGE_CARRIAGE,Every additional 8 km or part thereof,8.0,,5.0,PUBLISHED,Add ₹5 per additional 8 km or part thereof
+POINT_TO_POINT,Per km,,,1.4,PUBLISHED,Maximum point-to-point stage carriage rate
+AC_BUS,Per km,,,2.0,PUBLISHED,A/C bus maximum rate
+AC_ELECTRIC,Stage carriage surcharge,,,5.0,PUBLISHED,₹5 extra under Stage Carriage tariff

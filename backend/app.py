@@ -23,6 +23,16 @@ socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 # ---- In-memory store ----
 live_buses = {}
 
+# ---- Special Fares ----
+SPECIAL_FARES = {
+    ("DABOLIM", "PANAJI"): {"fare": 150, "service": "A/C Shuttle"},
+    ("DABOLIM", "CALANGUTE BEACH"): {"fare": 200, "service": "A/C Shuttle"},
+    ("MOPA", "MAPUSA"): {"fare": 150, "service": "A/C Shuttle"},
+    ("MOPA", "CALANGUTE BEACH"): {"fare": 200, "service": "A/C Shuttle"},
+    ("MOPA", "PANAJI"): {"fare": 200, "service": "A/C Shuttle"},
+    ("MOPA", "MARGAO"): {"fare": 400, "service": "A/C Shuttle"},
+}
+
 def haversine_km(lat1, lon1, lat2, lon2):
     R = 6371
     p1, p2 = math.radians(lat1), math.radians(lat2)
@@ -343,6 +353,126 @@ def get_buses():
     else:
         buses = list(buses_col.find().limit(limit))
     return jsonify(json_serialize(buses))
+
+@app.route("/api/fare/calculate", methods=["GET"])
+def calculate_fare():
+    origin_id = request.args.get("originStopId")
+    dest_id = request.args.get("destinationStopId")
+    passenger_cat = request.args.get("passengerCategory", "GENERAL").upper()
+
+    if not origin_id or not dest_id:
+        return jsonify({"error": "Missing origin or destination"}), 400
+
+    if origin_id == dest_id:
+        return jsonify({"error": "Origin and destination are the same"}), 400
+
+    origin_stop = stops_col.find_one({"stopId": origin_id})
+    dest_stop = stops_col.find_one({"stopId": dest_id})
+
+    if not origin_stop or not dest_stop:
+        return jsonify({"error": "Stop not found"}), 404
+
+    o_name = origin_stop.get("name", "").upper()
+    d_name = dest_stop.get("name", "").upper()
+
+    # 1. Check for special airport fares
+    special_key = None
+    for (k_o, k_d) in SPECIAL_FARES.keys():
+        if k_o in o_name and k_d in d_name:
+            special_key = (k_o, k_d)
+            break
+            
+    if special_key:
+        fare = SPECIAL_FARES[special_key]["fare"]
+        if passenger_cat in ["STUDENT", "SENIOR CITIZEN"]:
+            fare = fare / 2  # Example, if special fares follow same logic. Wait, usually special fares don't have discounts, but let's apply for now or just full fare. Let's keep it simple: no discount on airport shuttle unless specified. 
+            # Actually, standard says "For ordinary SINGLE journeys: 50%". So maybe not for A/C Shuttle.
+            # I will apply it anyway, or just keep full fare. Let's keep full fare for A/C Shuttle.
+            fare = SPECIAL_FARES[special_key]["fare"]
+
+        return jsonify({
+            "origin": origin_stop.get("name"),
+            "destination": dest_stop.get("name"),
+            "distanceKm": None,
+            "directServiceAvailable": True,
+            "fare": fare,
+            "passengerCategory": passenger_cat,
+            "fareType": SPECIAL_FARES[special_key]["service"],
+            "isEstimatedDistance": False,
+            "generalFare": SPECIAL_FARES[special_key]["fare"],
+            "studentFare": SPECIAL_FARES[special_key]["fare"],
+            "seniorFare": SPECIAL_FARES[special_key]["fare"],
+        })
+
+    # 2. Check if direct service exists using stop_times
+    origin_stop_times = list(stop_times_col.find({"stopId": origin_id}, {"tripId": 1, "stopSequence": 1}))
+    total_stop_times = stop_times_col.estimated_document_count()
+
+    direct_service = False
+    if total_stop_times == 0:
+        # If GTFS stop_times isn't populated, fallback to allowing it (or distance-based)
+        direct_service = True
+    elif origin_stop_times:
+        origin_map = {st["tripId"]: st["stopSequence"] for st in origin_stop_times}
+        dest_stop_times = stop_times_col.find(
+            {"stopId": dest_id, "tripId": {"$in": list(origin_map.keys())}},
+            {"tripId": 1, "stopSequence": 1}
+        )
+        for st in dest_stop_times:
+            if origin_map[st["tripId"]] < st["stopSequence"]:
+                direct_service = True
+                break
+
+    if not direct_service:
+        return jsonify({
+            "origin": origin_stop.get("name"),
+            "destination": dest_stop.get("name"),
+            "directServiceAvailable": False
+        })
+
+    # 3. Calculate Distance
+    try:
+        dist = haversine_km(
+            float(origin_stop.get("latitude", 0)), float(origin_stop.get("longitude", 0)),
+            float(dest_stop.get("latitude", 0)), float(dest_stop.get("longitude", 0))
+        )
+    except (ValueError, TypeError, KeyError):
+        dist = 0
+
+    # Increase by 30% to approximate road distance from straight line Haversine
+    dist = round(dist * 1.3, 1)
+
+    # 4. Apply Fare Rules
+    def get_fare(d):
+        if d <= 3:
+            return 10
+        elif d <= 8:
+            return 15
+        else:
+            return 15 + math.ceil((d - 8) / 8.0) * 5
+
+    base_fare = get_fare(dist)
+
+    fare = base_fare
+    if passenger_cat in ["STUDENT", "SENIOR CITIZEN"]:
+        fare = math.ceil(base_fare * 0.5)
+
+    return jsonify({
+        "success": True,
+        "origin": origin_stop.get("name"),
+        "destination": dest_stop.get("name"),
+        "distanceKm": round(dist, 1),
+        "directServiceAvailable": True,
+        "fare": fare,
+        "selectedFare": fare,
+        "selectedPassengerCategory": passenger_cat,
+        "passengerCategory": passenger_cat,
+        "fareType": "KTCL Stage Carriage",
+        "isEstimatedDistance": True,
+        "generalFare": base_fare,
+        "studentFare": math.ceil(base_fare * 0.5),
+        "seniorFare": math.ceil(base_fare * 0.5),
+    })
 
 @app.route("/api/buses/<bus_id>/live", methods=["GET"])
 def get_live_bus(bus_id):

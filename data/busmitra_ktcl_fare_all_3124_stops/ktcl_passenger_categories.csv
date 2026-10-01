@@ -1,0 +1,4 @@
+category_code,fare_multiplier,concession_rate
+GENERAL,1.0,0.0
+STUDENT,0.5,0.5
+SENIOR_CITIZEN,0.5,0.5

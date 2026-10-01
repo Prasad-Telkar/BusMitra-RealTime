@@ -61,30 +61,30 @@ export default function PassengerLayout() {
       </main>
 
       {/* Mobile Bottom Navbar - Hidden on Desktop */}
-      <nav className="bottom-nav mobile-only" style={{ overflowX: 'auto', justifyContent: 'flex-start', paddingBottom: 'env(safe-area-inset-bottom)' }}>
-        <Link to="/passenger" className={`nav-item ${currentPath === '/passenger' ? 'active' : ''}`} style={{ minWidth: '70px' }}>
-          <Home size={24} />
-          <span style={{ fontSize: '10px' }}>Home</span>
+      <nav className="bottom-nav mobile-only">
+        <Link to="/passenger" className={`nav-item ${currentPath === '/passenger' ? 'active' : ''}`}>
+          <Home size={22} />
+          <span>Home</span>
         </Link>
-        <Link to="/journey-planner" className={`nav-item ${currentPath === '/journey-planner' ? 'active' : ''}`} style={{ minWidth: '70px' }}>
-          <Navigation size={24} />
-          <span style={{ fontSize: '10px' }}>Plan</span>
+        <Link to="/journey-planner" className={`nav-item ${currentPath === '/journey-planner' ? 'active' : ''}`}>
+          <Navigation size={22} />
+          <span>Plan</span>
         </Link>
-        <Link to="/fare-calculator" className={`nav-item ${currentPath === '/fare-calculator' ? 'active' : ''}`} style={{ minWidth: '70px' }}>
-          <Calculator size={24} />
-          <span style={{ fontSize: '10px' }}>Fare</span>
+        <Link to="/fare-calculator" className={`nav-item ${currentPath === '/fare-calculator' ? 'active' : ''}`}>
+          <Calculator size={22} />
+          <span>Fare</span>
         </Link>
-        <Link to="/passenger" className="nav-item" style={{ minWidth: '70px' }}>
-          <MapPin size={24} />
-          <span style={{ fontSize: '10px' }}>Stops</span>
+        <Link to="/passenger" className="nav-item">
+          <MapPin size={22} />
+          <span>Stops</span>
         </Link>
-        <Link to="/routes" className={`nav-item ${currentPath === '/routes' || currentPath.startsWith('/route-detail') ? 'active' : ''}`} style={{ minWidth: '70px' }}>
-          <Bus size={24} />
-          <span style={{ fontSize: '10px' }}>Track</span>
+        <Link to="/routes" className={`nav-item ${currentPath === '/routes' || currentPath.startsWith('/route-detail') ? 'active' : ''}`}>
+          <Bus size={22} />
+          <span>Track</span>
         </Link>
-        <Link to="/saved" className={`nav-item ${currentPath === '/saved' ? 'active' : ''}`} style={{ minWidth: '70px' }}>
-          <Bookmark size={24} />
-          <span style={{ fontSize: '10px' }}>Saved</span>
+        <Link to="/saved" className={`nav-item ${currentPath === '/saved' ? 'active' : ''}`}>
+          <Bookmark size={22} />
+          <span>Saved</span>
         </Link>
       </nav>
     </div>

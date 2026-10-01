@@ -52,12 +52,8 @@ export default function FareCalculator() {
   };
 
   const calculateFare = async () => {
-    if (!fromStop) {
-      setError("Please select your starting stop.");
-      return;
-    }
-    if (!toStop) {
-      setError("Please select your destination.");
+    if (!fromStop || !toStop) {
+      setError("Please select both stops.");
       return;
     }
     if (fromStop.stopId === toStop.stopId) {
@@ -74,14 +70,14 @@ export default function FareCalculator() {
       const data = await res.json();
       
       if (!res.ok) {
-        setError(data.error || "Fare information is unavailable for this journey.");
-      } else if (data.directServiceAvailable === False || data.directServiceAvailable === false) {
-        setError("No direct scheduled bus found between these stops. Check Journey Planner for available connections.");
+        setError(data.error || "Unable to calculate the fare right now. Please try again.");
+      } else if (data.directServiceAvailable === false) {
+        setError("No direct scheduled bus found for these stops.");
       } else {
         setFareResult(data);
       }
     } catch (err) {
-      setError("Fare information is unavailable for this journey.");
+      setError("Unable to calculate the fare right now. Please try again.");
     } finally {
       setIsLoading(false);
     }
