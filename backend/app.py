@@ -66,17 +66,30 @@ def get_routes():
 @app.route("/api/search/routes", methods=["GET"])
 def search_routes():
     query = request.args.get("q", "").strip()
+    from_query = request.args.get("from", "").strip()
+    to_query = request.args.get("to", "").strip()
     limit = int(request.args.get("limit", 50))
-    if not query:
-        return jsonify([])
     
-    # Simple regex search on shortName or longName
-    routes = list(routes_col.find({
-        "$or": [
-            {"shortName": {"$regex": query, "$options": "i"}},
-            {"longName": {"$regex": query, "$options": "i"}}
-        ]
-    }).limit(limit))
+    if query:
+        # Simple regex search on shortName or longName
+        routes = list(routes_col.find({
+            "$or": [
+                {"shortName": {"$regex": query, "$options": "i"}},
+                {"longName": {"$regex": query, "$options": "i"}}
+            ]
+        }).limit(limit))
+    elif from_query or to_query:
+        # Search by from/to
+        and_conditions = []
+        if from_query:
+            and_conditions.append({"longName": {"$regex": from_query, "$options": "i"}})
+        if to_query:
+            and_conditions.append({"longName": {"$regex": to_query, "$options": "i"}})
+            
+        routes = list(routes_col.find({"$and": and_conditions}).limit(limit))
+    else:
+        return jsonify([])
+        
     return jsonify(json_serialize(routes))
 
 @app.route("/api/routes/<route_id>", methods=["GET"])
