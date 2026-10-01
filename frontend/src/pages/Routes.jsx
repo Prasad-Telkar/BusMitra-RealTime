@@ -45,6 +45,15 @@ export default function RoutesPage() {
     }
   };
 
+  const popularDestinations = [
+    { from: "Panaji", to: "Margao" },
+    { from: "Panaji", to: "Ponda" },
+    { from: "Margao", to: "Vasco" },
+    { from: "Panaji", to: "Mapusa" },
+    { from: "Ponda", to: "Margao" },
+    { from: "Panaji", to: "Old Goa" },
+  ];
+
   return (
     <div className="home-screen bg-light">
       <div className="routes-content">
@@ -122,22 +131,53 @@ export default function RoutesPage() {
           </div>
         </div>
 
-        <div className="results-header">
-          <h3>{loading ? 'Searching...' : `${routes.length} routes found`}</h3>
-          <span>GTFS Schedule</span>
-        </div>
+        {!fromQuery && !toQuery ? (
+          <div className="popular-routes">
+            <h3 style={{ fontSize: "16px", fontWeight: "700", marginBottom: "16px", color: "#333" }}>Popular Destinations in Goa</h3>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+              {popularDestinations.map((dest, i) => (
+                <div 
+                  key={i} 
+                  style={{ 
+                    backgroundColor: "#fff", 
+                    border: "1px solid #eaeaea", 
+                    borderRadius: "8px", 
+                    padding: "12px", 
+                    display: "flex", 
+                    alignItems: "center", 
+                    gap: "8px",
+                    cursor: "pointer",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.02)"
+                  }}
+                  onClick={() => {
+                    setFromQuery(dest.from);
+                    setToQuery(dest.to);
+                  }}
+                >
+                  <MapIcon size={16} color="var(--teal-800)" style={{ flexShrink: 0 }} />
+                  <span style={{ fontWeight: "600", fontSize: "13px", color: "#444", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{dest.from} &rarr; {dest.to}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="results-header">
+              <h3>{loading ? 'Searching...' : `${routes.length} routes found`}</h3>
+              <span>GTFS Schedule</span>
+            </div>
 
-        <div className="route-cards">
-          {loading && routes.length === 0 ? (
-            <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
-              Loading routes...
-            </div>
-          ) : !loading && routes.length === 0 ? (
-            <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
-              No routes match your search.
-            </div>
-          ) : (
-            routes.map((route, index) => {
+            <div className="route-cards">
+              {loading && routes.length === 0 ? (
+                <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                  Loading routes...
+                </div>
+              ) : !loading && routes.length === 0 ? (
+                <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                  No routes match your search.
+                </div>
+              ) : (
+                routes.map((route, index) => {
               return (
                 <Link 
                   key={route.routeId}
@@ -167,7 +207,9 @@ export default function RoutesPage() {
               );
             })
           )}
-        </div>
+            </div>
+          </>
+        )}
       </div>
 
       <nav className="bottom-nav">

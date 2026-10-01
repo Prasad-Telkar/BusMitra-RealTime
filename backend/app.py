@@ -72,21 +72,46 @@ def search_routes():
     
     if query:
         # Simple regex search on shortName or longName
+        import re
         routes = list(routes_col.find({
             "$or": [
-                {"shortName": {"$regex": query, "$options": "i"}},
-                {"longName": {"$regex": query, "$options": "i"}}
+                {"shortName": re.compile(query, re.IGNORECASE)},
+                {"longName": re.compile(query, re.IGNORECASE)}
             ]
         }).limit(limit))
     elif from_query or to_query:
         # Search by from/to
+        import re
+        
+        # Alias mapping for common places in Goa
+        aliases = {
+            "panjim": "panaji",
+            "madgaon": "margao",
+            "margoa": "margao",
+            "mapuca": "mapusa",
+            "vascodagama": "vasco"
+        }
+        
+        def apply_aliases(q):
+            if not q: return q
+            q_lower = q.lower().strip()
+            for k, v in aliases.items():
+                if k in q_lower:
+                    q_lower = q_lower.replace(k, v)
+            return q_lower
+            
+        from_query = apply_aliases(from_query)
+        to_query = apply_aliases(to_query)
+        
         and_conditions = []
         if from_query:
-            and_conditions.append({"longName": {"$regex": from_query, "$options": "i"}})
+            and_conditions.append({"longName": re.compile(from_query, re.IGNORECASE)})
         if to_query:
-            and_conditions.append({"longName": {"$regex": to_query, "$options": "i"}})
+            and_conditions.append({"longName": re.compile(to_query, re.IGNORECASE)})
             
+        print("QUERY COND:", and_conditions)
         routes = list(routes_col.find({"$and": and_conditions}).limit(limit))
+        print("FOUND:", len(routes))
     else:
         return jsonify([])
         
