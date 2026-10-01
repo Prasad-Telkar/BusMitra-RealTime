@@ -227,6 +227,46 @@ def get_stop_schedules(stop_id):
         "services": services
     }))
 
+@app.route("/api/stops/nearby", methods=["GET"])
+def get_nearby_stops():
+    try:
+        lat_str = request.args.get("lat")
+        lng_str = request.args.get("lng")
+        radius_km = float(request.args.get("radius", 5.0))
+        limit = int(request.args.get("limit", 15))
+        
+        if not lat_str or not lng_str:
+            return jsonify({"error": "lat and lng are required"}), 400
+            
+        lat = float(lat_str)
+        lng = float(lng_str)
+        
+        # Fetch all stops and calculate distance (fast enough for ~3500 stops in Python)
+        # We can optimize later with MongoDB 2dsphere index if needed
+        all_stops = list(stops_col.find())
+        nearby = []
+        
+        for stop in all_stops:
+            s_lat = stop.get("latitude")
+            s_lng = stop.get("longitude")
+            if s_lat is None or s_lng is None: continue
+            
+            try:
+                dist = haversine_km(lat, lng, float(s_lat), float(s_lng))
+                if dist <= radius_km:
+                    stop["distance_km"] = round(dist, 2)
+                    nearby.append(stop)
+            except (ValueError, TypeError):
+                continue
+                
+        # Sort by distance
+        nearby.sort(key=lambda x: x["distance_km"])
+        
+        return jsonify(json_serialize(nearby[:limit]))
+    except Exception as e:
+        print("Error in /api/stops/nearby:", e)
+        return jsonify({"error": "Failed to fetch nearby stops"}), 500
+
 @app.route("/api/search/stops", methods=["GET"])
 @app.route("/api/stops", methods=["GET"])
 def get_stops():
@@ -245,6 +285,47 @@ def get_stops():
     except Exception as e:
         print("Database error in /api/stops:", e)
         return jsonify([]), 503
+
+@app.route("/api/buses", methods=["GET"])
+@app.route("/api/search/buses", methods=["GET"])
+def get_buses():
+    query = request.args.get("q", "").strip()
+    limit = int(request.args.get("limit", 50))
+    
+    if query:
+        # Search by bus registration number
+        buses = list(buses_col.find({
+            "registrationNumber": {"$regex": query, "$options": "i"}
+        }).limit(limit))
+    else:
+        buses = list(buses_col.find().limit(limit))
+    return jsonify(json_serialize(buses))
+
+@app.route("/api/buses/<bus_id>/live", methods=["GET"])
+def get_live_bus(bus_id):
+    state = live_buses.get(bus_id)
+    if not state or not state.get("current"):
+        return jsonify({"error": "No live data for this bus", "status": "OFFLINE"}), 404
+        
+    current = state["current"]
+    
+    # Calculate staleness
+    staleness = time.time() - current["timestamp"]
+    if staleness > 120:
+        status = "OFFLINE"
+    else:
+        status = "LIVE"
+        
+    return jsonify({
+        "busId": bus_id,
+        "latitude": current["lat"],
+        "longitude": current["lng"],
+        "speed": current["speed"],
+        "accuracy": current["accuracy"],
+        "lastUpdatedAt": current["timestamp"],
+        "status": status,
+        "stalenessSeconds": int(staleness)
+    })
 
 @app.route("/predict", methods=["POST"])
 def predict_delay():
