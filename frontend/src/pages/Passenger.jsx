@@ -195,21 +195,6 @@ export default function Passenger() {
           </div>
         </div>
       </div>
-
-      <nav className="bottom-nav">
-        <Link to="/passenger" className="nav-item">
-          <Bus size={24} />
-          Nearby
-        </Link>
-        <Link to="/routes" className="nav-item">
-          <MapIcon size={24} />
-          Routes
-        </Link>
-        <Link to="/saved" className="nav-item">
-          <Bookmark size={24} />
-          Saved
-        </Link>
-      </nav>
     </div>
   );
 }

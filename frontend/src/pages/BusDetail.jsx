@@ -107,21 +107,6 @@ export default function BusDetail() {
           <Info size={14} /> Demo bus &middot; GPS from driver's smartphone
         </div>
       </div>
-
-      <nav className="bottom-nav">
-        <Link to="/passenger" className="nav-item">
-          <MapPin size={24} />
-          Stops
-        </Link>
-        <Link to="/routes" className="nav-item active">
-          <MapIcon size={24} />
-          Routes
-        </Link>
-        <Link to="/saved" className="nav-item">
-          <Bookmark size={24} />
-          Saved
-        </Link>
-      </nav>
     </div>
   );
 }

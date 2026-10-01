@@ -113,21 +113,6 @@ export default function Saved() {
           <span>Demo data &middot; No official KTC integration. Local / private buses coming soon.</span>
         </div>
       </div>
-
-      <nav className="bottom-nav">
-        <Link to="/passenger" className="nav-item">
-          <Bus size={24} />
-          Nearby
-        </Link>
-        <Link to="/routes" className="nav-item">
-          <MapIcon size={24} />
-          Routes
-        </Link>
-        <Link to="/saved" className="nav-item active">
-          <Bookmark size={24} />
-          Saved
-        </Link>
-      </nav>
     </div>
   );
 }

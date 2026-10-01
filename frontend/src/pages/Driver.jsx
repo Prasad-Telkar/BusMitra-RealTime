@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import io from "socket.io-client";
 import { HelpCircle, Radio, MapPin, ShieldAlert, Square, Play, ChevronDown, Wifi, Key, AlertTriangle } from "lucide-react";
 
@@ -12,8 +13,9 @@ const AVAILABLE_ROUTES = [
 ];
 
 export default function Driver() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [driverId, setDriverId] = useState("");
+  const location = useLocation();
+  const [isLoggedIn, setIsLoggedIn] = useState(location.state?.isLoggedIn || false);
+  const [driverId, setDriverId] = useState(location.state?.driverId || "");
   const [pin, setPin] = useState("");
 
   const [socket, setSocket] = useState(null);

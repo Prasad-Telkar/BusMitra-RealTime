@@ -61,21 +61,6 @@ export default function Language() {
           Demo data - No official KTC integration
         </p>
       </div>
-
-      <nav className="bottom-nav">
-        <Link to="/" className="nav-item">
-          <div className="nav-icon-placeholder"></div>
-          Nearby
-        </Link>
-        <Link to="/routes" className="nav-item">
-          <div className="nav-icon-placeholder"></div>
-          Routes
-        </Link>
-        <Link to="/saved" className="nav-item">
-          <div className="nav-icon-placeholder"></div>
-          Saved
-        </Link>
-      </nav>
     </div>
   );
 }

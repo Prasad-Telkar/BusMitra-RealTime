@@ -155,21 +155,6 @@ export default function Home() {
           </div>
         </section>
       </div>
-
-      <nav className="bottom-nav">
-        <Link to="/passenger" className="nav-item active">
-          <MapPin size={24} />
-          Stops
-        </Link>
-        <Link to="/routes" className="nav-item">
-          <MapIcon size={24} />
-          Routes
-        </Link>
-        <Link to="/saved" className="nav-item">
-          <Bookmark size={24} />
-          Saved
-        </Link>
-      </nav>
     </div>
   );
 }
