@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Search, ChevronDown, MapPin, Bus, ArrowRight, Bookmark, Map as MapIcon, RefreshCw } from "lucide-react";
 
-const API_BASE = "http://localhost:5001";
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5001";
 
 export default function Home() {
   const [buses, setBuses] = useState({});
@@ -78,11 +78,11 @@ export default function Home() {
           <div className="bus-cards">
             {busList.length === 0 ? (
               <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                No active buses found right now. Start a trip from the Driver app to see live tracking.
+                Live tracking is temporarily paused while we integrate official GTFS schedules. Please use the Routes tab to browse bus timetables.
               </div>
             ) : (
               busList.map(([busId, busData], index) => {
-                const { eta } = busData;
+                const eta = busData;
                 const isSignalWeak = eta?.status === "stale";
                 const isOffline = eta?.status === "offline";
                 const isPrimary = index === 0;

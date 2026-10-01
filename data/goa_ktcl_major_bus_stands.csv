@@ -1,0 +1,15 @@
+stop_id,name,district,taluka,latitude,longitude,source,confidence
+KTCL-001,Panaji KTC Bus Stand,North Goa,Tiswadi,15.49542,73.8367,OpenStreetMap/Mapcarta,high
+KTCL-002,Margao KTC Bus Stand,South Goa,Salcete,15.28781,73.95612,OpenStreetMap/Mapcarta,high
+KTCL-003,Vasco KTC Bus Stand,South Goa,Mormugao,15.40016,73.82089,OpenStreetMap/Mapcarta,high
+KTCL-004,Mapusa KTC Bus Stand,North Goa,Bardez,15.58911,73.81007,OpenStreetMap/Mapcarta,high
+KTCL-005,Ponda KTC Bus Stand,North Goa,Ponda,15.4064,73.9972,DistancesFrom,medium-high
+KTCL-006,Bicholim Bus Stand,North Goa,Bicholim,15.58843,73.94978,OpenStreetMap/Mapcarta,high
+KTCL-007,Assonora Bus Stand,North Goa,Bardez,15.61885,73.90128,OpenStreetMap/Mapcarta,high
+KTCL-008,Honda Bus Stand,North Goa,Sattari,15.54603,74.05217,North Goa District Disaster Plan,high
+KTCL-009,Sankhali KTC Bus Stand,North Goa,Bicholim,15.56118,74.00996,OpenStreetMap/Mapcarta,high
+KTCL-010,Pernem KTC Bus Stand,North Goa,Pernem,15.71635,73.79898,OpenStreetMap/Mapcarta,high
+KTCL-011,Curchorem Bus Stand,South Goa,Quepem,15.2612,74.10662,OpenStreetMap/Mapcarta,high
+KTCL-012,Cuncolim Bus Stand,South Goa,Salcete,15.1822,73.9977,DistancesFrom,medium-high
+KTCL-013,KTC Bus Stand Shiroda,South Goa,Ponda,15.32119,74.02735,OpenStreetMap/Mapcarta,high
+KTCL-014,Valpoi Bus Stand,North Goa,Sattari,15.53286,74.14165,North Goa District Disaster Plan,high

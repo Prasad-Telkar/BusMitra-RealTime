@@ -1,8 +1,20 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { HelpCircle, ChevronDown, RefreshCw, Bus, LayoutDashboard, Map as MapIcon, Clock } from "lucide-react";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 
-const API_BASE = "http://localhost:5001";
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5001";
+
+const createBusIcon = (busNumber, isStale) => {
+  return new L.DivIcon({
+    html: `<div class="bus-map-pin ${isStale ? 'amber-outline' : 'teal'}" style="position: relative !important; transform: none !important; margin: 0; border: 2px solid white;">${busNumber}</div>`,
+    className: "custom-leaflet-marker",
+    iconSize: [40, 24],
+    iconAnchor: [20, 12],
+  });
+};
 
 export default function Admin() {
   const [buses, setBuses] = useState({});
@@ -123,29 +135,30 @@ export default function Admin() {
               <span className="mobile-only">Online</span>
             </div>
             
-            <div className="mock-map-container">
-              <div className="mm-badge">DEMO REGION - NOT TO SCALE</div>
-              <div className="mm-nodes">
-                <span className="mm-loc" style={{ top: '30%', left: '15%' }}>Panaji</span>
-                <span className="mm-loc" style={{ top: '15%', left: '70%' }}>Mapusa</span>
-                <span className="mm-loc" style={{ top: '50%', left: '80%' }}>Ponda</span>
-                <span className="mm-loc" style={{ top: '80%', left: '15%' }}>Vasco</span>
-              </div>
-              <svg className="mm-lines">
-                <line x1="20%" y1="35%" x2="50%" y2="25%" stroke="rgba(0,0,0,0.1)" strokeWidth="2" strokeDasharray="4 4" />
-                <line x1="50%" y1="25%" x2="75%" y2="55%" stroke="rgba(0,0,0,0.1)" strokeWidth="2" strokeDasharray="4 4" />
-                <line x1="20%" y1="35%" x2="55%" y2="80%" stroke="rgba(0,0,0,0.1)" strokeWidth="2" strokeDasharray="4 4" />
-              </svg>
-              <div className="mm-buses">
-                {Object.values(buses).map((bus, idx) => {
+            <div className="mock-map-container" style={{ height: '300px', width: '100%' }}>
+              <MapContainer center={[15.35, 73.95]} zoom={10} style={{ height: "100%", width: "100%" }} zoomControl={true}>
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                {Object.values(buses).map((bus) => {
                   const isStale = bus.status === "stale";
+                  if (!bus.lat || !bus.lng) return null;
                   return (
-                    <div key={bus.bus_id} className={`bus-map-pin ${isStale ? 'amber-outline' : 'teal'}`} style={{ top: `${35 + idx * 10}%`, left: `${25 + idx * 10}%` }}>
-                      {bus.bus_number}
-                    </div>
+                    <Marker 
+                      key={bus.bus_id} 
+                      position={[bus.lat, bus.lng]} 
+                      icon={createBusIcon(bus.bus_number, isStale)}
+                    >
+                      <Popup>
+                        <strong>{bus.bus_number}</strong><br/>
+                        {bus.route_name}<br/>
+                        {Math.floor(bus.eta_minutes)} mins ETA
+                      </Popup>
+                    </Marker>
                   );
                 })}
-              </div>
+              </MapContainer>
             </div>
             <div className="lfm-legend">
               <span className="legend-item"><span className="dot teal"></span> Real GPS</span>

@@ -1,0 +1,86 @@
+[
+  {
+    "id": "KTCL-001",
+    "name": "Panaji KTC Bus Stand",
+    "lat": 15.49542,
+    "lng": 73.8367
+  },
+  {
+    "id": "KTCL-002",
+    "name": "Margao KTC Bus Stand",
+    "lat": 15.28781,
+    "lng": 73.95612
+  },
+  {
+    "id": "KTCL-003",
+    "name": "Vasco KTC Bus Stand",
+    "lat": 15.40016,
+    "lng": 73.82089
+  },
+  {
+    "id": "KTCL-004",
+    "name": "Mapusa KTC Bus Stand",
+    "lat": 15.58911,
+    "lng": 73.81007
+  },
+  {
+    "id": "KTCL-005",
+    "name": "Ponda KTC Bus Stand",
+    "lat": 15.4064,
+    "lng": 73.9972
+  },
+  {
+    "id": "KTCL-006",
+    "name": "Bicholim Bus Stand",
+    "lat": 15.58843,
+    "lng": 73.94978
+  },
+  {
+    "id": "KTCL-007",
+    "name": "Assonora Bus Stand",
+    "lat": 15.61885,
+    "lng": 73.90128
+  },
+  {
+    "id": "KTCL-008",
+    "name": "Honda Bus Stand",
+    "lat": 15.54603,
+    "lng": 74.05217
+  },
+  {
+    "id": "KTCL-009",
+    "name": "Sankhali KTC Bus Stand",
+    "lat": 15.56118,
+    "lng": 74.00996
+  },
+  {
+    "id": "KTCL-010",
+    "name": "Pernem KTC Bus Stand",
+    "lat": 15.71635,
+    "lng": 73.79898
+  },
+  {
+    "id": "KTCL-011",
+    "name": "Curchorem Bus Stand",
+    "lat": 15.2612,
+    "lng": 74.10662
+  },
+  {
+    "id": "KTCL-012",
+    "name": "Cuncolim Bus Stand",
+    "lat": 15.1822,
+    "lng": 73.9977
+  },
+  {
+    "id": "KTCL-013",
+    "name": "KTC Bus Stand Shiroda",
+    "lat": 15.32119,
+    "lng": 74.02735
+  },
+  {
+    "id": "KTCL-014",
+    "name": "Valpoi Bus Stand",
+    "lat": 15.53286,
+    "lng": 74.14165
+  }
+]

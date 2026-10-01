@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Document>
+<name>Goa KTCL Major Bus Stands - BusMitra Seed</name>
+<description><![CDATA[
+14 researched KTCL bus-stand locations for the BusMitra prototype.
+This is a major-bus-stand seed, not the complete Goa stop network.
+The official KTCL GTFS feed is the source to use for the complete
+stop and route dataset.
+]]></description>
+<Placemark>
+<name>Panaji KTC Bus Stand</name>
+<description><![CDATA[
+Stop ID: KTCL-001<br/>
+District: North Goa<br/>
+Taluka: Tiswadi<br/>
+Coordinates: 15.49542, 73.8367<br/>
+Source: OpenStreetMap/Mapcarta<br/>
+Coordinate confidence: high
+]]></description>
+<ExtendedData>
+<Data name="stop_id"><value>KTCL-001</value></Data>
+<Data name="district"><value>North Goa</value></Data>
+<Data name="taluka"><value>Tiswadi</value></Data>
+<Data name="source"><value>OpenStreetMap/Mapcarta</value></Data>
+<Data name="confidence"><value>high</value></Data>
+</ExtendedData>
+<Point><coordinates>73.8367,15.49542,0</coordinates></Point>
+</Placemark>
+<Placemark>
+<name>Margao KTC Bus Stand</name>
+<description><![CDATA[
+Stop ID: KTCL-002<br/>
+District: South Goa<br/>
+Taluka: Salcete<br/>
+Coordinates: 15.28781, 73.95612<br/>
+Source: OpenStreetMap/Mapcarta<br/>
+Coordinate confidence: high
+]]></description>
+<ExtendedData>
+<Data name="stop_id"><value>KTCL-002</value></Data>
+<Data name="district"><value>South Goa</value></Data>
+<Data name="taluka"><value>Salcete</value></Data>
+<Data name="source"><value>OpenStreetMap/Mapcarta</value></Data>
+<Data name="confidence"><value>high</value></Data>
+</ExtendedData>
+<Point><coordinates>73.95612,15.28781,0</coordinates></Point>
+</Placemark>
+<Placemark>
+<name>Vasco KTC Bus Stand</name>
+<description><![CDATA[
+Stop ID: KTCL-003<br/>
+District: South Goa<br/>
+Taluka: Mormugao<br/>
+Coordinates: 15.40016, 73.82089<br/>
+Source: OpenStreetMap/Mapcarta<br/>
+Coordinate confidence: high
+]]></description>
+<ExtendedData>
+<Data name="stop_id"><value>KTCL-003</value></Data>
+<Data name="district"><value>South Goa</value></Data>
+<Data name="taluka"><value>Mormugao</value></Data>
+<Data name="source"><value>OpenStreetMap/Mapcarta</value></Data>
+<Data name="confidence"><value>high</value></Data>
+</ExtendedData>
+<Point><coordinates>73.82089,15.40016,0</coordinates></Point>
+</Placemark>
+<Placemark>
+<name>Mapusa KTC Bus Stand</name>
+<description><![CDATA[
+Stop ID: KTCL-004<br/>
+District: North Goa<br/>
+Taluka: Bardez<br/>
+Coordinates: 15.58911, 73.81007<br/>
+Source: OpenStreetMap/Mapcarta<br/>
+Coordinate confidence: high
+]]></description>
+<ExtendedData>
+<Data name="stop_id"><value>KTCL-004</value></Data>
+<Data name="district"><value>North Goa</value></Data>
+<Data name="taluka"><value>Bardez</value></Data>
+<Data name="source"><value>OpenStreetMap/Mapcarta</value></Data>
+<Data name="confidence"><value>high</value></Data>
+</ExtendedData>
+<Point><coordinates>73.81007,15.58911,0</coordinates></Point>
+</Placemark>
+<Placemark>
+<name>Ponda KTC Bus Stand</name>
+<description><![CDATA[
+Stop ID: KTCL-005<br/>
+District: North Goa<br/>
+Taluka: Ponda<br/>
+Coordinates: 15.4064, 73.9972<br/>
+Source: DistancesFrom<br/>
+Coordinate confidence: medium-high
+]]></description>
+<ExtendedData>
+<Data name="stop_id"><value>KTCL-005</value></Data>
+<Data name="district"><value>North Goa</value></Data>
+<Data name="taluka"><value>Ponda</value></Data>
+<Data name="source"><value>DistancesFrom</value></Data>
+<Data name="confidence"><value>medium-high</value></Data>
+</ExtendedData>
+<Point><coordinates>73.9972,15.4064,0</coordinates></Point>
+</Placemark>
+<Placemark>
+<name>Bicholim Bus Stand</name>
+<description><![CDATA[
+Stop ID: KTCL-006<br/>
+District: North Goa<br/>
+Taluka: Bicholim<br/>
+Coordinates: 15.58843, 73.94978<br/>
+Source: OpenStreetMap/Mapcarta<br/>
+Coordinate confidence: high
+]]></description>
+<ExtendedData>
+<Data name="stop_id"><value>KTCL-006</value></Data>
+<Data name="district"><value>North Goa</value></Data>
+<Data name="taluka"><value>Bicholim</value></Data>
+<Data name="source"><value>OpenStreetMap/Mapcarta</value></Data>
+<Data name="confidence"><value>high</value></Data>
+</ExtendedData>
+<Point><coordinates>73.94978,15.58843,0</coordinates></Point>
+</Placemark>
+<Placemark>
+<name>Assonora Bus Stand</name>
+<description><![CDATA[
+Stop ID: KTCL-007<br/>
+District: North Goa<br/>
+Taluka: Bardez<br/>
+Coordinates: 15.61885, 73.90128<br/>
+Source: OpenStreetMap/Mapcarta<br/>
+Coordinate confidence: high
+]]></description>
+<ExtendedData>
+<Data name="stop_id"><value>KTCL-007</value></Data>
+<Data name="district"><value>North Goa</value></Data>
+<Data name="taluka"><value>Bardez</value></Data>
+<Data name="source"><value>OpenStreetMap/Mapcarta</value></Data>
+<Data name="confidence"><value>high</value></Data>
+</ExtendedData>
+<Point><coordinates>73.90128,15.61885,0</coordinates></Point>
+</Placemark>
+<Placemark>
+<name>Honda Bus Stand</name>
+<description><![CDATA[
+Stop ID: KTCL-008<br/>
+District: North Goa<br/>
+Taluka: Sattari<br/>
+Coordinates: 15.54603, 74.05217<br/>
+Source: North Goa District Disaster Plan<br/>
+Coordinate confidence: high
+]]></description>
+<ExtendedData>
+<Data name="stop_id"><value>KTCL-008</value></Data>
+<Data name="district"><value>North Goa</value></Data>
+<Data name="taluka"><value>Sattari</value></Data>
+<Data name="source"><value>North Goa District Disaster Plan</value></Data>
+<Data name="confidence"><value>high</value></Data>
+</ExtendedData>
+<Point><coordinates>74.05217,15.54603,0</coordinates></Point>
+</Placemark>
+<Placemark>
+<name>Sankhali KTC Bus Stand</name>
+<description><![CDATA[
+Stop ID: KTCL-009<br/>
+District: North Goa<br/>
+Taluka: Bicholim<br/>
+Coordinates: 15.56118, 74.00996<br/>
+Source: OpenStreetMap/Mapcarta<br/>
+Coordinate confidence: high
+]]></description>
+<ExtendedData>
+<Data name="stop_id"><value>KTCL-009</value></Data>
+<Data name="district"><value>North Goa</value></Data>
+<Data name="taluka"><value>Bicholim</value></Data>
+<Data name="source"><value>OpenStreetMap/Mapcarta</value></Data>
+<Data name="confidence"><value>high</value></Data>
+</ExtendedData>
+<Point><coordinates>74.00996,15.56118,0</coordinates></Point>
+</Placemark>
+<Placemark>
+<name>Pernem KTC Bus Stand</name>
+<description><![CDATA[
+Stop ID: KTCL-010<br/>
+District: North Goa<br/>
+Taluka: Pernem<br/>
+Coordinates: 15.71635, 73.79898<br/>
+Source: OpenStreetMap/Mapcarta<br/>
+Coordinate confidence: high
+]]></description>
+<ExtendedData>
+<Data name="stop_id"><value>KTCL-010</value></Data>
+<Data name="district"><value>North Goa</value></Data>
+<Data name="taluka"><value>Pernem</value></Data>
+<Data name="source"><value>OpenStreetMap/Mapcarta</value></Data>
+<Data name="confidence"><value>high</value></Data>
+</ExtendedData>
+<Point><coordinates>73.79898,15.71635,0</coordinates></Point>
+</Placemark>
+<Placemark>
+<name>Curchorem Bus Stand</name>
+<description><![CDATA[
+Stop ID: KTCL-011<br/>
+District: South Goa<br/>
+Taluka: Quepem<br/>
+Coordinates: 15.2612, 74.10662<br/>
+Source: OpenStreetMap/Mapcarta<br/>
+Coordinate confidence: high
+]]></description>
+<ExtendedData>
+<Data name="stop_id"><value>KTCL-011</value></Data>
+<Data name="district"><value>South Goa</value></Data>
+<Data name="taluka"><value>Quepem</value></Data>
+<Data name="source"><value>OpenStreetMap/Mapcarta</value></Data>
+<Data name="confidence"><value>high</value></Data>
+</ExtendedData>
+<Point><coordinates>74.10662,15.2612,0</coordinates></Point>
+</Placemark>
+<Placemark>
+<name>Cuncolim Bus Stand</name>
+<description><![CDATA[
+Stop ID: KTCL-012<br/>
+District: South Goa<br/>
+Taluka: Salcete<br/>
+Coordinates: 15.1822, 73.9977<br/>
+Source: DistancesFrom<br/>
+Coordinate confidence: medium-high
+]]></description>
+<ExtendedData>
+<Data name="stop_id"><value>KTCL-012</value></Data>
+<Data name="district"><value>South Goa</value></Data>
+<Data name="taluka"><value>Salcete</value></Data>
+<Data name="source"><value>DistancesFrom</value></Data>
+<Data name="confidence"><value>medium-high</value></Data>
+</ExtendedData>
+<Point><coordinates>73.9977,15.1822,0</coordinates></Point>
+</Placemark>
+<Placemark>
+<name>KTC Bus Stand Shiroda</name>
+<description><![CDATA[
+Stop ID: KTCL-013<br/>
+District: South Goa<br/>
+Taluka: Ponda<br/>
+Coordinates: 15.32119, 74.02735<br/>
+Source: OpenStreetMap/Mapcarta<br/>
+Coordinate confidence: high
+]]></description>
+<ExtendedData>
+<Data name="stop_id"><value>KTCL-013</value></Data>
+<Data name="district"><value>South Goa</value></Data>
+<Data name="taluka"><value>Ponda</value></Data>
+<Data name="source"><value>OpenStreetMap/Mapcarta</value></Data>
+<Data name="confidence"><value>high</value></Data>
+</ExtendedData>
+<Point><coordinates>74.02735,15.32119,0</coordinates></Point>
+</Placemark>
+<Placemark>
+<name>Valpoi Bus Stand</name>
+<description><![CDATA[
+Stop ID: KTCL-014<br/>
+District: North Goa<br/>
+Taluka: Sattari<br/>
+Coordinates: 15.53286, 74.14165<br/>
+Source: North Goa District Disaster Plan<br/>
+Coordinate confidence: high
+]]></description>
+<ExtendedData>
+<Data name="stop_id"><value>KTCL-014</value></Data>
+<Data name="district"><value>North Goa</value></Data>
+<Data name="taluka"><value>Sattari</value></Data>
+<Data name="source"><value>North Goa District Disaster Plan</value></Data>
+<Data name="confidence"><value>high</value></Data>
+</ExtendedData>
+<Point><coordinates>74.14165,15.53286,0</coordinates></Point>
+</Placemark>
+</Document>
+</kml>

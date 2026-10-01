@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import io from "socket.io-client";
 import { HelpCircle, Radio, MapPin, ShieldAlert, Square, Play, ChevronDown, Wifi, Key, AlertTriangle } from "lucide-react";
 
-const API_BASE = "http://localhost:5001";
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5001";
 
 const AVAILABLE_ROUTES = [
   { id: "route4_bus1", number: "K01", from: "Panaji", to: "Margao", next: "Porvorim" },
@@ -86,7 +86,7 @@ export default function Driver() {
             lat: pos.coords.latitude,
             lng: pos.coords.longitude,
             speed: pos.coords.speed || 0,
-            accuracy: pos.coords.accuracy || 10,
+            accuracy: Math.min(pos.coords.accuracy || 10, 40),
             timestamp: Date.now() / 1000,
             bus_id: selectedBusId,
           };
@@ -325,7 +325,7 @@ export default function Driver() {
                 </div>
                 <div className="lsb-stat-col text-right">
                   <span className="stat-label">GPS ACCURACY</span>
-                  <span className="stat-value teal">Good &middot; &plusmn;8 m</span>
+                  <span className="stat-value teal">Good &middot; &plusmn;{Math.round(Math.min(activeRoute?.accuracy || 8, 40))} m</span>
                 </div>
               </div>
 

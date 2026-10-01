@@ -12,52 +12,16 @@ from flask_socketio import SocketIO, join_room, emit
 import time
 import math
 import collections
-from db import stops_col, buses_col, routes_col
+from db import stops_col, buses_col, routes_col, trips_col, stop_times_col, service_calendars_col
+import json
+from bson import ObjectId
 
 app = Flask(__name__)
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 # ---- In-memory store ----
-# bus_id -> {
-#   "current": { lat, lng, speed, timestamp, accuracy, status },
-#   "history": [{ lat, lng, speed, timestamp }] (last 3 points for smoothing),
-#   "route_id": "..."
-# }
 live_buses = {}
-
-ROUTES = {
-    "route12_bus1": {
-        "bus_number": "K03",
-        "name": "Kadamba — Vasco to Panaji",
-        "stops": ["Vasco", "Dabolim", "Bambolim", "Panaji"],
-        "destination": {"lat": 15.4909, "lng": 73.8278},
-    },
-    "route4_bus1": {
-        "bus_number": "K01",
-        "name": "Kadamba — Panaji to Margao",
-        "stops": ["Panaji", "Porvorim", "Mapusa", "Ponda", "Margao"],
-        "destination": {"lat": 15.2832, "lng": 73.9862},
-    },
-    "route4_bus2": {
-        "bus_number": "K02",
-        "name": "Kadamba — Margao to Panaji",
-        "stops": ["Margao", "Ponda", "Mapusa", "Porvorim", "Panaji"],
-        "destination": {"lat": 15.4909, "lng": 73.8278},
-    },
-    "route5_bus1": {
-        "bus_number": "K05",
-        "name": "Kadamba — Mapusa to Panaji",
-        "stops": ["Mapusa", "Porvorim", "Panaji"],
-        "destination": {"lat": 15.4909, "lng": 73.8278},
-    },
-    "route6_bus1": {
-        "bus_number": "K09",
-        "name": "Kadamba — Vasco to Ponda",
-        "stops": ["Vasco", "Verna", "Ponda"],
-        "destination": {"lat": 15.4026, "lng": 74.0180},
-    },
-}
 
 def haversine_km(lat1, lon1, lat2, lon2):
     R = 6371
@@ -68,7 +32,6 @@ def haversine_km(lat1, lon1, lat2, lon2):
     return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
 def smooth_gps(history):
-    """Moving average smoothing over the last N valid GPS points."""
     if not history:
         return None
     avg_lat = sum(p["lat"] for p in history) / len(history)
@@ -78,90 +41,158 @@ def smooth_gps(history):
 
 def compute_eta(bus_id):
     bus_state = live_buses.get(bus_id)
-    route = ROUTES.get(bus_id)
-    
-    if not bus_state or not bus_state.get("current") or not route:
+    if not bus_state or not bus_state.get("current"):
         return None
-        
-    current = bus_state["current"]
-    dest = route["destination"]
-    
-    dist_km = haversine_km(current["lat"], current["lng"], dest["lat"], dest["lng"])
-    
-    # ETA Logic
-    speed_kmh = max(current.get("speed", 0) * 3.6, 5) # Floor at 5km/h for stationary buses
-    eta_min = round((dist_km / speed_kmh) * 60, 1)
-    age_sec = time.time() - current["timestamp"]
-    
-    # Status Logic
-    gps_status = "live"
-    if age_sec > 60:
-        gps_status = "stale"
-    if age_sec > 120:
-        gps_status = "offline"
-        eta_min = None # ETA unavailable when too stale
-        
-    # Route Deviation Logic (Mock distance to route logic, since we don't have full line strings yet)
-    # Using straight line to destination for deviation demo
-    deviation_status = "on_route"
-    
-    return {
-        "bus_id": bus_id,
-        "bus_number": route.get("bus_number", "K??"),
-        "route_name": route["name"],
-        "stops": route.get("stops", []),
-        "distance_km": round(dist_km, 2),
-        "eta_minutes": eta_min,
-        "signal_age_sec": round(age_sec, 1),
-        "status": gps_status,
-        "trip_status": "On Time",
-        "deviation_status": deviation_status,
-        "lat": current["lat"],
-        "lng": current["lng"]
-    }
+    # Live GPS blending will be added here in future tasks
+    return None
+
+def json_serialize(obj):
+    if isinstance(obj, ObjectId):
+        return str(obj)
+    if isinstance(obj, dict):
+        return {k: json_serialize(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [json_serialize(i) for i in obj]
+    return obj
 
 # ---------------- REST endpoints ----------------
 
 @app.route("/api/routes", methods=["GET"])
 def get_routes():
-    return jsonify(ROUTES)
+    limit = int(request.args.get("limit", 50))
+    routes = list(routes_col.find({"active": True}).limit(limit))
+    return jsonify(json_serialize(routes))
 
-@app.route("/api/buses", methods=["GET"])
-def get_active_buses():
-    enriched_buses = {}
-    for bus_id in list(live_buses.keys()):
-        eta_info = compute_eta(bus_id)
-        if eta_info:
-            enriched_buses[bus_id] = eta_info
-    return jsonify(enriched_buses)
+@app.route("/api/search/routes", methods=["GET"])
+def search_routes():
+    query = request.args.get("q", "").strip()
+    limit = int(request.args.get("limit", 50))
+    if not query:
+        return jsonify([])
+    
+    # Simple regex search on shortName or longName
+    routes = list(routes_col.find({
+        "$or": [
+            {"shortName": {"$regex": query, "$options": "i"}},
+            {"longName": {"$regex": query, "$options": "i"}}
+        ]
+    }).limit(limit))
+    return jsonify(json_serialize(routes))
 
-@app.route("/api/eta/<bus_id>", methods=["GET"])
-def get_eta(bus_id):
-    eta = compute_eta(bus_id)
-    if eta is None:
-        return jsonify({"error": "no data for this bus yet"}), 404
-    return jsonify(eta)
+@app.route("/api/routes/<route_id>", methods=["GET"])
+def get_route(route_id):
+    route = routes_col.find_one({"routeId": route_id})
+    if not route:
+        return jsonify({"error": "Route not found"}), 404
+    return jsonify(json_serialize(route))
 
+@app.route("/api/routes/<route_id>/trips", methods=["GET"])
+def get_route_trips(route_id):
+    trips = list(trips_col.find({"routeId": route_id}))
+    return jsonify(json_serialize(trips))
+
+@app.route("/api/trips/<trip_id>", methods=["GET"])
+def get_trip(trip_id):
+    trip = trips_col.find_one({"tripId": trip_id})
+    if not trip:
+        return jsonify({"error": "Trip not found"}), 404
+    return jsonify(json_serialize(trip))
+
+@app.route("/api/trips/<trip_id>/stops", methods=["GET"])
+def get_trip_stops(trip_id):
+    # Get all stop times for the trip, sorted by sequence
+    stop_times = list(stop_times_col.find({"tripId": trip_id}).sort("stopSequence", 1))
+    
+    # Fetch details for each stop
+    stop_ids = [st["stopId"] for st in stop_times]
+    stops_info = {str(s["stopId"]): s for s in stops_col.find({"stopId": {"$in": stop_ids}})}
+    
+    result = []
+    for st in stop_times:
+        s_id = str(st["stopId"])
+        info = stops_info.get(s_id, {})
+        
+        result.append({
+            "stopId": s_id,
+            "stopName": info.get("name", "Unknown Stop"),
+            "latitude": info.get("lat"),
+            "longitude": info.get("lng"),
+            "sequence": st["stopSequence"],
+            "arrivalTime": st.get("arrivalTime"),
+            "departureTime": st.get("departureTime")
+        })
+        
+    return jsonify(json_serialize(result))
+
+@app.route("/api/stops/<stop_id>/routes", methods=["GET"])
+def get_stop_routes(stop_id):
+    # 1. Find all trips that stop here
+    stop_times = list(stop_times_col.find({"stopId": stop_id}))
+    trip_ids = list(set(st["tripId"] for st in stop_times))
+    
+    # 2. Find those trips
+    trips = list(trips_col.find({"tripId": {"$in": trip_ids}}))
+    route_ids = list(set(t["routeId"] for t in trips))
+    
+    # 3. Return the routes
+    routes = list(routes_col.find({"routeId": {"$in": route_ids}}))
+    return jsonify(json_serialize(routes))
+
+@app.route("/api/stops/<stop_id>/schedules", methods=["GET"])
+def get_stop_schedules(stop_id):
+    # Find all stop times for this stop
+    stop_times = list(stop_times_col.find({"stopId": stop_id}).limit(100))
+    trip_ids = [st["tripId"] for st in stop_times]
+    
+    # Find the corresponding trips
+    trips = {str(t["tripId"]): t for t in trips_col.find({"tripId": {"$in": trip_ids}})}
+    
+    # Find the routes
+    route_ids = list(set(t["routeId"] for t in trips.values()))
+    routes = {str(r["routeId"]): r for r in routes_col.find({"routeId": {"$in": route_ids}})}
+    
+    services = []
+    for st in stop_times:
+        t_id = str(st["tripId"])
+        trip = trips.get(t_id)
+        if not trip: continue
+        
+        r_id = str(trip["routeId"])
+        route = routes.get(r_id, {})
+        
+        services.append({
+            "routeId": r_id,
+            "routeName": route.get("shortName") or route.get("longName"),
+            "tripId": t_id,
+            "headsign": trip.get("headsign"),
+            "arrivalTime": st.get("arrivalTime"),
+            "departureTime": st.get("departureTime"),
+            "serviceId": trip.get("serviceId")
+        })
+        
+    # Sort by arrival time
+    services.sort(key=lambda x: x["arrivalTime"] or "")
+    
+    return jsonify(json_serialize({
+        "stopId": stop_id,
+        "services": services
+    }))
+
+@app.route("/api/search/stops", methods=["GET"])
 @app.route("/api/stops", methods=["GET"])
 def get_stops():
-    query = request.args.get("query", "").strip()
+    query = request.args.get("query", request.args.get("q", "")).strip()
     limit = int(request.args.get("limit", 50))
     
     try:
         if query:
-            # Case insensitive regex search on name
             stops_cursor = stops_col.find({
                 "name": {"$regex": query, "$options": "i"}
             }).limit(limit)
         else:
             stops_cursor = stops_col.find().limit(limit)
             
-        stops = []
-        for s in stops_cursor:
-            s["_id"] = str(s["_id"])
-            stops.append(s)
-            
-        return jsonify(stops)
+        return jsonify(json_serialize(list(stops_cursor)))
     except Exception as e:
         print("Database error in /api/stops:", e)
         return jsonify([]), 503

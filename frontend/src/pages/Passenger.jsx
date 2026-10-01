@@ -4,7 +4,7 @@ import { ArrowLeft, Share2, Map as MapIcon, Info, Bus, Bookmark, AlertTriangle, 
 import LiveMap from "../components/LiveMap";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
-const API_BASE = "http://localhost:5001";
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5001";
 
 export default function Passenger() {
   const { busId } = useParams();
@@ -15,6 +15,19 @@ export default function Passenger() {
   // Determine signal status based on backend ETA data
   const isSignalWeak = etaData?.status === "stale";
   const isOffline = etaData?.status === "offline" || !etaData;
+
+  // Poll for ETA
+  const fetchEta = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/eta/${busId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setEtaData(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch ETA", err);
+    }
+  };
 
   useEffect(() => {
     const socket = io(API_BASE);
@@ -28,19 +41,6 @@ export default function Passenger() {
       setBusLocation({ lat: data.lat, lng: data.lng });
     });
 
-    // Poll for ETA
-    const fetchEta = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/api/eta/${busId}`);
-        if (res.ok) {
-          const data = await res.json();
-          setEtaData(data);
-        }
-      } catch (err) {
-        console.error("Failed to fetch ETA", err);
-      }
-    };
-
     fetchEta();
     const interval = setInterval(fetchEta, 5000); // Check ETA freshness every 5s
 
@@ -50,10 +50,15 @@ export default function Passenger() {
     };
   }, [busId]);
 
+  const activeLocation = busLocation || (etaData?.lat ? { lat: etaData.lat, lng: etaData.lng } : null);
+
   return (
     <div className="home-screen">
-      <div className="passenger-map-layer">
-        <LiveMap location={busLocation} />
+      <div className="passenger-map-layer" style={{ height: "100%", width: "100%", position: "absolute", top: 0, left: 0, zIndex: 0 }}>
+        <LiveMap 
+          busPosition={activeLocation ? [activeLocation.lat, activeLocation.lng] : null} 
+          center={activeLocation ? [activeLocation.lat, activeLocation.lng] : [15.35, 73.95]} 
+        />
       </div>
 
       <div className="passenger-ui-layer">
