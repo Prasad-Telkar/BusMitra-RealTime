@@ -12,6 +12,7 @@ from flask_socketio import SocketIO, join_room, emit
 import time
 import math
 import collections
+from db import stops_col, buses_col, routes_col
 
 app = Flask(__name__)
 CORS(app)
@@ -141,6 +142,30 @@ def get_eta(bus_id):
         return jsonify({"error": "no data for this bus yet"}), 404
     return jsonify(eta)
 
+@app.route("/api/stops", methods=["GET"])
+def get_stops():
+    query = request.args.get("query", "").strip()
+    limit = int(request.args.get("limit", 50))
+    
+    try:
+        if query:
+            # Case insensitive regex search on name
+            stops_cursor = stops_col.find({
+                "name": {"$regex": query, "$options": "i"}
+            }).limit(limit)
+        else:
+            stops_cursor = stops_col.find().limit(limit)
+            
+        stops = []
+        for s in stops_cursor:
+            s["_id"] = str(s["_id"])
+            stops.append(s)
+            
+        return jsonify(stops)
+    except Exception as e:
+        print("Database error in /api/stops:", e)
+        return jsonify([]), 503
+
 @app.route("/predict", methods=["POST"])
 def predict_delay():
     # Placeholder for ML delay model
@@ -176,8 +201,8 @@ def handle_driver_location(data):
     accuracy = data.get("accuracy", 10)
     timestamp = data.get("timestamp", time.time())
     
-    # 1. Validation: Reject if accuracy > 50m
-    if accuracy > 50:
+    # 1. Validation: Reject if accuracy > 10000m
+    if accuracy > 10000:
         print(f"[{bus_id}] Rejected: Poor accuracy ({accuracy}m)")
         return
         

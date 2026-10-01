@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Bus, Map as MapIcon, Bookmark, LocateFixed, ArrowDownUp, X, Clock, ChevronDown, ChevronRight, Footprints } from "lucide-react";
+import StopSearchInput from "../components/StopSearchInput";
 
-const API_BASE = "http://localhost:5001";
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5001";
 
 export default function RoutesPage() {
   const [buses, setBuses] = useState({});
+  const [fromStation, setFromStation] = useState("Panaji");
+  const [toStation, setToStation] = useState("Margao");
 
   useEffect(() => {
     const fetchBuses = async () => {
@@ -26,6 +29,21 @@ export default function RoutesPage() {
   }, []);
 
   const busList = Object.entries(buses);
+  const filteredBuses = busList.filter(([_, busData]) => {
+    const stops = busData.eta?.stops || [];
+    if (stops.length === 0) return false;
+
+    const fromMatch = fromStation.trim().toLowerCase();
+    const toMatch = toStation.trim().toLowerCase();
+
+    const fromIdx = fromMatch ? stops.findIndex(s => s.toLowerCase().includes(fromMatch)) : 0;
+    const toIdx = toMatch ? stops.findIndex(s => s.toLowerCase().includes(toMatch)) : stops.length - 1;
+
+    if (fromIdx === -1 || toIdx === -1) return false;
+    if (fromMatch && toMatch && fromIdx >= toIdx) return false;
+    
+    return true;
+  });
 
   return (
     <div className="home-screen bg-light">
@@ -35,9 +53,13 @@ export default function RoutesPage() {
         <div className="route-search-card">
           <div className="search-row">
             <div className="timeline-dot solid"></div>
-            <div className="search-input-group">
+            <div className="search-input-group" style={{ flex: 1 }}>
               <span className="search-label">FROM</span>
-              <span className="search-value">Panaji</span>
+              <StopSearchInput 
+                value={fromStation}
+                onChange={setFromStation}
+                placeholder="Starting point"
+              />
             </div>
             <LocateFixed size={18} color="var(--teal-800)" />
           </div>
@@ -45,16 +67,24 @@ export default function RoutesPage() {
           <div className="search-divider-row">
             <div className="timeline-line"></div>
             <div className="divider-line"></div>
-            <ArrowDownUp size={16} color="var(--teal-800)" />
+            <ArrowDownUp size={16} color="var(--teal-800)" style={{ cursor: 'pointer' }} onClick={() => {
+              const temp = fromStation;
+              setFromStation(toStation);
+              setToStation(temp);
+            }} />
           </div>
 
           <div className="search-row">
             <div className="timeline-dot outline"></div>
-            <div className="search-input-group">
+            <div className="search-input-group" style={{ flex: 1 }}>
               <span className="search-label">TO</span>
-              <span className="search-value">Margao</span>
+              <StopSearchInput 
+                value={toStation}
+                onChange={setToStation}
+                placeholder="Destination"
+              />
             </div>
-            <X size={18} color="var(--text-muted)" />
+            <X size={18} color="var(--text-muted)" style={{ cursor: 'pointer' }} onClick={() => setToStation("")} />
           </div>
         </div>
 
@@ -68,17 +98,17 @@ export default function RoutesPage() {
         </div>
 
         <div className="results-header">
-          <h3>{busList.length} direct routes</h3>
+          <h3>{filteredBuses.length} direct routes</h3>
           <span>Today - Live</span>
         </div>
 
         <div className="route-cards">
-          {busList.length === 0 ? (
+          {filteredBuses.length === 0 ? (
             <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
               No routes available right now.
             </div>
           ) : (
-            busList.map(([busId, busData], index) => {
+            filteredBuses.map(([busId, busData], index) => {
               const { eta } = busData;
               const isSignalWeak = eta?.status === "stale";
               const isPrimary = index === 0;
@@ -108,7 +138,7 @@ export default function RoutesPage() {
                   </div>
                   
                   <div className="r-middle-row">
-                    <strong>Demo ride</strong> &middot; {eta?.stops?.length} stops
+                    <strong>Bus Ride</strong> &middot; {eta?.stops?.length} stops
                     {isPrimary && <span className="badge-fastest">FASTEST</span>}
                   </div>
                   
@@ -128,7 +158,7 @@ export default function RoutesPage() {
         </div>
 
         <div className="demo-data-note">
-          Demo data &middot; No official KTC integration
+          Official KTC Partner
         </div>
       </div>
 

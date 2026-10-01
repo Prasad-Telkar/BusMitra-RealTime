@@ -28,6 +28,7 @@ def init_db():
     routes_col.create_index("routeId", unique=True)
     
     # Stops
+    stops_col.create_index("stopId", unique=True)
     stops_col.create_index([("location", "2dsphere")])
     
     # Trips
