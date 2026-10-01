@@ -8,6 +8,7 @@ import RouteDetail from "./pages/RouteDetail";
 import TripDetail from "./pages/TripDetail";
 import Saved from "./pages/Saved";
 import StopDetail from "./pages/StopDetail";
+import BusDetail from "./pages/BusDetail";
 import Offline from "./pages/Offline";
 import Admin from "./pages/Admin";
 import "./App.css";
@@ -22,6 +23,7 @@ export default function App() {
         <Route path="/route-detail/:busId" element={<RouteDetail />} />
         <Route path="/trip/:tripId" element={<TripDetail />} />
         <Route path="/stop/:stopId" element={<StopDetail />} />
+        <Route path="/bus/:busId" element={<BusDetail />} />
         <Route path="/saved" element={<Saved />} />
         <Route path="/offline" element={<Offline />} />
         <Route path="/track/:busId" element={<Passenger />} />

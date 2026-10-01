@@ -20,6 +20,7 @@ export default function Admin() {
   const [buses, setBuses] = useState({});
   const [routes, setRoutes] = useState([]);
   const [activeTab, setActiveTab] = useState("fleet"); // fleet or routes
+  const [selectedAdminBus, setSelectedAdminBus] = useState(null);
 
   useEffect(() => {
     const fetchBuses = async () => {
@@ -202,6 +203,7 @@ export default function Admin() {
                       key={bus.bus_id} 
                       position={[bus.lat, bus.lng]} 
                       icon={createBusIcon(bus.bus_number, isStale)}
+                      eventHandlers={{ click: () => setSelectedAdminBus(bus) }}
                     >
                       <Popup>
                         <strong>{bus.bus_number}</strong><br/>
@@ -224,26 +226,46 @@ export default function Admin() {
           <div className="featured-alert-col">
             <h3 className="desktop-only fac-desktop-title">Selected bus</h3>
             <div className="featured-alert-card">
-              <div className="fac-header">
-                <div className="bus-badge amber">Demo</div>
-                <div className="fac-h-text">
-                  <span className="fac-op">KADAMBA - DEMO BUS</span>
-                  <h4>Select a bus from list</h4>
-                </div>
-              </div>
+              {!selectedAdminBus ? (
+                <>
+                  <div className="fac-header">
+                    <div className="bus-badge amber">Demo</div>
+                    <div className="fac-h-text">
+                      <span className="fac-op">KADAMBA - DEMO BUS</span>
+                      <h4>Select a bus from list</h4>
+                    </div>
+                  </div>
+                  <div className="fac-warning-box">
+                    <strong>Fleet monitor</strong>
+                    <p>Clicking on buses will show details here.</p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="fac-header">
+                    <div className={`bus-badge ${selectedAdminBus.status === 'stale' ? 'amber' : ''}`}>{selectedAdminBus.bus_number}</div>
+                    <div className="fac-h-text">
+                      <span className="fac-op">KADAMBA</span>
+                      <h4>{selectedAdminBus.route_name}</h4>
+                    </div>
+                  </div>
+                  <div className="fac-warning-box" style={{ background: selectedAdminBus.status === 'stale' ? '#FEF3C7' : '#ECFDF5' }}>
+                    <strong style={{ color: selectedAdminBus.status === 'stale' ? '#92400E' : '#065F46' }}>
+                      {selectedAdminBus.status === 'stale' ? 'Signal Weak' : 'Live Tracking'}
+                    </strong>
+                    <p style={{ color: selectedAdminBus.status === 'stale' ? '#B45309' : '#047857' }}>
+                      Last update: {Math.floor(selectedAdminBus.signal_age_sec)} seconds ago
+                    </p>
+                  </div>
+                  <div className="fac-details" style={{ marginTop: '16px' }}>
+                    <p className="fac-desc" style={{ marginBottom: '8px' }}><strong>ETA:</strong> {Math.floor(selectedAdminBus.eta_minutes)} minutes</p>
+                    <p className="fac-desc" style={{ marginBottom: '8px' }}><strong>Speed:</strong> {Math.floor(selectedAdminBus.speed || 0)} km/h</p>
+                    <p className="fac-desc"><strong>Accuracy:</strong> &plusmn;{Math.floor(selectedAdminBus.accuracy || 10)} meters</p>
+                  </div>
+                </>
+              )}
 
-              <div className="fac-warning-box">
-                <strong>Fleet monitor</strong>
-                <p>Clicking on buses will show details here.</p>
-              </div>
-
-              <div className="fac-details">
-                <p className="fac-desc">
-                  This panel will show alerts, delays, and stale connections when integrated with full admin actions.
-                </p>
-              </div>
-
-              <button className="btn-outline fac-btn" onClick={() => window.location.reload()}>
+              <button className="btn-outline fac-btn" onClick={() => window.location.reload()} style={{ marginTop: '20px' }}>
                 <RefreshCw size={16} /> Refresh Backend
               </button>
             </div>
@@ -271,7 +293,7 @@ export default function Admin() {
               const nextStop = bus.stops && bus.stops.length > 1 ? bus.stops[1] : "Unknown";
               
               return (
-                <div key={busId} className={`list-route-card ${isStale ? 'border-teal alert-highlight' : ''}`}>
+                <div key={busId} className={`list-route-card ${isStale ? 'border-teal alert-highlight' : ''}`} onClick={() => { setSelectedAdminBus(bus); window.scrollTo({ top: 0, behavior: 'smooth' }); }} style={{ cursor: 'pointer' }}>
                   <div className="lrc-header">
                     <div className={`bus-badge ${isStale ? 'amber' : ''}`}>{bus.bus_number}</div>
                     <div className="lrc-title">
@@ -320,7 +342,7 @@ export default function Admin() {
                   const nextStop = bus.stops && bus.stops.length > 1 ? bus.stops[1] : "Unknown";
 
                   return (
-                    <tr key={busId} className={isStale ? "alert-highlight" : ""}>
+                    <tr key={busId} className={isStale ? "alert-highlight" : ""} onClick={() => { setSelectedAdminBus(bus); window.scrollTo({ top: 0, behavior: 'smooth' }); }} style={{ cursor: 'pointer' }}>
                       <td><div className={`bus-badge ${isStale ? 'amber' : ''}`}>{bus.bus_number}</div></td>
                       <td className="fw-bold text-main">{origin} &rarr; {destination}</td>
                       <td className={isStale ? "teal fw-bold" : "teal fw-bold"}>

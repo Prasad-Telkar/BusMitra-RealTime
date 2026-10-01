@@ -48,8 +48,8 @@ export default function RouteDetail() {
             <ArrowLeft size={24} color="var(--text-main)" />
           </button>
           <div className="rd-title-group">
-            <h1>{route.shortName || "BUS"}</h1>
-            <p>Kadamba &middot; {route.longName}</p>
+            <h1>{route.routeNumber || route.shortName || "BUS"}</h1>
+            <p>Kadamba &middot; {route.routeName || route.longName}</p>
           </div>
           <button className="icon-btn">
             <Bookmark size={24} color="var(--teal-800)" />
@@ -57,9 +57,9 @@ export default function RouteDetail() {
         </header>
 
         <div className="rd-main-info" style={{ marginBottom: "20px" }}>
-          <div className="bus-badge">{route.shortName || "KTC"}</div>
+          <div className="bus-badge">{route.routeNumber || route.shortName || "KTC"}</div>
           <div className="rd-dest-info">
-            <div className="rd-dest-line">{route.longName}</div>
+            <div className="rd-dest-line">{route.routeName || route.longName}</div>
             <div className="rd-stops-count">{trips.length} scheduled trips</div>
           </div>
         </div>
@@ -85,7 +85,7 @@ export default function RouteDetail() {
                   <div className="r-card-top" style={{ alignItems: "center" }}>
                     <div className="r-title-area" style={{ flex: 1 }}>
                       <h4 style={{ margin: 0, fontSize: "16px", color: "var(--text-main)" }}>
-                        {trip.headsign || route.longName}
+                        {trip.headsign || route.routeName || route.longName}
                       </h4>
                       <p style={{ margin: "4px 0 0 0", fontSize: "13px", color: "var(--text-light)" }}>
                         Service: {trip.serviceId}
