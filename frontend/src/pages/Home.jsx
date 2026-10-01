@@ -1,32 +1,81 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, ChevronDown, MapPin, Bus, ArrowRight, Bookmark, Map as MapIcon, RefreshCw } from "lucide-react";
+import { Search, ChevronDown, MapPin, Bus, Navigation, Bookmark, Map as MapIcon, Loader2 } from "lucide-react";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5001";
 
 export default function Home() {
-  const [buses, setBuses] = useState({});
+  const [stops, setStops] = useState([]);
+  const [query, setQuery] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [locationStatus, setLocationStatus] = useState("idle"); // idle, locating, found, error
   const navigate = useNavigate();
 
+  // Load default or nearby stops on mount
   useEffect(() => {
-    const fetchBuses = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/api/buses`);
-        if (res.ok) {
-          const data = await res.json();
-          setBuses(data);
-        }
-      } catch (err) {
-        console.error("Failed to fetch buses", err);
-      }
-    };
-
-    fetchBuses();
-    const interval = setInterval(fetchBuses, 5000);
-    return () => clearInterval(interval);
+    fetchStops();
   }, []);
 
-  const busList = Object.entries(buses);
+  const fetchStops = async (searchQuery = "") => {
+    setIsLoading(true);
+    try {
+      const url = searchQuery 
+        ? `${API_BASE}/api/search/stops?q=${encodeURIComponent(searchQuery)}`
+        : `${API_BASE}/api/stops?limit=15`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const data = await res.json();
+        setStops(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch stops", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSearch = (e) => {
+    const val = e.target.value;
+    setQuery(val);
+    if (val.length > 2) {
+      fetchStops(val);
+    } else if (val.length === 0) {
+      fetchStops();
+    }
+  };
+
+  const findNearbyStops = () => {
+    setLocationStatus("locating");
+    if (!navigator.geolocation) {
+      setLocationStatus("error");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        setLocationStatus("found");
+        setIsLoading(true);
+        try {
+          const { latitude, longitude } = position.coords;
+          const res = await fetch(`${API_BASE}/api/stops/nearby?lat=${latitude}&lng=${longitude}&radius=5`);
+          if (res.ok) {
+            const data = await res.json();
+            setStops(data);
+            setQuery("");
+          }
+        } catch (err) {
+          console.error("Failed to fetch nearby stops", err);
+        } finally {
+          setIsLoading(false);
+        }
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+        setLocationStatus("error");
+      },
+      { timeout: 10000 }
+    );
+  };
 
   return (
     <div className="home-screen">
@@ -43,138 +92,74 @@ export default function Home() {
               Goa <ChevronDown size={16} />
             </div>
           </div>
-          <p className="tagline">Know your bus. Know your time.</p>
+          <p className="tagline">Find your stop. Track your bus.</p>
         </header>
 
         <section className="search-section">
-          <h1>Track your bus</h1>
+          <h1>Where are you?</h1>
           <div className="search-box">
             <Search size={18} color="var(--text-muted)" />
-            <input type="text" placeholder="Search bus number, route, or stop" />
-            <div className="language-selector">
-              English <ChevronDown size={14} />
-            </div>
+            <input 
+              type="text" 
+              placeholder="Search for a bus stop..." 
+              value={query}
+              onChange={handleSearch}
+            />
+            {isLoading && <Loader2 className="spinner" size={16} color="var(--teal-600)" />}
           </div>
+          
+          <button 
+            className="btn-outline nearby-btn" 
+            onClick={findNearbyStops}
+            disabled={locationStatus === "locating"}
+            style={{ width: '100%', marginTop: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}
+          >
+            {locationStatus === "locating" ? (
+              <><Loader2 className="spinner" size={18} /> Locating you...</>
+            ) : (
+              <><Navigation size={18} /> Find stops near me</>
+            )}
+          </button>
         </section>
 
-        <section className="operator-section">
-          <span className="section-label">OPERATOR</span>
-          <div className="operator-pills">
-            <button className="op-pill active">
-              <span className="dot amber"></span> Kadamba
-            </button>
-            <button className="op-pill inactive">
-              <span className="dot gray"></span> Local / private - coming soon
-            </button>
-          </div>
-        </section>
-
-        <section className="live-buses-section">
+        <section className="live-buses-section" style={{ marginTop: '24px' }}>
           <div className="section-header">
-            <h3>Live buses</h3>
-            <span className="view-all">View all</span>
+            <h3>{query ? "Search Results" : (locationStatus === "found" ? "Nearby Stops" : "Popular Stops")}</h3>
           </div>
 
-          <div className="bus-cards">
-            {busList.length === 0 ? (
+          <div className="stop-cards" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {stops.length === 0 && !isLoading ? (
               <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                Live tracking is temporarily paused while we integrate official GTFS schedules. Please use the Routes tab to browse bus timetables.
+                No stops found. Try a different search.
               </div>
             ) : (
-              busList.map(([busId, busData], index) => {
-                const eta = busData;
-                const isSignalWeak = eta?.status === "stale";
-                const isOffline = eta?.status === "offline";
-                const isPrimary = index === 0;
-
-                return (
-                  <Link
-                    key={busId}
-                    to={`/track/${busId}`}
-                    className={`bus-card ${isPrimary ? 'primary-card' : 'secondary-card'} ${isSignalWeak || isOffline ? 'weak' : ''}`}
-                  >
-                    {isPrimary ? (
-                      <>
-                        <div className="card-top">
-                          <div className="card-title-area">
-                            <div className={`bus-badge ${isSignalWeak || isOffline ? 'amber' : ''}`}>{eta?.bus_number}</div>
-                            <div className="bus-route-info">
-                              <h4>{eta?.route_name}</h4>
-                              <p>Via {eta?.stops?.slice(1, -1).join(", ")}</p>
-                            </div>
-                          </div>
-                          {isSignalWeak ? (
-                            <div style={{ fontSize: '12px', fontWeight: '600', color: '#92400E' }}>Cached</div>
-                          ) : (
-                            <div className="card-eta-area">
-                              <span className="massive-min">{Math.floor(eta?.eta_minutes || 0)}</span>
-                              <span className="min-label">min</span>
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="card-next-stop" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <div><MapPin size={14} color={isSignalWeak ? "#B45309" : "var(--teal-100)"} /> Next stop: {eta?.stops?.[1] || "Unknown"}</div>
-                          <div style={{ fontSize: '12px', fontWeight: '600', color: 'var(--teal-800)', background: 'var(--teal-100)', padding: '2px 6px', borderRadius: '4px' }}>{eta?.trip_status || "On Time"}</div>
-                        </div>
-
-                        <div className="card-bottom">
-                          <div className={(isSignalWeak || isOffline) ? "live-status amber" : "live-status teal"}>
-                            <span className={(isSignalWeak || isOffline) ? "live-dot amber" : "live-dot teal"}></span>
-                            {isOffline ? `Offline · last updated ${Math.floor((eta?.signal_age_sec || 0) / 60)}m ago` : isSignalWeak ? `Signal Weak · ${Math.floor((eta?.signal_age_sec || 0) / 60)}m ago` : `Live GPS · ${Math.floor(eta?.signal_age_sec || 0)}s ago`}
-                          </div>
-                          <div className="track-action">
-                            Track bus <ArrowRight size={16} />
-                          </div>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="card-row">
-                        <div className="card-title-area">
-                          <div className={`bus-badge ${(isSignalWeak || isOffline) ? 'amber' : ''}`}>{eta?.bus_number}</div>
-                          <div className="bus-route-info">
-                            <h4>{eta?.route_name}</h4>
-                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '4px' }}>
-                              <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--teal-800)', background: 'var(--teal-100)', padding: '2px 6px', borderRadius: '4px' }}>{eta?.trip_status || "On Time"}</span>
-                              {isOffline ? (
-                                <div className="status-delay muted" style={{ marginTop: 0 }}><span className="amber-dot"></span> Offline</div>
-                              ) : isSignalWeak ? (
-                                <div className="status-delay muted" style={{ marginTop: 0 }}><span className="amber-dot"></span> Signal Weak</div>
-                              ) : (
-                                <div className="status-delay" style={{ marginTop: 0 }}><span className="delay-dot"></span> Live GPS</div>
-                              )}
-                            </div>
-                            <div className="card-next-stop muted">
-                              <MapPin size={14} /> Next: {eta?.stops?.[1] || "Unknown"}
-                            </div>
-                          </div>
-                        </div>
-                        {(isSignalWeak || isOffline) ? (
-                          <div style={{ fontSize: '12px', fontWeight: '600', color: '#92400E' }}>Cached</div>
-                        ) : (
-                          <div className="card-eta-area">
-                            <span className="massive-min">{Math.floor(eta?.eta_minutes || 0)}</span>
-                            <span className="min-label">min</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </Link>
-                );
-              })
+              stops.map((stop) => (
+                <Link
+                  key={stop.stopId || stop._id}
+                  to={`/stop/${stop.stopId || stop._id}`}
+                  className="bus-card"
+                  style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', padding: '16px', gap: '12px' }}
+                >
+                  <div style={{ background: 'var(--teal-100)', padding: '10px', borderRadius: '12px' }}>
+                    <MapPin size={24} color="var(--teal-800)" />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <h4 style={{ margin: 0, fontSize: '16px', color: 'var(--text-main)' }}>{stop.name}</h4>
+                    <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>
+                      {stop.distance_km ? `${stop.distance_km} km away` : "KTCL Bus Stop"}
+                    </p>
+                  </div>
+                </Link>
+              ))
             )}
-          </div>
-
-          <div className="demo-data-note">
-            Demo data · No official KTC integration
           </div>
         </section>
       </div>
 
       <nav className="bottom-nav">
         <Link to="/passenger" className="nav-item active">
-          <Bus size={24} />
-          Nearby
+          <MapPin size={24} />
+          Stops
         </Link>
         <Link to="/routes" className="nav-item">
           <MapIcon size={24} />
