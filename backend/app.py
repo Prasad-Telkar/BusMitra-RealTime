@@ -59,7 +59,7 @@ def json_serialize(obj):
 
 @app.route("/api/routes", methods=["GET"])
 def get_routes():
-    limit = int(request.args.get("limit", 50))
+    limit = int(request.args.get("limit", 500))
     routes = list(routes_col.find({"active": True}).limit(limit))
     return jsonify(json_serialize(routes))
 
@@ -71,12 +71,13 @@ def search_routes():
     limit = int(request.args.get("limit", 50))
     
     if query:
-        # Simple regex search on shortName or longName
+        # Simple regex search on shortName, longName, or routeName
         import re
         routes = list(routes_col.find({
             "$or": [
                 {"shortName": re.compile(query, re.IGNORECASE)},
-                {"longName": re.compile(query, re.IGNORECASE)}
+                {"longName": re.compile(query, re.IGNORECASE)},
+                {"routeName": re.compile(query, re.IGNORECASE)}
             ]
         }).limit(limit))
     elif from_query or to_query:
@@ -105,9 +106,19 @@ def search_routes():
         
         and_conditions = []
         if from_query:
-            and_conditions.append({"longName": re.compile(from_query, re.IGNORECASE)})
+            and_conditions.append({
+                "$or": [
+                    {"longName": re.compile(from_query, re.IGNORECASE)},
+                    {"routeName": re.compile(from_query, re.IGNORECASE)}
+                ]
+            })
         if to_query:
-            and_conditions.append({"longName": re.compile(to_query, re.IGNORECASE)})
+            and_conditions.append({
+                "$or": [
+                    {"longName": re.compile(to_query, re.IGNORECASE)},
+                    {"routeName": re.compile(to_query, re.IGNORECASE)}
+                ]
+            })
             
         print("QUERY COND:", and_conditions)
         routes = list(routes_col.find({"$and": and_conditions}).limit(limit))

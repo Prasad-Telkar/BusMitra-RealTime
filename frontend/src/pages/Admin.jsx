@@ -18,6 +18,8 @@ const createBusIcon = (busNumber, isStale) => {
 
 export default function Admin() {
   const [buses, setBuses] = useState({});
+  const [routes, setRoutes] = useState([]);
+  const [activeTab, setActiveTab] = useState("fleet"); // fleet or routes
 
   useEffect(() => {
     const fetchBuses = async () => {
@@ -32,13 +34,27 @@ export default function Admin() {
       }
     };
     
+    const fetchRoutes = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/routes`);
+        if (res.ok) {
+          const data = await res.json();
+          setRoutes(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch routes", err);
+      }
+    };
+    
     fetchBuses();
+    fetchRoutes();
     const interval = setInterval(fetchBuses, 5000);
     return () => clearInterval(interval);
   }, []);
 
   // Compute active count from real data
   const activeCount = Object.keys(buses).length;
+  const totalRoutesCount = routes.length;
 
   return (
     <div className="admin-layout">
@@ -56,8 +72,8 @@ export default function Admin() {
         </div>
 
         <nav className="as-nav">
-          <a href="#" className="as-nav-item active"><LayoutDashboard size={18} /> Fleet overview</a>
-          <a href="#" className="as-nav-item"><MapIcon size={18} /> Demo routes</a>
+          <a href="#" className={`as-nav-item ${activeTab === 'fleet' ? 'active' : ''}`} onClick={(e) => { e.preventDefault(); setActiveTab('fleet'); }}><LayoutDashboard size={18} /> Fleet overview</a>
+          <a href="#" className={`as-nav-item ${activeTab === 'routes' ? 'active' : ''}`} onClick={(e) => { e.preventDefault(); setActiveTab('routes'); }}><MapIcon size={18} /> Route Master ({totalRoutesCount})</a>
           <a href="#" className="as-nav-item"><HelpCircle size={18} /> Help &amp; guidance</a>
         </nav>
 
@@ -81,8 +97,8 @@ export default function Admin() {
         {/* Desktop Header */}
         <header className="admin-header desktop-only">
           <div className="ah-left">
-            <h1>Fleet overview</h1>
-            <p className="ah-sub">Demo data - No official KTC integration</p>
+            <h1>{activeTab === 'fleet' ? 'Fleet overview' : 'Route Master'}</h1>
+            <p className="ah-sub">{activeTab === 'fleet' ? 'Demo data - No official KTC integration' : `Source: KTCL Routes 2026 - ${totalRoutesCount} routes imported`}</p>
           </div>
           <div className="ah-right">
             <Clock size={16} color="var(--text-muted)" />
@@ -90,7 +106,44 @@ export default function Admin() {
           </div>
         </header>
 
-        <div className="admin-section-label">SAMPLE FLEET / DEMO &middot; REAL BACKEND DATA</div>
+        <div className="admin-section-label">{activeTab === 'fleet' ? 'SAMPLE FLEET / DEMO &middot; REAL BACKEND DATA' : 'OFFICIAL ROUTE DATA'}</div>
+
+        {activeTab === 'routes' ? (
+          <section className="admin-list-section">
+            <div className="al-header">
+              <h3>Imported Route Master</h3>
+              <span>{totalRoutesCount} official KTCL routes</span>
+            </div>
+            <div className="admin-desktop-table">
+              <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "1rem" }}>
+                <thead>
+                  <tr style={{ borderBottom: "1px solid var(--border-light)", textAlign: "left" }}>
+                    <th style={{ padding: "0.75rem" }}>Route No</th>
+                    <th style={{ padding: "0.75rem" }}>Route Name</th>
+                    <th style={{ padding: "0.75rem" }}>Source</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {routes.map(r => (
+                    <tr key={r.routeId} style={{ borderBottom: "1px solid var(--border-light)" }}>
+                      <td style={{ padding: "0.75rem" }}><div className="bus-badge teal">{r.routeNumber}</div></td>
+                      <td style={{ padding: "0.75rem" }} className="fw-bold">{r.routeName || r.longName || r.shortName}</td>
+                      <td style={{ padding: "0.75rem", color: "var(--text-muted)" }}>{r.source || 'Manual'}</td>
+                    </tr>
+                  ))}
+                  {routes.length === 0 && (
+                    <tr>
+                      <td colSpan="3" style={{ padding: "2rem", textAlign: "center", color: "var(--text-muted)" }}>
+                        No routes found. Import them from the backend.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        ) : (
+          <>
 
         <div className="stats-grid">
           <div className="stat-card">
@@ -298,6 +351,7 @@ export default function Admin() {
             </table>
           </div>
         </section>
+        )}
 
         <p className="admin-footer">
           Real-time data from backend. Map pins are illustrative.
