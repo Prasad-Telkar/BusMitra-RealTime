@@ -1,114 +1,90 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, ChevronDown, MapPin, Navigation, Loader2 } from "lucide-react";
-
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5001";
+import { Search, MapPin, Calculator, History, Bookmark } from "lucide-react";
 
 export default function Home() {
-  const [stops, setStops] = useState([]);
   const [query, setQuery] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-
-  // Load popular stops on mount
-  useEffect(() => {
-    fetchStops();
-  }, []);
-
-  const fetchStops = async (searchQuery = "") => {
-    setIsLoading(true);
-    try {
-      const url = searchQuery 
-        ? `${API_BASE}/api/search/stops?q=${encodeURIComponent(searchQuery)}`
-        : `${API_BASE}/api/stops?limit=15`;
-      const res = await fetch(url);
-      if (res.ok) {
-        const data = await res.json();
-        setStops(data);
-      }
-    } catch (err) {
-      console.error("Failed to fetch stops", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSearch = (e) => {
-    const val = e.target.value;
-    setQuery(val);
-    if (val.length > 2) {
-      fetchStops(val);
-    } else if (val.length === 0) {
-      fetchStops();
-    }
-  };
-
-  const handleSelectDestination = (stop) => {
-    // Navigate to journey planner with pre-filled destination
-    const stopName = encodeURIComponent(stop.name);
-    navigate(`/journey-planner?to=${stopName}&toId=${stop.stopId || stop._id}`);
-  };
 
   return (
     <div className="home-screen">
       <div className="home-content">
         <header className="home-header">
           <div className="header-top">
-            <div className="user-profile">
-              <div className="profile-img"></div>
-            </div>
-            <div className="location-dropdown">
-              Goa <ChevronDown size={16} />
-            </div>
+            <h1 style={{ margin: 0, fontSize: '24px', color: 'white' }}>BusMitra</h1>
           </div>
-          <p className="tagline">Where are you going?</p>
+          <p className="tagline">Know your bus. Know your time.</p>
         </header>
 
         <section className="search-section">
-          <h1>Plan your journey</h1>
+          <h1>Where are you going?</h1>
           <div className="search-box">
             <Search size={18} color="var(--text-muted)" />
             <input 
               type="text" 
-              placeholder="Search destination, stop, or landmark..." 
+              placeholder="Search destination, bus or route..." 
               value={query}
-              onChange={handleSearch}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && query) {
+                  navigate(`/journey-planner?to=${encodeURIComponent(query)}`);
+                }
+              }}
             />
-            {isLoading && <Loader2 className="spinner" size={16} color="var(--teal-600)" />}
+          </div>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '16px' }}>
+            <button 
+              onClick={() => navigate('/journey-planner')}
+              style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                gap: '8px', padding: '16px', background: 'white', border: '1px solid #E2E8F0',
+                borderRadius: '12px', cursor: 'pointer', color: 'var(--teal-700)', fontWeight: '600'
+              }}
+            >
+              <MapPin size={24} />
+              <span>Plan Journey</span>
+            </button>
+            <button 
+              onClick={() => navigate('/fare-calculator')}
+              style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                gap: '8px', padding: '16px', background: 'white', border: '1px solid #E2E8F0',
+                borderRadius: '12px', cursor: 'pointer', color: 'var(--teal-700)', fontWeight: '600'
+              }}
+            >
+              <Calculator size={24} />
+              <span>Calculate Fare</span>
+            </button>
           </div>
         </section>
 
         <section className="live-buses-section" style={{ marginTop: '24px' }}>
           <div className="section-header">
-            <h3>{query ? "Search Results" : "Popular Destinations"}</h3>
+            <h3>Live buses near you</h3>
           </div>
-
-          <div className="stop-cards" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {stops.length === 0 && !isLoading ? (
-              <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                No destinations found. Try a different search.
-              </div>
-            ) : (
-              stops.map((stop) => (
-                <div
-                  key={stop.stopId || stop._id}
-                  onClick={() => handleSelectDestination(stop)}
-                  className="bus-card"
-                  style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '16px', gap: '12px' }}
-                >
-                  <div style={{ background: 'var(--teal-100)', padding: '10px', borderRadius: '12px' }}>
-                    <MapPin size={24} color="var(--teal-800)" />
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <h4 style={{ margin: 0, fontSize: '16px', color: 'var(--text-main)' }}>{stop.name}</h4>
-                    <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>
-                      {stop.distance_km ? `${stop.distance_km} km away` : "KTCL Bus Stop"}
-                    </p>
-                  </div>
-                  <Navigation size={20} color="var(--teal-600)" />
-                </div>
-              ))
-            )}
+          <div style={{ background: 'white', padding: '24px', borderRadius: '12px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+            <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '14px' }}>Live arrivals unavailable</p>
+          </div>
+        </section>
+        
+        <section className="recent-section" style={{ marginTop: '24px' }}>
+          <div className="section-header">
+            <h3>Recent journeys</h3>
+          </div>
+          <div style={{ background: 'white', padding: '20px', borderRadius: '12px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+            <History size={24} color="var(--text-muted)" style={{ margin: '0 auto 8px auto' }} />
+            <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '14px' }}>No recent journeys</p>
+          </div>
+        </section>
+        
+        <section className="saved-section" style={{ marginTop: '24px', paddingBottom: '24px' }}>
+          <div className="section-header">
+            <h3>Saved</h3>
+          </div>
+          <div style={{ background: 'white', padding: '20px', borderRadius: '12px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+            <Bookmark size={24} color="var(--text-muted)" style={{ margin: '0 auto 8px auto' }} />
+            <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '14px' }}>No saved routes</p>
           </div>
         </section>
       </div>

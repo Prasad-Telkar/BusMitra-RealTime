@@ -286,6 +286,21 @@ def get_stop_schedules(stop_id):
         "services": services
     }))
 
+def get_route_counts_for_stops(stop_ids):
+    if not stop_ids:
+        return {}
+    stop_times = list(stop_times_col.find({"stopId": {"$in": stop_ids}}))
+    trip_ids = list(set(st["tripId"] for st in stop_times))
+    trips = list(trips_col.find({"tripId": {"$in": trip_ids}}))
+    trip_to_route = {t["tripId"]: t["routeId"] for t in trips}
+    
+    counts = {}
+    for stop_id in stop_ids:
+        s_trips = set(st["tripId"] for st in stop_times if st["stopId"] == stop_id)
+        s_routes = set(trip_to_route.get(tid) for tid in s_trips if tid in trip_to_route)
+        counts[stop_id] = len(s_routes)
+    return counts
+
 @app.route("/api/stops/nearby", methods=["GET"])
 def get_nearby_stops():
     try:
@@ -300,8 +315,6 @@ def get_nearby_stops():
         lat = float(lat_str)
         lng = float(lng_str)
         
-        # Fetch all stops and calculate distance (fast enough for ~3500 stops in Python)
-        # We can optimize later with MongoDB 2dsphere index if needed
         all_stops = list(stops_col.find())
         nearby = []
         
@@ -318,10 +331,17 @@ def get_nearby_stops():
             except (ValueError, TypeError):
                 continue
                 
-        # Sort by distance
         nearby.sort(key=lambda x: x["distance_km"])
+        nearby = nearby[:limit]
         
-        return jsonify(json_serialize(nearby[:limit]))
+        # Add route_count
+        stop_ids = [s.get("stopId") or str(s.get("_id")) for s in nearby]
+        counts = get_route_counts_for_stops(stop_ids)
+        for s in nearby:
+            sid = s.get("stopId") or str(s.get("_id"))
+            s["route_count"] = counts.get(sid, 0)
+            
+        return jsonify(json_serialize(nearby))
     except Exception as e:
         print("Error in /api/stops/nearby:", e)
         return jsonify({"error": "Failed to fetch nearby stops"}), 500
@@ -340,7 +360,16 @@ def get_stops():
         else:
             stops_cursor = stops_col.find().limit(limit)
             
-        return jsonify(json_serialize(list(stops_cursor)))
+        stops_list = list(stops_cursor)
+        
+        # Add route_count
+        stop_ids = [s.get("stopId") or str(s.get("_id")) for s in stops_list]
+        counts = get_route_counts_for_stops(stop_ids)
+        for s in stops_list:
+            sid = s.get("stopId") or str(s.get("_id"))
+            s["route_count"] = counts.get(sid, 0)
+            
+        return jsonify(json_serialize(stops_list))
     except Exception as e:
         print("Database error in /api/stops:", e)
         return jsonify([]), 503

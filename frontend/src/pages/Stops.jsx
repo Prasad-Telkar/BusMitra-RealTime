@@ -81,23 +81,17 @@ export default function Stops() {
       <div className="home-content">
         <header className="home-header">
           <div className="header-top">
-            <div className="user-profile">
-              <div className="profile-img"></div>
-            </div>
-            <div className="location-dropdown">
-              Goa <ChevronDown size={16} />
-            </div>
+            <h1 style={{ margin: 0, fontSize: '24px', color: 'white' }}>Bus Stops</h1>
           </div>
-          <p className="tagline">Explore nearby stops</p>
+          <p className="tagline">Find a stop and see buses serving it.</p>
         </header>
 
         <section className="search-section">
-          <h1>Find a Bus Stop</h1>
           <div className="search-box">
             <Search size={18} color="var(--text-muted)" />
             <input 
               type="text" 
-              placeholder="Search stops..." 
+              placeholder="Search bus stop..." 
               value={query}
               onChange={handleSearch}
             />
@@ -113,14 +107,14 @@ export default function Stops() {
             {locationStatus === "locating" ? (
               <><Loader2 className="spinner" size={18} /> Locating you...</>
             ) : (
-              <><Navigation size={18} /> Stops near me</>
+              <><Navigation size={18} /> Use My Location</>
             )}
           </button>
         </section>
 
         <section className="live-buses-section" style={{ marginTop: '24px' }}>
           <div className="section-header">
-            <h3>{query ? "Search Results" : (locationStatus === "found" ? "Nearby Stops" : "Popular Stops")}</h3>
+            <h3>{query ? "Search Results" : (locationStatus === "found" ? "Stops near you" : "Popular Stops")}</h3>
           </div>
 
           <div className="stop-cards" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -130,22 +124,40 @@ export default function Stops() {
               </div>
             ) : (
               stops.map((stop) => (
-                <Link
-                  key={stop.stopId || stop._id}
-                  to={`/stop/${stop.stopId || stop._id}`}
-                  className="bus-card"
-                  style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', padding: '16px', gap: '12px' }}
-                >
-                  <div style={{ background: 'var(--teal-100)', padding: '10px', borderRadius: '12px' }}>
-                    <MapPin size={24} color="var(--teal-800)" />
+                <div key={stop.stopId || stop._id} className="bus-card" style={{ display: 'flex', flexDirection: 'column', padding: '16px', gap: '12px', background: 'white', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                    <div style={{ background: 'var(--teal-50)', padding: '10px', borderRadius: '12px' }}>
+                      <MapPin size={24} color="var(--teal-600)" />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <h4 style={{ margin: 0, fontSize: '16px', color: 'var(--text-main)' }}>{stop.name}</h4>
+                      <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>
+                        {stop.distance_km ? `${stop.distance_km} km away` : "KTCL Bus Stop"}
+                      </p>
+                      <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>
+                        {stop.route_count !== undefined 
+                          ? (stop.route_count > 0 ? `${stop.route_count} route${stop.route_count > 1 ? 's' : ''} serving this stop` : "No scheduled routes")
+                          : ""}
+                      </p>
+                    </div>
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <h4 style={{ margin: 0, fontSize: '16px', color: 'var(--text-main)' }}>{stop.name}</h4>
-                    <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>
-                      {stop.distance_km ? `${stop.distance_km} km away` : "KTCL Bus Stop"}
-                    </p>
-                  </div>
-                </Link>
+                  <Link
+                    to={`/stop/${stop.stopId || stop._id}`}
+                    style={{
+                      background: '#F1F5F9',
+                      color: 'var(--teal-700)',
+                      textAlign: 'center',
+                      padding: '10px',
+                      borderRadius: '8px',
+                      textDecoration: 'none',
+                      fontWeight: '600',
+                      fontSize: '14px',
+                      display: 'block'
+                    }}
+                  >
+                    View Stop
+                  </Link>
+                </div>
               ))
             )}
           </div>

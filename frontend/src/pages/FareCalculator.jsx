@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Search, ArrowUpDown, ChevronRight, Calculator, IndianRupee, MapPin } from "lucide-react";
 import "./FareCalculator.css";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "https://busmitra-backend-uskr.onrender.com";
 
 export default function FareCalculator() {
+  const [searchParams] = useSearchParams();
   const [fromQuery, setFromQuery] = useState("");
   const [toQuery, setToQuery] = useState("");
   const [fromStop, setFromStop] = useState(null);
@@ -19,6 +21,37 @@ export default function FareCalculator() {
   const [error, setError] = useState("");
 
   const searchTimeout = useRef(null);
+
+  // Reconstruct from URL parameters or previous navigation state
+  useEffect(() => {
+    const fromParam = searchParams.get('from');
+    const toParam = searchParams.get('to');
+
+    const resolveStop = async (query, setStop, setQueryVal) => {
+      try {
+        const res = await fetch(`${API_BASE}/api/search/stops?q=${encodeURIComponent(query)}&limit=1`);
+        const data = await res.json();
+        if (data && data.length > 0) {
+          setStop(data[0]);
+          setQueryVal(data[0].name);
+        } else {
+          setQueryVal(""); // Clear if unable to resolve
+        }
+      } catch (err) {
+        console.error(err);
+        setQueryVal("");
+      }
+    };
+
+    if (fromParam && !fromStop) {
+      setFromQuery(fromParam);
+      resolveStop(fromParam, setFromStop, setFromQuery);
+    }
+    if (toParam && !toStop) {
+      setToQuery(toParam);
+      resolveStop(toParam, setToStop, setToQuery);
+    }
+  }, [searchParams]);
 
   const fetchStops = (query, type) => {
     if (!query) {
@@ -42,6 +75,7 @@ export default function FareCalculator() {
   };
 
   const handleSwap = () => {
+    // Swap BOTH text and full stop objects
     const tempQ = fromQuery;
     setFromQuery(toQuery);
     setToQuery(tempQ);
@@ -52,11 +86,14 @@ export default function FareCalculator() {
   };
 
   const calculateFare = async () => {
-    if (!fromStop || !toStop) {
-      setError("Please select both stops.");
+    const originId = fromStop?.stopId || fromStop?._id;
+    const destId = toStop?.stopId || toStop?._id;
+
+    if (!originId || !destId) {
+      setError("Please select both stops from the search dropdown.");
       return;
     }
-    if (fromStop.stopId === toStop.stopId) {
+    if (originId === destId) {
       setError("Starting point and destination are the same.");
       return;
     }
@@ -66,7 +103,7 @@ export default function FareCalculator() {
     setFareResult(null);
 
     try {
-      const url = `${API_BASE}/api/fare/calculate?originStopId=${fromStop.stopId}&destinationStopId=${toStop.stopId}&passengerCategory=${passengerType}`;
+      const url = `${API_BASE}/api/fare/calculate?originStopId=${originId}&destinationStopId=${destId}&passengerCategory=${passengerType}`;
       console.log("FareCalc Request URL:", url);
       
       const res = await fetch(url);
@@ -117,7 +154,7 @@ export default function FareCalculator() {
               placeholder="Search starting stop" 
               value={fromStop ? fromStop.name : fromQuery}
               onChange={(e) => {
-                setFromStop(null);
+                setFromStop(null); // Clear selected object on manual edit
                 setFromQuery(e.target.value);
                 setActiveSearch('from');
                 fetchStops(e.target.value, 'from');
@@ -125,6 +162,15 @@ export default function FareCalculator() {
               onFocus={() => {
                 setActiveSearch('from');
                 if (!fromStop && fromQuery) fetchStops(fromQuery, 'from');
+              }}
+              onBlur={() => {
+                setTimeout(() => {
+                  setActiveSearch((prev) => prev === 'from' ? null : prev);
+                  setFromStop((prevStop) => {
+                    if (!prevStop) setFromQuery(""); // Prevent pretending a stop is selected
+                    return prevStop;
+                  });
+                }, 200);
               }}
             />
           </div>
@@ -166,7 +212,7 @@ export default function FareCalculator() {
               placeholder="Search destination" 
               value={toStop ? toStop.name : toQuery}
               onChange={(e) => {
-                setToStop(null);
+                setToStop(null); // Clear selected object on manual edit
                 setToQuery(e.target.value);
                 setActiveSearch('to');
                 fetchStops(e.target.value, 'to');
@@ -174,6 +220,15 @@ export default function FareCalculator() {
               onFocus={() => {
                 setActiveSearch('to');
                 if (!toStop && toQuery) fetchStops(toQuery, 'to');
+              }}
+              onBlur={() => {
+                setTimeout(() => {
+                  setActiveSearch((prev) => prev === 'to' ? null : prev);
+                  setToStop((prevStop) => {
+                    if (!prevStop) setToQuery(""); // Prevent pretending a stop is selected
+                    return prevStop;
+                  });
+                }, 200);
               }}
             />
           </div>
