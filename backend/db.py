@@ -17,11 +17,16 @@ trips_col = db.trips
 stop_times_col = db.stopTimes
 service_calendars_col = db.serviceCalendars
 telemetry_col = db.telemetry
+active_trips_col = db.activeTrips
 
 def init_db():
     """Create indexes for the MongoDB collections."""
     # Users
     users_col.create_index("username", unique=True)
+    
+    # Active Trips
+    active_trips_col.create_index("driverId")
+    active_trips_col.create_index("status")
     
     # Buses
     buses_col.create_index("registrationNumber", unique=True)

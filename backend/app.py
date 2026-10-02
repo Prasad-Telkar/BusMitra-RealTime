@@ -12,7 +12,7 @@ from flask_socketio import SocketIO, join_room, emit
 import time
 import math
 import collections
-from db import stops_col, buses_col, routes_col, trips_col, stop_times_col, service_calendars_col, db
+from db import stops_col, buses_col, routes_col, trips_col, stop_times_col, service_calendars_col, db, active_trips_col
 import json
 from bson import ObjectId
 from fare_engine import calculate_fare as calculate_fare_engine
@@ -23,7 +23,9 @@ app = Flask(__name__)
 allowed_origins = [
     "https://busmitra-tracker-app.web.app",
     "http://localhost:5173",
-    "http://127.0.0.1:5173"
+    "http://127.0.0.1:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5174"
 ]
 CORS(app, origins=allowed_origins)
 socketio = SocketIO(app, cors_allowed_origins=allowed_origins, async_mode="threading")
@@ -529,6 +531,117 @@ def calculate_fare():
     })
 
 # ==========================================
+# DRIVER & ADMIN ENDPOINTS
+# ==========================================
+
+
+
+@app.route("/api/driver/upcoming-trips", methods=["GET"])
+def upcoming_trips():
+    # Return 50 static GTFS trips to choose from
+    trips = list(trips_col.find().limit(50))
+    for t in trips:
+        r = routes_col.find_one({"routeId": t.get("routeId")})
+        t["route"] = json_serialize(r) if r else None
+        first_stop = stop_times_col.find_one({"tripId": t.get("tripId")}, sort=[("stopSequence", 1)])
+        last_stop = stop_times_col.find_one({"tripId": t.get("tripId")}, sort=[("stopSequence", -1)])
+        t["start_time"] = first_stop.get("departureTime") if first_stop else "Unknown"
+        t["end_time"] = last_stop.get("arrivalTime") if last_stop else "Unknown"
+    print("FIRST TRIP:", trips[0])
+    return jsonify(json_serialize(trips))
+
+@app.route("/api/driver/trip/start", methods=["POST"])
+def start_trip():
+    data = request.json or {}
+    driver_id = data.get("driverId")
+    trip_id = data.get("tripId")
+    bus_id = data.get("busId")
+    route_id = data.get("routeId")
+    
+    # If trip_id is provided, try to fetch the GTFS trip to get its route
+    if trip_id and not route_id:
+        trip = trips_col.find_one({"tripId": trip_id})
+        if trip:
+            route_id = trip.get("routeId")
+            
+    active_trip = {
+        "driverId": driver_id,
+        "busId": bus_id,
+        "tripId": trip_id,
+        "routeId": route_id,
+        "startTime": time.time(),
+        "status": "IN_PROGRESS"
+    }
+    
+    res = active_trips_col.insert_one(active_trip)
+    active_trip_id = str(res.inserted_id)
+    
+    # Initialize live_buses for tracking
+    live_buses[active_trip_id] = {
+        "current": {
+            "trip_id": trip_id,  # Used by routing engine to link live bus to GTFS trip
+            "route_id": route_id,
+            "bus_id": bus_id,
+            "driver_id": driver_id,
+            "start_time": time.time(),
+            "lat": 0,
+            "lng": 0,
+            "speed": 0,
+            "accuracy": 0,
+            "timestamp": time.time()
+        },
+        "history": collections.deque(maxlen=3)
+    }
+    
+    return jsonify({"success": True, "activeTripId": active_trip_id})
+
+@app.route("/api/driver/trip/end", methods=["POST"])
+def api_end_trip():
+    data = request.json or {}
+    active_trip_id = data.get("activeTripId")
+    if active_trip_id:
+        active_trips_col.update_one({"_id": ObjectId(active_trip_id)}, {"$set": {"status": "COMPLETED", "endTime": time.time()}})
+        if active_trip_id in live_buses:
+            del live_buses[active_trip_id]
+        return jsonify({"success": True})
+    return jsonify({"success": False, "error": "Missing activeTripId"}), 400
+
+@app.route("/api/admin/fleet", methods=["GET"])
+def admin_fleet():
+    fleet = []
+    for active_trip_id, state in live_buses.items():
+        curr = state.get("current", {})
+        fleet.append({
+            "activeTripId": active_trip_id,
+            "tripId": curr.get("trip_id"),
+            "routeId": curr.get("route_id"),
+            "busId": curr.get("bus_id"),
+            "driverId": curr.get("driver_id"),
+            "lat": curr.get("lat"),
+            "lng": curr.get("lng"),
+            "speed": curr.get("speed"),
+            "accuracy": curr.get("accuracy"),
+            "timestamp": curr.get("timestamp"),
+            "stalenessSeconds": int(time.time() - curr.get("timestamp", time.time()))
+        })
+    return jsonify({"success": True, "fleet": fleet})
+
+@app.route("/api/admin/stats", methods=["GET"])
+def admin_stats():
+    live_count = len(live_buses)
+    routes_count = routes_col.count_documents({})
+    buses_count = buses_col.count_documents({})
+    completed_trips = active_trips_col.count_documents({"status": "COMPLETED"})
+    
+    return jsonify({
+        "success": True, 
+        "liveBuses": live_count, 
+        "totalRoutes": routes_count,
+        "totalBuses": buses_count,
+        "completedTrips": completed_trips
+    })
+
+# ==========================================
 # JOURNEY PLANNER ENDPOINT
 # ==========================================
 @app.route("/api/ping", methods=["GET"])
@@ -650,13 +763,13 @@ def handle_driver_location(data):
     smoothed = smooth_gps(bus_state["history"])
     
     # 5. Update Current State
-    bus_state["current"] = {
+    bus_state["current"].update({
         "lat": smoothed["lat"],
         "lng": smoothed["lng"],
         "speed": smoothed["speed"],
         "timestamp": time.time(), # Time received by server
         "accuracy": accuracy
-    }
+    })
     
     # Broadcast updated enriched state to passengers
     eta_info = compute_eta(bus_id)

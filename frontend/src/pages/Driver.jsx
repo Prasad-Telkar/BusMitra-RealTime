@@ -5,29 +5,39 @@ import { HelpCircle, Radio, MapPin, ShieldAlert, Square, Play, ChevronDown, Wifi
 
 const API_BASE = import.meta.env.VITE_API_BASE || "https://busmitra-goa.onrender.com";
 
-const AVAILABLE_ROUTES = [
-  { id: "route4_bus1", number: "K01", from: "Panaji", to: "Margao", next: "Porvorim" },
-  { id: "route4_bus2", number: "K02", from: "Margao", to: "Panaji", next: "Porvorim" },
-  { id: "route5_bus1", number: "K05", from: "Mapusa", to: "Panaji", next: "Porvorim" },
-  { id: "route6_bus1", number: "K09", from: "Vasco", to: "Ponda", next: "Verna" },
-];
-
 export default function Driver() {
   const location = useLocation();
   const [isLoggedIn, setIsLoggedIn] = useState(location.state?.isLoggedIn || false);
   const [driverId, setDriverId] = useState(location.state?.driverId || "");
   const [pin, setPin] = useState("");
+  const [busNumber, setBusNumber] = useState("GA-03-X-0001");
 
   const [socket, setSocket] = useState(null);
   const [isTracking, setIsTracking] = useState(false);
   const [lastSent, setLastSent] = useState(0);
   const [isConnected, setIsConnected] = useState(false);
   const [queuedPoints, setQueuedPoints] = useState(0);
-  const [selectedBusId, setSelectedBusId] = useState(AVAILABLE_ROUTES[0].id);
+  
+  const [upcomingTrips, setUpcomingTrips] = useState([]);
+  const [selectedTripId, setSelectedTripId] = useState("");
+  const [activeTripId, setActiveTripId] = useState(null);
+
   const watchId = useRef(null);
   const offlineQueue = useRef([]);
 
-  const activeRoute = AVAILABLE_ROUTES.find(r => r.id === selectedBusId);
+  const activeTrip = upcomingTrips.find(t => t.tripId === selectedTripId) || upcomingTrips[0];
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      fetch(`${API_BASE}/api/driver/upcoming-trips`)
+        .then(res => res.json())
+        .then(data => {
+          setUpcomingTrips(data);
+          if (data.length > 0) setSelectedTripId(data[0].tripId);
+        })
+        .catch(console.error);
+    }
+  }, [isLoggedIn]);
 
   useEffect(() => {
     if (!isLoggedIn) return;
@@ -69,58 +79,99 @@ export default function Driver() {
     return () => clearInterval(interval);
   }, [isTracking]);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (driverId.length > 3 && pin.length > 3) {
-      setIsLoggedIn(true);
-    } else {
-      alert("Please enter a valid Driver ID and PIN (e.g., KTC-DRV-1042 / 1234)");
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: driverId, password: pin })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setIsLoggedIn(true);
+      } else {
+        alert("Login failed: " + (data.error || "Invalid credentials"));
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Network error");
     }
   };
 
-  const startTracking = () => {
-    if (navigator.geolocation && socket) {
-      setIsTracking(true);
-      setLastSent(0);
-      watchId.current = navigator.geolocation.watchPosition(
-        (pos) => {
-          const payload = {
-            lat: pos.coords.latitude,
-            lng: pos.coords.longitude,
-            speed: pos.coords.speed || 0,
-            accuracy: Math.min(pos.coords.accuracy || 10, 40),
-            timestamp: Date.now() / 1000,
-            bus_id: selectedBusId,
-          };
-          
-          if (socket.connected) {
-            socket.emit("driver_location", payload);
-            setLastSent(0); // reset counter when sent
-          } else {
-            // Queue offline
-            offlineQueue.current.push(payload);
-            setQueuedPoints(offlineQueue.current.length);
-          }
-        },
-        (err) => console.error(err),
-        { enableHighAccuracy: true, maximumAge: 0 }
-      );
-    } else {
-      // For demo if no geolocation available
-      setIsTracking(true);
+  const startTracking = async () => {
+    if (!activeTrip) return alert("Please select a trip first");
+    
+    try {
+      const res = await fetch(`${API_BASE}/api/driver/trip/start`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          driverId,
+          tripId: activeTrip.tripId,
+          routeId: activeTrip.routeId,
+          busId: busNumber
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setActiveTripId(data.activeTripId);
+        setIsTracking(true);
+        setLastSent(0);
+        
+        if (navigator.geolocation && socket) {
+          watchId.current = navigator.geolocation.watchPosition(
+            (pos) => {
+              const payload = {
+                lat: pos.coords.latitude,
+                lng: pos.coords.longitude,
+                speed: pos.coords.speed || 0,
+                accuracy: Math.min(pos.coords.accuracy || 10, 40),
+                timestamp: Date.now() / 1000,
+                bus_id: data.activeTripId,
+              };
+              
+              if (socket.connected) {
+                socket.emit("driver_location", payload);
+                setLastSent(0); // reset counter when sent
+              } else {
+                offlineQueue.current.push(payload);
+                setQueuedPoints(offlineQueue.current.length);
+              }
+            },
+            (err) => console.error(err),
+            { enableHighAccuracy: true, maximumAge: 0 }
+          );
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Failed to start trip");
     }
   };
 
-  const endTrip = () => {
+  const endTrip = async () => {
     setIsTracking(false);
     if (watchId.current && navigator.geolocation) {
       navigator.geolocation.clearWatch(watchId.current);
     }
     offlineQueue.current = [];
     setQueuedPoints(0);
-    if (socket && socket.connected) {
-      socket.emit("driver_end_trip", { bus_id: selectedBusId });
+    
+    if (socket && socket.connected && activeTripId) {
+      socket.emit("driver_end_trip", { bus_id: activeTripId });
     }
+    
+    try {
+      await fetch(`${API_BASE}/api/driver/trip/end`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ activeTripId })
+      });
+    } catch (err) {
+      console.error(err);
+    }
+    setActiveTripId(null);
   };
 
   if (!isLoggedIn) {
@@ -189,19 +240,19 @@ export default function Driver() {
               </div>
               
               <div className="tib-middle">
-                <div className="bus-badge">{activeRoute?.number}</div>
+                <div className="bus-badge">{activeTrip?.routeId}</div>
                 <div className="tib-route">
-                  <span className="tr-from">KADAMBA &middot; DEMO ROUTE</span>
-                  <span className="tr-to">{activeRoute?.from} &rarr; {activeRoute?.to}</span>
+                  <span className="tr-from">KADAMBA &middot; LIVE ROUTE</span>
+                  <span className="tr-to">{activeTrip?.tripId}</span>
                 </div>
                 <div style={{ position: 'relative' }}>
                   <select 
-                    value={selectedBusId} 
-                    onChange={(e) => setSelectedBusId(e.target.value)}
+                    value={selectedTripId} 
+                    onChange={(e) => setSelectedTripId(e.target.value)}
                     style={{ position: 'absolute', top: 0, left: '-100px', opacity: 0, width: '120px', height: '100%', cursor: 'pointer' }}
                   >
-                    {AVAILABLE_ROUTES.map(r => (
-                      <option key={r.id} value={r.id}>{r.number} - {r.from} to {r.to}</option>
+                    {upcomingTrips.map(r => (
+                      <option key={r.tripId} value={r.tripId}>{r.routeId} - {r.start_time}</option>
                     ))}
                   </select>
                   <ChevronDown size={20} color="var(--text-light)" style={{ pointerEvents: 'none' }} />
@@ -210,7 +261,7 @@ export default function Driver() {
 
               <div className="tib-bottom">
                 <span className="teal-text fw-bold">Select or change route (Tap chevron)</span>
-                <span className="gray-text">Next: {activeRoute?.next}</span>
+                <span className="gray-text">Time: {activeTrip?.start_time} - {activeTrip?.end_time}</span>
               </div>
             </div>
 
@@ -291,10 +342,10 @@ export default function Driver() {
               </div>
               
               <div className="tab-middle">
-                <div className="bus-badge dark-text">{activeRoute?.number}</div>
+                <div className="bus-badge dark-text">{activeTrip?.routeId}</div>
                 <div className="tab-route">
-                  <span className="tr-from">{activeRoute?.from}</span>
-                  <span className="tr-to">&rarr; {activeRoute?.to}</span>
+                  <span className="tr-from">{activeTrip?.start_time}</span>
+                  <span className="tr-to">&rarr; {activeTrip?.end_time}</span>
                 </div>
               </div>
 
@@ -327,7 +378,7 @@ export default function Driver() {
                 </div>
                 <div className="lsb-stat-col text-right">
                   <span className="stat-label">GPS ACCURACY</span>
-                  <span className="stat-value teal">Good &middot; &plusmn;{Math.round(Math.min(activeRoute?.accuracy || 8, 40))} m</span>
+                  <span className="stat-value teal">Good &middot; &plusmn;8 m</span>
                 </div>
               </div>
 
@@ -343,7 +394,7 @@ export default function Driver() {
             <div className="driver-timeline">
               <div className="dt-row past">
                 <div className="dt-icon"><span className="dot gray"></span></div>
-                <div className="dt-text">Left {activeRoute?.from}</div>
+                <div className="dt-text">Started Trip</div>
               </div>
               
               <div className="dt-connector"></div>
@@ -351,8 +402,8 @@ export default function Driver() {
               <div className="dt-row current">
                 <div className="dt-icon"><MapPin size={20} color="var(--teal-700)" /></div>
                 <div className="dt-info">
-                  <span className="dt-label">NEXT STOP</span>
-                  <h4>{activeRoute?.next}</h4>
+                  <span className="dt-label">CURRENT TRIP</span>
+                  <h4>{activeTrip?.tripId}</h4>
                 </div>
               </div>
             </div>

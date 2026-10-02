@@ -25,10 +25,23 @@ export default function Admin() {
   useEffect(() => {
     const fetchBuses = async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/buses`);
+        const res = await fetch(`${API_BASE}/api/admin/fleet`);
         if (res.ok) {
           const data = await res.json();
-          setBuses(data);
+          const fleetData = data.fleet.reduce((acc, bus) => {
+            acc[bus.activeTripId] = {
+              bus_id: bus.activeTripId,
+              bus_number: bus.busId || "Unknown",
+              route_name: bus.routeId || "Unknown Route",
+              eta_minutes: 0,
+              status: bus.stalenessSeconds > 120 ? "stale" : "live",
+              lat: bus.lat,
+              lng: bus.lng,
+              driver_id: bus.driverId
+            };
+            return acc;
+          }, {});
+          setBuses(fleetData);
         }
       } catch (err) {
         console.error("Failed to fetch buses", err);

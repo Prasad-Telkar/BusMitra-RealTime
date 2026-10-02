@@ -66,16 +66,16 @@ def login():
 
 # Seed script helper for testing
 def seed_admin_and_driver():
-    if not users_col.find_one({"username": "admin"}):
+    if not users_col.find_one({"username": "ADMIN-KTC-001"}):
         users_col.insert_one({
-            "username": "admin",
-            "passwordHash": generate_password_hash("admin123"),
+            "username": "ADMIN-KTC-001",
+            "passwordHash": generate_password_hash("ktc@2024"),
             "role": "admin"
         })
-    if not users_col.find_one({"username": "driver1"}):
+    if not users_col.find_one({"username": "KTC-DRV-1042"}):
         users_col.insert_one({
-            "username": "driver1",
-            "passwordHash": generate_password_hash("driver123"),
+            "username": "KTC-DRV-1042",
+            "passwordHash": generate_password_hash("1234"),
             "role": "driver"
         })
 
