@@ -20,8 +20,13 @@ from auth import auth_bp
 import routing_engine
 
 app = Flask(__name__)
-CORS(app)
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
+allowed_origins = [
+    "https://busmitra-tracker-app.web.app",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173"
+]
+CORS(app, origins=allowed_origins)
+socketio = SocketIO(app, cors_allowed_origins=allowed_origins, async_mode="threading")
 
 # ---- Register Blueprints ----
 app.register_blueprint(auth_bp, url_prefix="/api/auth")
@@ -72,6 +77,16 @@ def json_serialize(obj):
     return obj
 
 # ---------------- REST endpoints ----------------
+
+@app.route("/api/health", methods=["GET"])
+def health_check():
+    return jsonify({
+        "status": "ok",
+        "service": "busmitra-backend",
+        "environment": "production",
+        "version": "1.0.1"
+    })
+
 
 @app.route("/api/routes", methods=["GET"])
 def get_routes():
