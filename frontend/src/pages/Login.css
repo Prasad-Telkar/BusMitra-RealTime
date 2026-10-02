@@ -153,10 +153,10 @@
 }
 
 .login-submit-btn.transport-btn {
-  background: var(--slate-800);
+  background: #1e293b;
 }
 .login-submit-btn.transport-btn:hover {
-  background: var(--slate-900);
+  background: #0f172a;
 }
 
 .login-divider {
@@ -234,8 +234,8 @@
 }
 
 .role-option.selected {
-  border-color: var(--slate-800);
-  color: var(--slate-900);
+  border-color: #1e293b;
+  color: #0f172a;
   background: rgba(30, 41, 59, 0.05);
 }
 

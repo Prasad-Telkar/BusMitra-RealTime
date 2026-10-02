@@ -1,8 +1,9 @@
 .fc-container {
   padding: 16px;
-  padding-bottom: 90px; /* space for bottom nav */
+  padding-bottom: calc(90px + env(safe-area-inset-bottom)); /* space for bottom nav */
   background-color: #f8fafc;
   min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .fc-header {
