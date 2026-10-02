@@ -135,8 +135,12 @@ export default function JourneyPlanner() {
         setJourneys([]);
         setSearchError(results.error);
       } else {
-        setJourneys(results || []);
-        setSearchError(null);
+        setJourneys(results.journeys || []);
+        if (results.isScheduleExpired) {
+          setSearchError("SCHEDULE_EXPIRED_WARNING");
+        } else {
+          setSearchError(null);
+        }
       }
     } catch (err) {
       console.error("Failed to fetch journeys", err);
@@ -350,14 +354,15 @@ export default function JourneyPlanner() {
                   </div>
                 ) : (
                   <div className="jp-results">
-                    {searchError === "NO_CURRENT_SCHEDULE_DATA" ? (
-                      <div className="jp-no-results" style={{ color: '#be185d', padding: '16px', background: '#fff1f2', borderRadius: '8px', border: '1px solid #fda4af', margin: '16px' }}>
-                        <strong>⚠️ Schedule Data Expired</strong>
-                        <p style={{ margin: '8px 0 0 0', fontSize: '14px', color: '#881337' }}>
-                          Current bus schedules are out of date and need updating. No live journeys are available for today.
+                    {searchError === "SCHEDULE_EXPIRED_WARNING" && (
+                      <div className="jp-schedule-warning" style={{ color: '#854d0e', padding: '12px 16px', background: '#fef9c3', borderRadius: '8px', border: '1px solid #fef08a', margin: '0 16px 16px 16px' }}>
+                        <strong>⚠️ Schedule Data May Be Outdated</strong>
+                        <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#713f12' }}>
+                          Schedule based on the latest available official GTFS. Verify current timings with KTCL.
                         </p>
                       </div>
-                    ) : journeys.length === 0 ? (
+                    )}
+                    {journeys.length === 0 ? (
                       <p className="jp-no-results">No routes found matching your search.</p>
                     ) : (
                       <div className="jp-journey-list">

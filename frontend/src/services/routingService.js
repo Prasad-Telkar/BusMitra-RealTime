@@ -101,7 +101,7 @@ export async function getTransitJourney(origin, destination) {
     }
     
     // Map backend 'legs' to frontend 'segments'
-    return data.journeys.map(j => ({
+    const mappedJourneys = data.journeys.map(j => ({
       ...j,
       totalDuration: j.totalDurationMinutes,
       segments: j.legs.map(leg => ({
@@ -110,8 +110,14 @@ export async function getTransitJourney(origin, destination) {
         distance: leg.distanceMeters
       }))
     }));
+    
+    return {
+      journeys: mappedJourneys,
+      isScheduleExpired: data.isScheduleExpired,
+      message: data.message
+    };
   } catch (error) {
     console.error("Journey plan error:", error);
-    return [];
+    return { journeys: [] };
   }
 }

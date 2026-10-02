@@ -101,7 +101,10 @@ def is_service_active(service_id, target_date, prefetched_cal=None):
         try:
             start_date = datetime.datetime.strptime(start_str, "%Y%m%d").date()
             end_date = datetime.datetime.strptime(end_str, "%Y%m%d").date()
-            if target_date < start_date or target_date > end_date:
+            # Do NOT return False if target_date > end_date. 
+            # We want to use the expired schedule data as long as the day of the week matches.
+            # Only reject if target_date is BEFORE the start_date.
+            if target_date < start_date:
                 return False
         except:
             pass
@@ -160,14 +163,15 @@ def plan_transit_journey(origin, destination, dt_time=None, live_buses=None):
     if not origin_stops or not dest_stops:
         return {"success": False, "reason": "NO_STOPS_NEARBY"}
         
-    # Check if target date exceeds global GTFS expiry
+    # Check if target date exceeds global GTFS expiry to set a freshness warning
+    is_expired = False
     latest_cal = service_calendars_col.find_one(sort=[('calendar.endDate', -1)])
     if latest_cal:
         max_end_date_str = latest_cal['calendar']['endDate']
         try:
             max_end_date = datetime.datetime.strptime(max_end_date_str, "%Y%m%d").date()
             if target_date > max_end_date:
-                return {"success": False, "reason": "NO_CURRENT_SCHEDULE_DATA"}
+                is_expired = True
         except:
             pass
         
@@ -490,4 +494,9 @@ def plan_transit_journey(origin, destination, dt_time=None, live_buses=None):
         return {"success": False, "reason": "NO_JOURNEY_FOUND"}
         
     journeys.sort(key=lambda j: datetime.datetime.strptime(j["legs"][1]["scheduledDeparture"], "%I:%M %p"))
-    return {"success": True, "journeys": journeys[:10]}
+    return {
+        "success": True, 
+        "journeys": journeys[:10],
+        "isScheduleExpired": is_expired,
+        "message": "Schedule based on the latest available official data. Verify current timings with KTCL." if is_expired else None
+    }
