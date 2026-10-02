@@ -4,7 +4,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-MONGO_URI = "***REMOVED***/busmitra?retryWrites=true&w=majority"
+MONGO_URI = os.getenv("MONGODB_URI")
+if not MONGO_URI:
+    raise RuntimeError("MONGODB_URI environment variable is not configured")
 client = MongoClient(MONGO_URI)
 db = client["busmitra"]
 
