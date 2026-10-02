@@ -21,21 +21,20 @@ def apply_concession(base_fare, passenger_type, concessions):
     """
     concessions: list of dicts from db.concessions
     """
-    if passenger_type == "General":
+    if passenger_type.upper() == "GENERAL":
         return base_fare
         
     for c in concessions:
         # 'category' might be 'Student', 'Senior Citizen', etc.
-        # Match case-insensitively just in case
         if c.get("category", "").lower() == passenger_type.lower():
-            discount_pct = c.get("discount_percentage")
+            discount_pct = c.get("concession")
             if discount_pct is not None:
                 # E.g. 50% discount -> base_fare * 0.5
                 discount = float(discount_pct) / 100.0
-                return base_fare * (1.0 - discount)
+                return round(base_fare * (1.0 - discount), 2)
             
             # If there's a flat rate or full free pass
-            if c.get("description", "").lower().startswith("free"):
+            if "free" in str(c.get("description", "")).lower() or "free" in str(c.get("conditions", "")).lower():
                 return 0.0
 
     return base_fare

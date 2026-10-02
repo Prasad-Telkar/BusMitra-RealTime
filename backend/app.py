@@ -500,24 +500,32 @@ def calculate_fare():
     dist = round(dist * 1.3, 1)
 
     # 4. Apply Fare Rules
-    fare_result = calculate_fare_engine(o_name, d_name, dist, passenger_cat, db)
-    fare = fare_result["finalFare"]
+    gen_result = calculate_fare_engine(o_name, d_name, dist, "GENERAL", db)
+    stu_result = calculate_fare_engine(o_name, d_name, dist, "STUDENT", db)
+    sen_result = calculate_fare_engine(o_name, d_name, dist, "SENIOR CITIZEN", db)
+
+    if passenger_cat == "STUDENT":
+        fare = stu_result["finalFare"]
+    elif passenger_cat == "SENIOR CITIZEN":
+        fare = sen_result["finalFare"]
+    else:
+        fare = gen_result["finalFare"]
 
     return jsonify({
         "success": True,
         "origin": origin_stop.get("name"),
         "destination": dest_stop.get("name"),
-        "distanceKm": round(dist, 1) if not fare_result["isFixedFare"] else None,
+        "distanceKm": round(dist, 1) if not gen_result["isFixedFare"] else None,
         "directServiceAvailable": True,
         "fare": fare,
         "selectedFare": fare,
         "selectedPassengerCategory": passenger_cat,
         "passengerCategory": passenger_cat,
-        "fareType": "KTCL Fixed Fare" if fare_result["isFixedFare"] else "KTCL Stage Carriage",
-        "isEstimatedDistance": not fare_result["isFixedFare"],
-        "generalFare": fare_result["baseFare"],
-        "studentFare": fare_result["finalFare"] if passenger_cat == "STUDENT" else None,
-        "seniorFare": fare_result["finalFare"] if passenger_cat == "SENIOR CITIZEN" else None,
+        "fareType": "KTCL Fixed Fare" if gen_result["isFixedFare"] else "KTCL Stage Carriage",
+        "isEstimatedDistance": not gen_result["isFixedFare"],
+        "generalFare": gen_result["finalFare"],
+        "studentFare": stu_result["finalFare"],
+        "seniorFare": sen_result["finalFare"],
     })
 
 # ==========================================
