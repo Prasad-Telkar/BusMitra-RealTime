@@ -12,13 +12,19 @@ from flask_socketio import SocketIO, join_room, emit
 import time
 import math
 import collections
-from db import stops_col, buses_col, routes_col, trips_col, stop_times_col, service_calendars_col
+from db import stops_col, buses_col, routes_col, trips_col, stop_times_col, service_calendars_col, db
 import json
 from bson import ObjectId
+from fare_engine import calculate_fare as calculate_fare_engine
+from auth import auth_bp
+import routing_engine
 
 app = Flask(__name__)
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
+
+# ---- Register Blueprints ----
+app.register_blueprint(auth_bp, url_prefix="/api/auth")
 
 # ---- In-memory store ----
 live_buses = {}
@@ -413,22 +419,29 @@ def calculate_fare():
         # If GTFS stop_times isn't populated, fallback to allowing it (or distance-based)
         direct_service = True
     elif origin_stop_times:
-        origin_map = {st["tripId"]: st["stopSequence"] for st in origin_stop_times}
+        origin_map = collections.defaultdict(list)
+        for st in origin_stop_times:
+            origin_map[st["tripId"]].append(st["stopSequence"])
+            
         dest_stop_times = stop_times_col.find(
             {"stopId": dest_id, "tripId": {"$in": list(origin_map.keys())}},
             {"tripId": 1, "stopSequence": 1}
         )
         for st in dest_stop_times:
-            if origin_map[st["tripId"]] < st["stopSequence"]:
+            dest_seq = st["stopSequence"]
+            if any(orig_seq < dest_seq for orig_seq in origin_map[st["tripId"]]):
                 direct_service = True
                 break
 
     if not direct_service:
         return jsonify({
+            "success": False,
+            "reason": "NO_DIRECT_SERVICE",
+            "message": "No direct scheduled bus service was found between these stops.",
             "origin": origin_stop.get("name"),
             "destination": dest_stop.get("name"),
             "directServiceAvailable": False
-        })
+        }), 200
 
     # 3. Calculate Distance
     try:
@@ -443,36 +456,54 @@ def calculate_fare():
     dist = round(dist * 1.3, 1)
 
     # 4. Apply Fare Rules
-    def get_fare(d):
-        if d <= 3:
-            return 10
-        elif d <= 8:
-            return 15
-        else:
-            return 15 + math.ceil((d - 8) / 8.0) * 5
-
-    base_fare = get_fare(dist)
-
-    fare = base_fare
-    if passenger_cat in ["STUDENT", "SENIOR CITIZEN"]:
-        fare = math.ceil(base_fare * 0.5)
+    fare_result = calculate_fare_engine(o_name, d_name, dist, passenger_cat, db)
+    fare = fare_result["finalFare"]
 
     return jsonify({
         "success": True,
         "origin": origin_stop.get("name"),
         "destination": dest_stop.get("name"),
-        "distanceKm": round(dist, 1),
+        "distanceKm": round(dist, 1) if not fare_result["isFixedFare"] else None,
         "directServiceAvailable": True,
         "fare": fare,
         "selectedFare": fare,
         "selectedPassengerCategory": passenger_cat,
         "passengerCategory": passenger_cat,
-        "fareType": "KTCL Stage Carriage",
-        "isEstimatedDistance": True,
-        "generalFare": base_fare,
-        "studentFare": math.ceil(base_fare * 0.5),
-        "seniorFare": math.ceil(base_fare * 0.5),
+        "fareType": "KTCL Fixed Fare" if fare_result["isFixedFare"] else "KTCL Stage Carriage",
+        "isEstimatedDistance": not fare_result["isFixedFare"],
+        "generalFare": fare_result["baseFare"],
+        "studentFare": fare_result["finalFare"] if passenger_cat == "STUDENT" else None,
+        "seniorFare": fare_result["finalFare"] if passenger_cat == "SENIOR CITIZEN" else None,
     })
+
+# ==========================================
+# JOURNEY PLANNER ENDPOINT
+# ==========================================
+@app.route("/api/journey/plan", methods=["POST"])
+def plan_journey():
+    try:
+        data = request.json
+        origin = data.get("origin")
+        destination = data.get("destination")
+        
+        if not origin or not destination:
+            return jsonify({"success": False, "reason": "Missing origin or destination"}), 400
+            
+        dt_time = None
+        dep_str = data.get("departureTime")
+        date_str = data.get("date")
+        if dep_str and date_str:
+            import datetime
+            try:
+                dt_time = datetime.datetime.strptime(f"{date_str} {dep_str}", "%Y-%m-%d %H:%M")
+            except:
+                pass
+                
+        result = routing_engine.plan_transit_journey(origin, destination, dt_time, live_buses)
+        return jsonify(result)
+    except Exception as e:
+        print(f"Journey Plan Error: {e}")
+        return jsonify({"success": False, "reason": "INTERNAL_ERROR"}), 500
 
 @app.route("/api/buses/<bus_id>/live", methods=["GET"])
 def get_live_bus(bus_id):

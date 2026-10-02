@@ -1,0 +1,7 @@
+﻿fare_type,distance_or_condition,amount,currency,description,source,source_page
+stage_carriage,0-3 km,10,INR,maximum fare,Official KTCL Citizen Charter 2026,page 4
+stage_carriage,3.1-8 km,15,INR,maximum fare (₹5 added to first band),Official KTCL Citizen Charter 2026,page 4
+stage_carriage,each additional 8 km or part thereof,5,INR,additional fare,Official KTCL Citizen Charter 2026,page 4
+ac_electric,any applicable stage-carriage fare,5,INR,extra surcharge,Official KTCL Citizen Charter 2026,page 4
+point_to_point_no_standees,per km,1.40,INR,maximum fare per km,Official KTCL Citizen Charter 2026,page 4
+air_condition_bus,per km,2.00,INR,fare per km,Official KTCL Citizen Charter 2026,page 4

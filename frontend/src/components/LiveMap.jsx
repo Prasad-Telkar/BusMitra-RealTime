@@ -22,7 +22,7 @@ function MapUpdater({ center }) {
   return null;
 }
 
-export default function LiveMap({ center, busPosition, destination, stopLabel, passengerPosition }) {
+export default function LiveMap({ center, busPosition, destination, stopLabel, passengerPosition, journeySegments }) {
   return (
     <MapContainer center={center} zoom={13} style={{ height: "100%", width: "100%" }} zoomControl={false}>
       <MapUpdater center={center} />
@@ -43,8 +43,8 @@ export default function LiveMap({ center, busPosition, destination, stopLabel, p
         </CircleMarker>
       ))}
 
-      {/* Render all KML routes */}
-      {Object.entries(routeShapes).map(([name, coords]) => (
+      {/* Render all KML routes only if we don't have active segments */}
+      {!journeySegments && Object.entries(routeShapes).map(([name, coords]) => (
         <Polyline 
           key={name} 
           positions={coords} 
@@ -54,6 +54,22 @@ export default function LiveMap({ center, busPosition, destination, stopLabel, p
         >
           <Popup>{name}</Popup>
         </Polyline>
+      ))}
+
+      {/* Render Journey Segments */}
+      {journeySegments && journeySegments.map((segment, idx) => (
+        segment.path ? (
+          <Polyline
+            key={`seg-${idx}`}
+            positions={segment.path}
+            color={segment.type === 'WALK' ? '#6b7280' : '#3b82f6'}
+            weight={segment.type === 'WALK' ? 4 : 5}
+            dashArray={segment.type === 'WALK' ? '8, 8' : undefined}
+            opacity={0.8}
+          >
+            <Popup>{segment.type === 'WALK' ? `Walk ${segment.duration} min` : `Bus ${segment.routeNumber}`}</Popup>
+          </Polyline>
+        ) : null
       ))}
 
       {passengerPosition && (

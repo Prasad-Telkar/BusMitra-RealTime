@@ -254,3 +254,11 @@
 .login-footer a:hover {
   color: var(--text-main);
 }
+
+@media (max-width: 600px) {
+  .login-wrapper {
+    align-items: flex-start;
+    padding-top: 48px;
+    padding-bottom: 48px;
+  }
+}

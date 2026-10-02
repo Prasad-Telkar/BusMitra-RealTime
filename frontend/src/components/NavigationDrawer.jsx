@@ -30,7 +30,7 @@ export default function NavigationDrawer({ isOpen, onClose }) {
           <Link to="/fare-calculator" className="drawer-item" onClick={onClose}>
             <Calculator size={20} /> <span>Fare Calculator</span>
           </Link>
-          <Link to="/passenger" className="drawer-item" onClick={onClose}>
+          <Link to="/stops" className="drawer-item" onClick={onClose}>
             <MapPin size={20} /> <span>Nearby Stops</span>
           </Link>
           <div className="drawer-item disabled">

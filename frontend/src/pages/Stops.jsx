@@ -1,16 +1,16 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Search, ChevronDown, MapPin, Navigation, Loader2 } from "lucide-react";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5001";
 
-export default function Home() {
+export default function Stops() {
   const [stops, setStops] = useState([]);
   const [query, setQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [locationStatus, setLocationStatus] = useState("idle");
   const navigate = useNavigate();
 
-  // Load popular stops on mount
   useEffect(() => {
     fetchStops();
   }, []);
@@ -43,10 +43,37 @@ export default function Home() {
     }
   };
 
-  const handleSelectDestination = (stop) => {
-    // Navigate to journey planner with pre-filled destination
-    const stopName = encodeURIComponent(stop.name);
-    navigate(`/journey-planner?to=${stopName}&toId=${stop.stopId || stop._id}`);
+  const findNearbyStops = () => {
+    setLocationStatus("locating");
+    if (!navigator.geolocation) {
+      setLocationStatus("error");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        setLocationStatus("found");
+        setIsLoading(true);
+        try {
+          const { latitude, longitude } = position.coords;
+          const res = await fetch(`${API_BASE}/api/stops/nearby?lat=${latitude}&lng=${longitude}&radius=5`);
+          if (res.ok) {
+            const data = await res.json();
+            setStops(data);
+            setQuery("");
+          }
+        } catch (err) {
+          console.error("Failed to fetch nearby stops", err);
+        } finally {
+          setIsLoading(false);
+        }
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+        setLocationStatus("error");
+      },
+      { timeout: 10000 }
+    );
   };
 
   return (
@@ -61,40 +88,53 @@ export default function Home() {
               Goa <ChevronDown size={16} />
             </div>
           </div>
-          <p className="tagline">Where are you going?</p>
+          <p className="tagline">Explore nearby stops</p>
         </header>
 
         <section className="search-section">
-          <h1>Plan your journey</h1>
+          <h1>Find a Bus Stop</h1>
           <div className="search-box">
             <Search size={18} color="var(--text-muted)" />
             <input 
               type="text" 
-              placeholder="Search destination, stop, or landmark..." 
+              placeholder="Search stops..." 
               value={query}
               onChange={handleSearch}
             />
             {isLoading && <Loader2 className="spinner" size={16} color="var(--teal-600)" />}
           </div>
+          
+          <button 
+            className="btn-outline nearby-btn" 
+            onClick={findNearbyStops}
+            disabled={locationStatus === "locating"}
+            style={{ width: '100%', marginTop: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}
+          >
+            {locationStatus === "locating" ? (
+              <><Loader2 className="spinner" size={18} /> Locating you...</>
+            ) : (
+              <><Navigation size={18} /> Stops near me</>
+            )}
+          </button>
         </section>
 
         <section className="live-buses-section" style={{ marginTop: '24px' }}>
           <div className="section-header">
-            <h3>{query ? "Search Results" : "Popular Destinations"}</h3>
+            <h3>{query ? "Search Results" : (locationStatus === "found" ? "Nearby Stops" : "Popular Stops")}</h3>
           </div>
 
           <div className="stop-cards" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {stops.length === 0 && !isLoading ? (
               <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                No destinations found. Try a different search.
+                No stops found. Try a different search.
               </div>
             ) : (
               stops.map((stop) => (
-                <div
+                <Link
                   key={stop.stopId || stop._id}
-                  onClick={() => handleSelectDestination(stop)}
+                  to={`/stop/${stop.stopId || stop._id}`}
                   className="bus-card"
-                  style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '16px', gap: '12px' }}
+                  style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', padding: '16px', gap: '12px' }}
                 >
                   <div style={{ background: 'var(--teal-100)', padding: '10px', borderRadius: '12px' }}>
                     <MapPin size={24} color="var(--teal-800)" />
@@ -105,8 +145,7 @@ export default function Home() {
                       {stop.distance_km ? `${stop.distance_km} km away` : "KTCL Bus Stop"}
                     </p>
                   </div>
-                  <Navigation size={20} color="var(--teal-600)" />
-                </div>
+                </Link>
               ))
             )}
           </div>

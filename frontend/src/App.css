@@ -67,16 +67,16 @@ body, html { margin: 0; padding: 0; background: #E2E8F0; color: var(--text-main)
 .btn-outline { background: transparent; color: var(--teal-800); border: 2px solid var(--border-color); border-radius: 12px; padding: 14px 24px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; }
 
 /* Layout */
-.app-container { display: flex; flex-direction: column; height: 100vh; width: 100%; overflow: hidden; position: relative; padding-bottom: 70px; }
+.app-container { display: flex; flex-direction: column; height: 100vh; width: 100%; overflow: hidden; position: relative; padding-bottom: 80px; }
 
 /* Bottom Nav */
-.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; max-width: 480px; margin: 0 auto; height: 64px; background: #ffffff; border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; align-items: center; z-index: 100; padding-bottom: env(safe-area-inset-bottom); box-shadow: 0 -4px 20px rgba(0,0,0,0.05); }
-.nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--text-light); text-decoration: none; font-size: 10px; font-weight: 600; padding: 4px; min-width: 55px; }
+.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; max-width: 480px; margin: 0 auto; height: 72px; background: #ffffff; border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; align-items: center; z-index: 100; padding-bottom: env(safe-area-inset-bottom); box-shadow: 0 -4px 20px rgba(0,0,0,0.05); }
+.nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--text-light); text-decoration: none; font-size: 12px; font-weight: 600; padding: 6px; min-width: 60px; }
 .nav-item.active { color: var(--teal-800); }
 
 /* Passenger View */
-.passenger-map-layer { position: absolute; top: 0; left: 0; right: 0; bottom: 70px; z-index: 1; }
-.passenger-ui-layer { position: absolute; top: 0; left: 0; right: 0; bottom: 70px; z-index: 10; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; }
+.passenger-map-layer { position: absolute; top: 0; left: 0; right: 0; bottom: 72px; z-index: 1; }
+.passenger-ui-layer { position: absolute; top: 0; left: 0; right: 0; bottom: 72px; z-index: 10; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; }
 .passenger-ui-layer > * { pointer-events: auto; }
 
 /* Top Bar */
@@ -94,7 +94,7 @@ body, html { margin: 0; padding: 0; background: #E2E8F0; color: var(--text-main)
 .track-card-eta span { font-size: 16px; }
 
 /* Driver View */
-.driver-screen { padding: 0; display: flex; flex-direction: column; height: 100vh; background: var(--bg-color); padding-bottom: 70px; }
+.driver-screen { padding: 0; display: flex; flex-direction: column; height: 100vh; background: var(--bg-color); padding-bottom: 80px; }
 .driver-topbar { padding: 16px 20px; background: var(--surface-color); border-bottom: 1px solid var(--border-color); }
 .driver-topbar h1 { font-size: 20px; font-weight: 700; margin: 0 0 4px 0; color: var(--text-main); }
 .driver-topbar p { font-size: 13px; color: var(--text-muted); margin: 0; }
@@ -138,7 +138,7 @@ body, html { margin: 0; padding: 0; background: #E2E8F0; color: var(--text-main)
 .admin-route-cell span { font-size: 13px; color: var(--text-muted); }
 
 /* Home Screen */
-.home-screen { display: flex; flex-direction: column; min-height: 100vh; background: #ffffff; padding-bottom: 70px; }
+.home-screen { display: flex; flex-direction: column; min-height: 100vh; background: #ffffff; padding-bottom: 80px; }
 .home-content { padding: 24px 20px; display: flex; flex-direction: column; gap: 24px; max-width: 600px; margin: 0 auto; width: 100%; }
 
 .home-header .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }

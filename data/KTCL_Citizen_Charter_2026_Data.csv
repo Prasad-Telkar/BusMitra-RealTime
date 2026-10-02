@@ -1,0 +1,52 @@
+﻿record_type,field1,field2,field3,field4,field5,field6,field7,field8
+FARE_RULE,stage_carriage,0-3 km,10,INR,maximum fare,Official KTCL Citizen Charter 2026,page 4
+FARE_RULE,stage_carriage,3.1-8 km,15,INR,maximum fare (₹5 added to first band),Official KTCL Citizen Charter 2026,page 4
+FARE_RULE,stage_carriage,each additional 8 km or part thereof,5,INR,additional fare,Official KTCL Citizen Charter 2026,page 4
+FARE_RULE,ac_electric,any applicable stage-carriage fare,5,INR,extra surcharge,Official KTCL Citizen Charter 2026,page 4
+FARE_RULE,point_to_point_no_standees,per km,1.40,INR,maximum fare per km,Official KTCL Citizen Charter 2026,page 4
+FARE_RULE,air_condition_bus,per km,2.00,INR,fare per km,Official KTCL Citizen Charter 2026,page 4
+FIXED_FARE,airport_shuttle,Dabolim Airport,Panaji,150,INR,A/C,Official KTCL Citizen Charter 2026,page 4
+FIXED_FARE,airport_shuttle,Dabolim Airport,Calangute Beach,200,INR,A/C,Official KTCL Citizen Charter 2026,page 4
+FIXED_FARE,airport_shuttle,Mopa Airport,Mapusa,150,INR,A/C,Official KTCL Citizen Charter 2026,page 4
+FIXED_FARE,airport_shuttle,Mopa Airport,Calangute Beach,200,INR,A/C,Official KTCL Citizen Charter 2026,page 4
+FIXED_FARE,airport_shuttle,Mopa Airport,Panaji,200,INR,A/C,Official KTCL Citizen Charter 2026,page 4
+FIXED_FARE,airport_shuttle,Mopa Airport,Margao,400,INR,A/C,Official KTCL Citizen Charter 2026,page 4
+FIXED_FARE,shuttle,Panaji,Margao,45,INR,Regular,Official KTCL Citizen Charter 2026,page 16
+FIXED_FARE,shuttle,Margao,Panaji,45,INR,Regular,Official KTCL Citizen Charter 2026,page 16
+FIXED_FARE,shuttle,Panaji,Margao,50,INR,AC EV,Official KTCL Citizen Charter 2026,page 16
+FIXED_FARE,shuttle,Margao,Panaji,50,INR,AC EV,Official KTCL Citizen Charter 2026,page 16
+FIXED_FARE,shuttle,Panaji,Vasco,43,INR,Regular,Official KTCL Citizen Charter 2026,page 16
+FIXED_FARE,shuttle,Vasco,Panaji,43,INR,Regular,Official KTCL Citizen Charter 2026,page 16
+FIXED_FARE,shuttle,Panaji,Vasco,48,INR,AC EV,Official KTCL Citizen Charter 2026,page 16
+FIXED_FARE,shuttle,Vasco,Panaji,48,INR,AC EV,Official KTCL Citizen Charter 2026,page 16
+FIXED_FARE,shuttle,Panaji,Mapusa,17,INR,Regular,Official KTCL Citizen Charter 2026,page 16
+FIXED_FARE,shuttle,Mapusa,Panaji,17,INR,Regular,Official KTCL Citizen Charter 2026,page 16
+FIXED_FARE,shuttle,Panaji,Mapusa,20,INR,AC EV,Official KTCL Citizen Charter 2026,page 16
+FIXED_FARE,shuttle,Mapusa,Panaji,20,INR,AC EV,Official KTCL Citizen Charter 2026,page 16
+FIXED_FARE,shuttle,Margao,Curchorem,28,INR,Regular,Official KTCL Citizen Charter 2026,page 16
+FIXED_FARE,shuttle,Curchorem,Margao,28,INR,Regular,Official KTCL Citizen Charter 2026,page 16
+FIXED_FARE,shuttle,Margao,Curchorem,33,INR,AC EV,Official KTCL Citizen Charter 2026,page 16
+FIXED_FARE,shuttle,Curchorem,Margao,33,INR,AC EV,Official KTCL Citizen Charter 2026,page 16
+FIXED_FARE,shuttle,Panaji,Ponda,39,INR,Regular,Official KTCL Citizen Charter 2026,page 16
+FIXED_FARE,shuttle,Ponda,Panaji,39,INR,Regular,Official KTCL Citizen Charter 2026,page 16
+FIXED_FARE,shuttle,Panaji,Ponda,45,INR,AC EV,Official KTCL Citizen Charter 2026,page 16
+FIXED_FARE,shuttle,Ponda,Panaji,45,INR,AC EV,Official KTCL Citizen Charter 2026,page 16
+FIXED_FARE,shuttle,Margao,Vasco,42,INR,Regular,Official KTCL Citizen Charter 2026,page 16
+FIXED_FARE,shuttle,Vasco,Margao,42,INR,Regular,Official KTCL Citizen Charter 2026,page 16
+FIXED_FARE,shuttle,Margao,Vasco,47,INR,AC EV,Official KTCL Citizen Charter 2026,page 16
+FIXED_FARE,shuttle,Vasco,Margao,47,INR,AC EV,Official KTCL Citizen Charter 2026,page 16
+CONCESSION_OR_PASS,Senior Citizen,Intrastate,50,percent,Valid Social Welfare Department ID required,Official KTCL Citizen Charter 2026,page 22
+CONCESSION_OR_PASS,Student,Intrastate,50,percent,Valid school/college/institute ID required,Official KTCL Citizen Charter 2026,page 22
+CONCESSION_OR_PASS,Blind Person,Intrastate,100,percent,Valid Social Welfare Department ID required,Official KTCL Citizen Charter 2026,page 22
+CONCESSION_OR_PASS,Person with Disability (PwD),Within Goa,100,percent,As stated in charter,Official KTCL Citizen Charter 2026,page 22
+CONCESSION_OR_PASS,AIDS Patient,Within Goa,100,percent,As stated in charter,Official KTCL Citizen Charter 2026,page 22
+CONCESSION_OR_PASS,MLA,Intrastate/Interstate,100,percent,Legislature Department identity card required,Official KTCL Citizen Charter 2026,page 22
+CONCESSION_OR_PASS,Freedom Fighter,Intrastate/Interstate,100,percent,Home Department identity card required,Official KTCL Citizen Charter 2026,page 22
+CONCESSION_OR_PASS,Weekly Pass - Student/Senior Citizen,Specified route,60,percent,Pass concession,Official KTCL Citizen Charter 2026,page 20
+CONCESSION_OR_PASS,Weekly Pass - General,Specified route,20,percent,Pass concession,Official KTCL Citizen Charter 2026,page 20
+CONCESSION_OR_PASS,Fortnightly Pass - Student/Senior Citizen,Specified route,65,percent,Pass concession,Official KTCL Citizen Charter 2026,page 20
+CONCESSION_OR_PASS,Fortnightly Pass - General,Specified route,30,percent,Pass concession,Official KTCL Citizen Charter 2026,page 20
+CONCESSION_OR_PASS,Monthly Pass - Student/Senior Citizen,Specified route,70,percent,Pass concession,Official KTCL Citizen Charter 2026,page 20
+CONCESSION_OR_PASS,Monthly Pass - General,Specified route,40,percent,Pass concession,Official KTCL Citizen Charter 2026,page 20
+CONCESSION_OR_PASS,Half Yearly/Yearly Pass - Student/Senior Citizen,Specified route,70,percent,Pass concession,Official KTCL Citizen Charter 2026,page 20
+CONCESSION_OR_PASS,Half Yearly/Yearly Pass - General,Specified route,40,percent,Pass concession,Official KTCL Citizen Charter 2026,page 20

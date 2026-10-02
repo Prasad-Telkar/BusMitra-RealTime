@@ -1,0 +1,31 @@
+﻿fare_type,origin,destination,amount,currency,service_type,source,source_page
+airport_shuttle,Dabolim Airport,Panaji,150,INR,A/C,Official KTCL Citizen Charter 2026,page 4
+airport_shuttle,Dabolim Airport,Calangute Beach,200,INR,A/C,Official KTCL Citizen Charter 2026,page 4
+airport_shuttle,Mopa Airport,Mapusa,150,INR,A/C,Official KTCL Citizen Charter 2026,page 4
+airport_shuttle,Mopa Airport,Calangute Beach,200,INR,A/C,Official KTCL Citizen Charter 2026,page 4
+airport_shuttle,Mopa Airport,Panaji,200,INR,A/C,Official KTCL Citizen Charter 2026,page 4
+airport_shuttle,Mopa Airport,Margao,400,INR,A/C,Official KTCL Citizen Charter 2026,page 4
+shuttle,Panaji,Margao,45,INR,Regular,Official KTCL Citizen Charter 2026,page 16
+shuttle,Margao,Panaji,45,INR,Regular,Official KTCL Citizen Charter 2026,page 16
+shuttle,Panaji,Margao,50,INR,AC EV,Official KTCL Citizen Charter 2026,page 16
+shuttle,Margao,Panaji,50,INR,AC EV,Official KTCL Citizen Charter 2026,page 16
+shuttle,Panaji,Vasco,43,INR,Regular,Official KTCL Citizen Charter 2026,page 16
+shuttle,Vasco,Panaji,43,INR,Regular,Official KTCL Citizen Charter 2026,page 16
+shuttle,Panaji,Vasco,48,INR,AC EV,Official KTCL Citizen Charter 2026,page 16
+shuttle,Vasco,Panaji,48,INR,AC EV,Official KTCL Citizen Charter 2026,page 16
+shuttle,Panaji,Mapusa,17,INR,Regular,Official KTCL Citizen Charter 2026,page 16
+shuttle,Mapusa,Panaji,17,INR,Regular,Official KTCL Citizen Charter 2026,page 16
+shuttle,Panaji,Mapusa,20,INR,AC EV,Official KTCL Citizen Charter 2026,page 16
+shuttle,Mapusa,Panaji,20,INR,AC EV,Official KTCL Citizen Charter 2026,page 16
+shuttle,Margao,Curchorem,28,INR,Regular,Official KTCL Citizen Charter 2026,page 16
+shuttle,Curchorem,Margao,28,INR,Regular,Official KTCL Citizen Charter 2026,page 16
+shuttle,Margao,Curchorem,33,INR,AC EV,Official KTCL Citizen Charter 2026,page 16
+shuttle,Curchorem,Margao,33,INR,AC EV,Official KTCL Citizen Charter 2026,page 16
+shuttle,Panaji,Ponda,39,INR,Regular,Official KTCL Citizen Charter 2026,page 16
+shuttle,Ponda,Panaji,39,INR,Regular,Official KTCL Citizen Charter 2026,page 16
+shuttle,Panaji,Ponda,45,INR,AC EV,Official KTCL Citizen Charter 2026,page 16
+shuttle,Ponda,Panaji,45,INR,AC EV,Official KTCL Citizen Charter 2026,page 16
+shuttle,Margao,Vasco,42,INR,Regular,Official KTCL Citizen Charter 2026,page 16
+shuttle,Vasco,Margao,42,INR,Regular,Official KTCL Citizen Charter 2026,page 16
+shuttle,Margao,Vasco,47,INR,AC EV,Official KTCL Citizen Charter 2026,page 16
+shuttle,Vasco,Margao,47,INR,AC EV,Official KTCL Citizen Charter 2026,page 16

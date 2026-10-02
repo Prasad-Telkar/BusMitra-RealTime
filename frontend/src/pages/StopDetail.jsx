@@ -88,6 +88,31 @@ export default function StopDetail() {
           </div>
         ) : (
           <>
+            {stopDetails && (
+              <div style={{ marginBottom: '24px' }}>
+                <button
+                  onClick={() => navigate(`/journey-planner?to=${encodeURIComponent(stopDetails.name)}&toId=${stopDetails.stopId || stopDetails._id}`)}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    background: 'var(--teal-600)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    gap: '8px',
+                    fontSize: '15px',
+                    fontWeight: '600',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <MapPin size={18} /> Navigate here
+                </button>
+              </div>
+            )}
+
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <h3 style={{ margin: 0, fontSize: '16px', color: 'var(--text-main)' }}>Upcoming Buses</h3>
             </div>

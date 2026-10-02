@@ -35,14 +35,22 @@ export default function PassengerLayout() {
       {/* Desktop Top Navbar - Hidden on Mobile */}
       <header className="passenger-top-nav desktop-only">
         <div className="ptn-container">
-          <Link to="/passenger" className="ptn-brand">
-            <div className="ptn-logo">
-              <Bus size={20} color="white" />
-            </div>
-            <h2>BusMitra</h2>
-          </Link>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <button 
+              onClick={() => setIsDrawerOpen(true)}
+              style={{ background: 'transparent', border: 'none', padding: 0, display: 'flex', alignItems: 'center', cursor: 'pointer', marginRight: '16px' }}
+            >
+              <Menu size={24} color="var(--teal-800)" />
+            </button>
+            <Link to="/passenger" className="ptn-brand">
+              <div className="ptn-logo">
+                <Bus size={20} color="white" />
+              </div>
+              <h2>BusMitra</h2>
+            </Link>
+          </div>
           <nav className="ptn-links">
-            <Link to="/passenger" className={`ptn-link ${currentPath === '/passenger' ? 'active' : ''}`}>
+            <Link to="/stops" className={`ptn-link ${currentPath === '/stops' ? 'active' : ''}`}>
               <MapPin size={18} /> Stops
             </Link>
             <Link to="/routes" className={`ptn-link ${currentPath === '/routes' ? 'active' : ''}`}>
@@ -63,27 +71,27 @@ export default function PassengerLayout() {
       {/* Mobile Bottom Navbar - Hidden on Desktop */}
       <nav className="bottom-nav mobile-only">
         <Link to="/passenger" className={`nav-item ${currentPath === '/passenger' ? 'active' : ''}`}>
-          <Home size={22} />
+          <Home size={24} />
           <span>Home</span>
         </Link>
         <Link to="/journey-planner" className={`nav-item ${currentPath === '/journey-planner' ? 'active' : ''}`}>
-          <Navigation size={22} />
+          <Navigation size={24} />
           <span>Plan</span>
         </Link>
         <Link to="/fare-calculator" className={`nav-item ${currentPath === '/fare-calculator' ? 'active' : ''}`}>
-          <Calculator size={22} />
+          <Calculator size={24} />
           <span>Fare</span>
         </Link>
-        <Link to="/passenger" className="nav-item">
-          <MapPin size={22} />
+        <Link to="/stops" className={`nav-item ${currentPath === '/stops' ? 'active' : ''}`}>
+          <MapPin size={24} />
           <span>Stops</span>
         </Link>
         <Link to="/routes" className={`nav-item ${currentPath === '/routes' || currentPath.startsWith('/route-detail') ? 'active' : ''}`}>
-          <Bus size={22} />
+          <Bus size={24} />
           <span>Track</span>
         </Link>
         <Link to="/saved" className={`nav-item ${currentPath === '/saved' ? 'active' : ''}`}>
-          <Bookmark size={22} />
+          <Bookmark size={24} />
           <span>Saved</span>
         </Link>
       </nav>

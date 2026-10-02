@@ -1,0 +1,454 @@
+﻿route_number,route_text,source_page,source,source_file
+1,Ponda  to  GMC Bambolim  via  Mardol,1,KTCL Routes Operated 2026,Routes-2026.pdf
+2,Valpoi  to  Tonca  via  Sankhali-Marcel,1,KTCL Routes Operated 2026,Routes-2026.pdf
+3,Panaji to Altinho-Panaji via Panaji Market,1,KTCL Routes Operated 2026,Routes-2026.pdf
+4,Panaji to Sao Pedro via Old Goa,1,KTCL Routes Operated 2026,Routes-2026.pdf
+5,Sao Pedro to Vashi Ferry,1,KTCL Routes Operated 2026,Routes-2026.pdf
+6,Sao Pedro to Marita Bakery,1,KTCL Routes Operated 2026,Routes-2026.pdf
+7,Panaji to Narva  via Old Goa,1,KTCL Routes Operated 2026,Routes-2026.pdf
+8,Narva to Old Goa Ferry,1,KTCL Routes Operated 2026,Routes-2026.pdf
+9,Panaji toTambdisurla via Old Goa-Ponda-Usgao-Kumbarwada,1,KTCL Routes Operated 2026,Routes-2026.pdf
+10,Panaji to Tambdisurla via Old Goa-Ponda-Usgao-Satpal,1,KTCL Routes Operated 2026,Routes-2026.pdf
+11,Panaji Market to Tambdisurla via Panaji-Old Goa-Ponda-Usgao-Satpal,1,KTCL Routes Operated 2026,Routes-2026.pdf
+12,NIO to Malpan via Panaji-Old Goa-Ponda-Usgao-Khotodem,1,KTCL Routes Operated 2026,Routes-2026.pdf
+13,NIO to Panaji via Campal,1,KTCL Routes Operated 2026,Routes-2026.pdf
+14,Panaji to Dhada via Old Goa-Ponda-Usgao-Maingine,1,KTCL Routes Operated 2026,Routes-2026.pdf
+15,Panaji Market to Dhada via  Altino-Panaji-Old Goa-Ponda-Usgao-Maingine,1,KTCL Routes Operated 2026,Routes-2026.pdf
+16,Panaji to Vagurme via Old Goa-Ponda,1,KTCL Routes Operated 2026,Routes-2026.pdf
+17,Ponda to Undir via Aagapur,1,KTCL Routes Operated 2026,Routes-2026.pdf
+18,Panaji to Gavne via Old Goa-Ponda,1,KTCL Routes Operated 2026,Routes-2026.pdf
+19,Ponda to Gavne via Mahalaxmi,1,KTCL Routes Operated 2026,Routes-2026.pdf
+20,Panaji to Shirshire via Old Goa-Ponda,1,KTCL Routes Operated 2026,Routes-2026.pdf
+21,Panaji Market to Shirshire via Panaji-Old Goa-Ponda,1,KTCL Routes Operated 2026,Routes-2026.pdf
+22,Ponda to Shirshire via Davli,1,KTCL Routes Operated 2026,Routes-2026.pdf
+23,Panaji Market to Undir-Ponda  via Panaji-Old Goa-Tapobhumi-Karnai-Kavle,1,KTCL Routes Operated 2026,Routes-2026.pdf
+24,Panaji to Kalay via Old Goa-Ponda-Shiroda-Curchorem,1,KTCL Routes Operated 2026,Routes-2026.pdf
+25,Panaji to Kalay via Old Goa-Ponda-Shiroda-Curchorem-Sanguem-Costi,1,KTCL Routes Operated 2026,Routes-2026.pdf
+26,Curchorem  to Kalay via Sanguem-Costi,1,KTCL Routes Operated 2026,Routes-2026.pdf
+27,Panaji to Curchorem via Old Goa-Ponda-Shiroda,1,KTCL Routes Operated 2026,Routes-2026.pdf
+28,Vasco to Dabal-Codli-Tisk via Cortalim-Borim-Ponda-Betora,1,KTCL Routes Operated 2026,Routes-2026.pdf
+29,Panaji to Gimone-Ponda via Marcel-Keri,1,KTCL Routes Operated 2026,Routes-2026.pdf
+30,Bicholim to Ponda via Sankhali-Marcel,1,KTCL Routes Operated 2026,Routes-2026.pdf
+31,Panaji to Volvoi via Marcel-Savoi-Betki,1,KTCL Routes Operated 2026,Routes-2026.pdf
+32,Marcel to Volvoi via Savoi-Betki,1,KTCL Routes Operated 2026,Routes-2026.pdf
+33,Panaji to Mapusa via Sangolda-Saligao-Calangute,1,KTCL Routes Operated 2026,Routes-2026.pdf
+34,Mapusa to Panaji  via Saligao-Calangute-Pilerna,1,KTCL Routes Operated 2026,Routes-2026.pdf
+35,Panaji to Calangute via Sangolda-Saligao-Pilerna,1,KTCL Routes Operated 2026,Routes-2026.pdf
+36,Panaji to Calangute via Betim-Pilerna-Saligao,1,KTCL Routes Operated 2026,Routes-2026.pdf
+37,Panaji to Mandre-Madlamaz via Candolim-Calangute-Siolim,1,KTCL Routes Operated 2026,Routes-2026.pdf
+38,Panaji  to Harmal via Candolim-Calangute-Siolim-Mandre,1,KTCL Routes Operated 2026,Routes-2026.pdf
+39,Mapusa to Siolim via Duler,1,KTCL Routes Operated 2026,Routes-2026.pdf
+40,Panaji to Siolim via Betim-Candolim-Calangute,1,KTCL Routes Operated 2026,Routes-2026.pdf
+41,Panaji to Mopa via Mapusa-Pernem-Karmaliwada,1,KTCL Routes Operated 2026,Routes-2026.pdf
+42,Panaji to Pethechawada-Korgao via  Mapusa-Pernem,1,KTCL Routes Operated 2026,Routes-2026.pdf
+43,Panaji to Tulaskarwadi via Mapusa-Kulan,1,KTCL Routes Operated 2026,Routes-2026.pdf
+44,Panaji to Parse via Mapusa-Dhargal-Aroba,1,KTCL Routes Operated 2026,Routes-2026.pdf
+45,Mapusa to Tuem via Dhargal-Arabo,1,KTCL Routes Operated 2026,Routes-2026.pdf
+46,Panaji Market to Badem via Panaji-Mapusa-Assagao,1,KTCL Routes Operated 2026,Routes-2026.pdf
+47,Panaji to Badem via Mapusa-Assagao,1,KTCL Routes Operated 2026,Routes-2026.pdf
+48,Mapusa to Badem via Assagao,1,KTCL Routes Operated 2026,Routes-2026.pdf
+49,Panaji to Neura-Panaji via Pillar-Old Goa,1,KTCL Routes Operated 2026,Routes-2026.pdf
+50,Panaji to Azzosim via St. Cruz-Pillar,1,KTCL Routes Operated 2026,Routes-2026.pdf
+51,Panaji to Neura via Old Goa,1,KTCL Routes Operated 2026,Routes-2026.pdf
+52,Panaji Market to Neura via Panaji-Old Goa,1,KTCL Routes Operated 2026,Routes-2026.pdf
+53,Panaji to Akhada via Marcel-St.Esteevm,1,KTCL Routes Operated 2026,Routes-2026.pdf
+54,Panaji Market to Akhada via Panaji-Marcel-St.Esteevem,1,KTCL Routes Operated 2026,Routes-2026.pdf
+55,Panaji to Copardem via Mapusa-Sankhali-Valpoi,1,KTCL Routes Operated 2026,Routes-2026.pdf
+56,Panaji  to Signe via Marcel-Sankhli-Valpoi,1,KTCL Routes Operated 2026,Routes-2026.pdf
+57,Bambolim GMC to Signe via Panaji-Marcel-Sankhli-Valpoi,2,KTCL Routes Operated 2026,Routes-2026.pdf
+58,Panaji to Nanoda via Mapusa-Bicholim-Sankhali-Valpoi,2,KTCL Routes Operated 2026,Routes-2026.pdf
+59,Panaji to Dogurlim via Mapusa-Bicholim-Sankhali-Valpoi,2,KTCL Routes Operated 2026,Routes-2026.pdf
+60,Panaji to Dogurlim via Marcel-Sankhali-Valpoi,2,KTCL Routes Operated 2026,Routes-2026.pdf
+61,Panaji to Cipla Verna Ind. Est. via Bambolim-Cortalim,2,KTCL Routes Operated 2026,Routes-2026.pdf
+62,Bicholim to Thane via Sankhali-Honda-Valpoi,2,KTCL Routes Operated 2026,Routes-2026.pdf
+63,Valpoi to Sankhali via Advoi,2,KTCL Routes Operated 2026,Routes-2026.pdf
+64,Valpoi to Brahmakarmali  via  Signe,2,KTCL Routes Operated 2026,Routes-2026.pdf
+65,Valpoi to Karanzol via Velguem,2,KTCL Routes Operated 2026,Routes-2026.pdf
+66,Panaji to Bicholim via Pomburpha-Aldona,2,KTCL Routes Operated 2026,Routes-2026.pdf
+67,Panaji  to Kudchire via Assonora-Bicholim,2,KTCL Routes Operated 2026,Routes-2026.pdf
+68,Panaji to Diretrate of Education,2,KTCL Routes Operated 2026,Routes-2026.pdf
+69,Panaji to Amthane via  Mapusa-Colvale-Revora-Nadora,2,KTCL Routes Operated 2026,Routes-2026.pdf
+70,Panaji to Amthane via  Mapusa-Assonora-Bicholim-Pirna,2,KTCL Routes Operated 2026,Routes-2026.pdf
+71,Panaji Market to Amthane via Panaji-Mapusa-Assonora-Bicholim-Pirna,2,KTCL Routes Operated 2026,Routes-2026.pdf
+72,Panaji to Amthane via Bypass-Assonora-Bicholim-Pirna,2,KTCL Routes Operated 2026,Routes-2026.pdf
+73,Panaji to IPHB  via Bambolim,2,KTCL Routes Operated 2026,Routes-2026.pdf
+74,Panaji to RITE Shiroda via Mapusa-Bicholim-Sankhali-Marcel-Ponda,2,KTCL Routes Operated 2026,Routes-2026.pdf
+75,Panaji to RITE Shiroda via Old Goa-Ponda,2,KTCL Routes Operated 2026,Routes-2026.pdf
+76,Ponda to Akhada via Marcel-St.Esteevem,2,KTCL Routes Operated 2026,Routes-2026.pdf
+77,St.Esteevem to RITE Shiroda via  Marcel-Mardol-Ponda,2,KTCL Routes Operated 2026,Routes-2026.pdf
+78,Valpoi to Kumbarkhand via Nanus cross,2,KTCL Routes Operated 2026,Routes-2026.pdf
+79,Valpoi to Porvorim Secretariate via Sankhali-Marcel-Panaji-Dir. of Education,2,KTCL Routes Operated 2026,Routes-2026.pdf
+80,Bicholim to GMFC Dharbadora via Sankhali-Pali,2,KTCL Routes Operated 2026,Routes-2026.pdf
+81,Panaji to Sankhali via Marcel-Kundne village,2,KTCL Routes Operated 2026,Routes-2026.pdf
+82,Sankhali to Cipla Verna Ind.Est. via Marcel-Neura-Cortalim,2,KTCL Routes Operated 2026,Routes-2026.pdf
+83,Panaji to Surla via Marcel-Sankhali-Keri-Chorla,2,KTCL Routes Operated 2026,Routes-2026.pdf
+84,Panaji to Margao via Old Goa-Ponda-Borim,2,KTCL Routes Operated 2026,Routes-2026.pdf
+85,Ponda to Vasco Harbour via Lotuliem-Cortalim-Vasco,2,KTCL Routes Operated 2026,Routes-2026.pdf
+86,Panaji to Surla via Marcel-Sankhali-Maina,2,KTCL Routes Operated 2026,Routes-2026.pdf
+87,Sankhali to Surla via Maina,2,KTCL Routes Operated 2026,Routes-2026.pdf
+88,Panaji to Virdi  via Marcel-Sankhali,2,KTCL Routes Operated 2026,Routes-2026.pdf
+89,Panaji Market to Virdi via Panaji-Bypass-Assonara-Bicholim-Sankhali,2,KTCL Routes Operated 2026,Routes-2026.pdf
+90,Panaji to Virdi via Mapusa-Assonara-Bicholim-Sarvan-Sankhali,2,KTCL Routes Operated 2026,Routes-2026.pdf
+91,Panaji to Kudchire  via Marcel-Sankhali,2,KTCL Routes Operated 2026,Routes-2026.pdf
+92,Kudchire to Harvale via Sankhali,2,KTCL Routes Operated 2026,Routes-2026.pdf
+93,Panaji to Harvale via  Marcel-Virdi-Sankhali,2,KTCL Routes Operated 2026,Routes-2026.pdf
+94,Mapusa to Patradevi  via Kulan-Nagzar-Chandel-Hali,2,KTCL Routes Operated 2026,Routes-2026.pdf
+95,Mapusa to Patradevi via Colvale-Pernem,2,KTCL Routes Operated 2026,Routes-2026.pdf
+96,Mapusa to Patradevi  via  Colvale-AyushHospital-Pernem,2,KTCL Routes Operated 2026,Routes-2026.pdf
+97,Mapusa to Hasapur via  Kulan-Nagzar-Chandel,2,KTCL Routes Operated 2026,Routes-2026.pdf
+98,Mapusa to Menkure  via  Colvale-Revora-Nadora-Ozarim,2,KTCL Routes Operated 2026,Routes-2026.pdf
+99,Mapusa to  Chandel  via  Colvale-Dhargal-Kulan-Nagzar-Bailpar,2,KTCL Routes Operated 2026,Routes-2026.pdf
+100,Panaji to Dhave via Mapusa-Assonora-Bicholim-Sankhali-Valpoi,2,KTCL Routes Operated 2026,Routes-2026.pdf
+101,Panaji to Torse via Mapusa-Colvale-Dhargal-Pernem,2,KTCL Routes Operated 2026,Routes-2026.pdf
+102,Panaji  to Honda  via Marcel-Sankhali,2,KTCL Routes Operated 2026,Routes-2026.pdf
+103,Bicholim to Bicholim via Poira-Sinqurim,2,KTCL Routes Operated 2026,Routes-2026.pdf
+104,Bicholim to Poira via Sinqurim,2,KTCL Routes Operated 2026,Routes-2026.pdf
+105,Madel to Madel via Saude,2,KTCL Routes Operated 2026,Routes-2026.pdf
+106,Bicholim to Madel via Tikhazan,2,KTCL Routes Operated 2026,Routes-2026.pdf
+107,Madel to Madel via Pombupha ferry,2,KTCL Routes Operated 2026,Routes-2026.pdf
+108,Panaji to Madel via Mapusa-Calvi,2,KTCL Routes Operated 2026,Routes-2026.pdf
+109,Bicholim to Madel via Narve,2,KTCL Routes Operated 2026,Routes-2026.pdf
+110,Panjim to Madel via Pomburpha-Calvi,2,KTCL Routes Operated 2026,Routes-2026.pdf
+111,Bicholim to Saptakoteshwar Narve  via Pilgao-Murdi,2,KTCL Routes Operated 2026,Routes-2026.pdf
+112,Bicholim to Narve via Mayemlake,2,KTCL Routes Operated 2026,Routes-2026.pdf
+113,Bicholim to Haturlim via Mayem,2,KTCL Routes Operated 2026,Routes-2026.pdf
+114,Madel to Haturlim  via Narve,2,KTCL Routes Operated 2026,Routes-2026.pdf
+115,Bicholim to Varpal via Mayem-Haturlim,3,KTCL Routes Operated 2026,Routes-2026.pdf
+116,Mapusa to Goljuvem via Aldona-Khorjuvem,3,KTCL Routes Operated 2026,Routes-2026.pdf
+117,Mapusa to Amadi via Aldona,3,KTCL Routes Operated 2026,Routes-2026.pdf
+118,Mapusa to Panaji via Uccassaim-Pomburpha-Brittona,3,KTCL Routes Operated 2026,Routes-2026.pdf
+119,Mapusa to Calvi via Aldona,3,KTCL Routes Operated 2026,Routes-2026.pdf
+120,Mapusa to Quitla via Aldona,3,KTCL Routes Operated 2026,Routes-2026.pdf
+121,Quitla to Aldona PHC via Aldona,3,KTCL Routes Operated 2026,Routes-2026.pdf
+122,Mapusa to Panaji via Paliem-Torda,3,KTCL Routes Operated 2026,Routes-2026.pdf
+123,Mapusa to Bastora,3,KTCL Routes Operated 2026,Routes-2026.pdf
+124,Mapusa to Salvador do Mundo via Bastora-Donvado,3,KTCL Routes Operated 2026,Routes-2026.pdf
+125,Mapusa to District Hospital (North),3,KTCL Routes Operated 2026,Routes-2026.pdf
+126,Mapusa to Khairat via Kucheli-Kamurlim,3,KTCL Routes Operated 2026,Routes-2026.pdf
+127,Panaji to Khairat via Mapusa-Khairat-Kamurlim,3,KTCL Routes Operated 2026,Routes-2026.pdf
+128,Mapusa to Guddem via Sodiem-Siolim,3,KTCL Routes Operated 2026,Routes-2026.pdf
+129,Panaji to Betul via Cortalim-Margao-Cuncolim,3,KTCL Routes Operated 2026,Routes-2026.pdf
+130,Panaji to Keri via Mapusa-Colvale-Pernem-Harmal,3,KTCL Routes Operated 2026,Routes-2026.pdf
+131,Panaji to Keri via  Mapusa-Siolim-Mandrem-Harmal,3,KTCL Routes Operated 2026,Routes-2026.pdf
+132,Panaji to Keri via Mapusa-Aroba-Tuem-Mandrem-Harmal,3,KTCL Routes Operated 2026,Routes-2026.pdf
+133,Mapusa to Keri via Colvale-Pernem-Harmal,3,KTCL Routes Operated 2026,Routes-2026.pdf
+134,Mapusa to Terekhol via Siolim-Mandrem-Harmal,3,KTCL Routes Operated 2026,Routes-2026.pdf
+135,Panaji to Harmal via Mapusa-Colvale-Virnoda-Pernem-Korgao-Bhutwadi,3,KTCL Routes Operated 2026,Routes-2026.pdf
+136,Panaji to Harmal via Mapusa-Colvale-Pernem-Korgao-Bhutwadi,3,KTCL Routes Operated 2026,Routes-2026.pdf
+137,Mapusa to Mandrem Madlamaz via Colvale-Arabo-Marathwada,3,KTCL Routes Operated 2026,Routes-2026.pdf
+138,Mapusa to Madkai via Dhargal-Dadachiwadi,3,KTCL Routes Operated 2026,Routes-2026.pdf
+139,Mapusa to Korgao via Dhargal-Aroba,3,KTCL Routes Operated 2026,Routes-2026.pdf
+140,Mapusa to Korgao via Dhargal-Pernem,3,KTCL Routes Operated 2026,Routes-2026.pdf
+141,Panaji to Mandrem via Siolim-Parsem,3,KTCL Routes Operated 2026,Routes-2026.pdf
+142,Panaji to Ashwem via Colvale-Aroba-Pernem-Tuem,3,KTCL Routes Operated 2026,Routes-2026.pdf
+143,Panaji to Mandrem via Virnoda-Pernem-Tuem,3,KTCL Routes Operated 2026,Routes-2026.pdf
+144,Harmal to Patradevi via Mandrem-Ashvem-Morjim-Tuem-Pernem-Torxem,3,KTCL Routes Operated 2026,Routes-2026.pdf
+145,Mapusa to Pernem via Colvale-Dhargal,3,KTCL Routes Operated 2026,Routes-2026.pdf
+146,Morjim to Mapusa via Chopdem-Siolim,3,KTCL Routes Operated 2026,Routes-2026.pdf
+147,Panaji to Morjim via Arabo-Tuem,3,KTCL Routes Operated 2026,Routes-2026.pdf
+148,Panaji to Morjim via Mapusa-Siolim,3,KTCL Routes Operated 2026,Routes-2026.pdf
+149,Morjim to Harmal via Junueswada,3,KTCL Routes Operated 2026,Routes-2026.pdf
+150,Panaji toHarmal via Siolim-Mandrem,3,KTCL Routes Operated 2026,Routes-2026.pdf
+151,Panaji to Kadshi Mopa via Mapusa-Pernem,3,KTCL Routes Operated 2026,Routes-2026.pdf
+152,Mapusa to Bhutwadi via Dhargal,3,KTCL Routes Operated 2026,Routes-2026.pdf
+153,Mapusa to Bhutwadi via Pernem,3,KTCL Routes Operated 2026,Routes-2026.pdf
+154,Panaji to Varkand via Mapusa-Dadachiwadi,3,KTCL Routes Operated 2026,Routes-2026.pdf
+155,Mapusa to Halarna via  Kulan-Nagzar-Talarna,3,KTCL Routes Operated 2026,Routes-2026.pdf
+156,Panaji to Halarna via Mapusa-Kulan-Nagzar-Talarna,3,KTCL Routes Operated 2026,Routes-2026.pdf
+157,Panaji Market to Halarna via Panaji-Mapusa-Kulan-Nagzar-Talarna,3,KTCL Routes Operated 2026,Routes-2026.pdf
+158,Panaji to Talarna Halarna via Mapusa-Revora-Nadora-Ozari-Tarmas,3,KTCL Routes Operated 2026,Routes-2026.pdf
+159,Mapusa to Netarde via Kulan-Nagzar-Chandel-Hali,3,KTCL Routes Operated 2026,Routes-2026.pdf
+160,Panaji to Ibrampur via Mapusa-Kulan-Nagzar-Chandel-Hasapur,3,KTCL Routes Operated 2026,Routes-2026.pdf
+161,Panaji to Ibrampur via Mapusa-Assonoro-Dodamarg,3,KTCL Routes Operated 2026,Routes-2026.pdf
+162,Valpoi to Ibrampur via Sankhali-Bicholim-Assonora-Dodamarg,3,KTCL Routes Operated 2026,Routes-2026.pdf
+163,Valpoi to Ibrampur via Advoi-Sankhali-Bicholim-Assonora-Dodamarg,3,KTCL Routes Operated 2026,Routes-2026.pdf
+164,Shirgao to Cipla Verna Ind.Est. via Assonora-Mapusa-Panaji-Cortalim,3,KTCL Routes Operated 2026,Routes-2026.pdf
+165,Panaji to Sal via Mapusa-Assonara-Dodamarg,3,KTCL Routes Operated 2026,Routes-2026.pdf
+166,Panaji to Usap Savardhat via Mapusa-Assonora,3,KTCL Routes Operated 2026,Routes-2026.pdf
+167,Panaji to Talekhol via Mapusa-Assonara-Bicholim-Sankhali-Parye,3,KTCL Routes Operated 2026,Routes-2026.pdf
+168,Mapusa to Kharpal via Assonora-Bicholim-Ladfe,3,KTCL Routes Operated 2026,Routes-2026.pdf
+169,Bicholim to Kharpal via Ladfe,3,KTCL Routes Operated 2026,Routes-2026.pdf
+170,Panaji to Uste via Mapusa-Assonora-Bicholim-Sankhali-Honda-Valpoi,3,KTCL Routes Operated 2026,Routes-2026.pdf
+171,Panaji Market to Uste via Panaji-Mapusa-Assonora-Bicholim-Sankhali-Honda-Valpoi,3,KTCL Routes Operated 2026,Routes-2026.pdf
+172,Valpoi  to Uste,3,KTCL Routes Operated 2026,Routes-2026.pdf
+173,Valpoi to Hivre,4,KTCL Routes Operated 2026,Routes-2026.pdf
+174,Valpoi to Nanoda,4,KTCL Routes Operated 2026,Routes-2026.pdf
+175,Panaji to Zarme  via  Marcel-Sankhali-Honda-Valpoi-Mauxi,4,KTCL Routes Operated 2026,Routes-2026.pdf
+176,Valpoi to Zarme via Mauxi,4,KTCL Routes Operated 2026,Routes-2026.pdf
+177,Panaji to Naneli  via Marcel-Sankhali-Honda-Valpoi,4,KTCL Routes Operated 2026,Routes-2026.pdf
+178,Mapusa to Valpoi  via Assonora-Bicholim-Sankhali-Honda,4,KTCL Routes Operated 2026,Routes-2026.pdf
+179,Valpoi to Kumbharkhand,4,KTCL Routes Operated 2026,Routes-2026.pdf
+180,Panaji to Satre via Secretariate-Mapusa-Assonora-Bicholim-Sankhali-Honda-Valpoi,4,KTCL Routes Operated 2026,Routes-2026.pdf
+181,Mapusa to Hivre via Assonora-Bicholim-Sankhali-Honda-Valpoi,4,KTCL Routes Operated 2026,Routes-2026.pdf
+182,Panaji to Hivre via Mapusa-Assonora-Bicholim-Sankhali-Honda-Advoi-Valpoi,4,KTCL Routes Operated 2026,Routes-2026.pdf
+183,Panaji to Hivre via Marcel-Sankhali-Honda-Valpoi,4,KTCL Routes Operated 2026,Routes-2026.pdf
+184,Panaji to Mhadai via Marcel-Sankhali-Honda-Advoi,4,KTCL Routes Operated 2026,Routes-2026.pdf
+185,Panaji Market to Nanoda via Panaji-Mapusa-Assonora-Bicholim-Sankhali-Honda-Valpoi,4,KTCL Routes Operated 2026,Routes-2026.pdf
+186,Panaji Market to Nanoda via Panaji-Bypass-Assonora-Bicholim-Sankhali-Honda-Valpoi,4,KTCL Routes Operated 2026,Routes-2026.pdf
+187,Panaji to Karanzol via Mapusa-Assonora-Bicholim-Sankhali-Honda-Valpoi,4,KTCL Routes Operated 2026,Routes-2026.pdf
+188,Panaji to Signe via Mapusa-Assonora-Bicholim-Sankhali-Honda-Valpoi,4,KTCL Routes Operated 2026,Routes-2026.pdf
+189,Panaji to Velguem via Mapusa-Assonora-Bicholim-Sankhali-Honda-Valpoi,4,KTCL Routes Operated 2026,Routes-2026.pdf
+190,Valpoi to Karazol via Velguem,4,KTCL Routes Operated 2026,Routes-2026.pdf
+191,Panaji to Nanoda via Marcel-Sankhali-Honda-Valpoi,4,KTCL Routes Operated 2026,Routes-2026.pdf
+192,Kala Acadamy to Surla via Panaji-Marcel-Sankhali-Honda-Valpoi,4,KTCL Routes Operated 2026,Routes-2026.pdf
+193,Margao to Volvoi via Verna Ind. Est.-Cortalim-Ponda,4,KTCL Routes Operated 2026,Routes-2026.pdf
+194,Panaji to St. Esteeve via Marcel-Juvem-Bhatule,4,KTCL Routes Operated 2026,Routes-2026.pdf
+195,Sankhali to Vijaydurga via Marcel,4,KTCL Routes Operated 2026,Routes-2026.pdf
+196,Panaji to Vijaydurga via Mardol,4,KTCL Routes Operated 2026,Routes-2026.pdf
+197,Panaji Market to Vijaydurga via Panaji-Mardol,4,KTCL Routes Operated 2026,Routes-2026.pdf
+198,Advoi to Morle via Honda,4,KTCL Routes Operated 2026,Routes-2026.pdf
+199,Panaji to Morle via Marcel-Sankhali,4,KTCL Routes Operated 2026,Routes-2026.pdf
+200,Panaji to Dongarwada via Marcel-Sankhali-Vante,4,KTCL Routes Operated 2026,Routes-2026.pdf
+201,Panaji Market to Dongarwada via Panaji-Marcel-Sankhali-Vante,4,KTCL Routes Operated 2026,Routes-2026.pdf
+202,Panaji to Kumbharwada via Marcel-Sankhali,4,KTCL Routes Operated 2026,Routes-2026.pdf
+203,Panaji to Khodgini via Marcel-Sankhali,4,KTCL Routes Operated 2026,Routes-2026.pdf
+204,Sankhali to Khodgini via Chikne,4,KTCL Routes Operated 2026,Routes-2026.pdf
+205,Sankhali to Advoi via Honda,4,KTCL Routes Operated 2026,Routes-2026.pdf
+206,Margao to Kuske via Cuncolim-Canacona-Khotigao,4,KTCL Routes Operated 2026,Routes-2026.pdf
+207,Margao to Khargal via Cuncolim-Canacona-Sadolxem-Poinguinim,4,KTCL Routes Operated 2026,Routes-2026.pdf
+208,Margao to Kalay via Macazan-Guirdolim-Chandor-Curchorem,4,KTCL Routes Operated 2026,Routes-2026.pdf
+209,Margao to Kalay via Quepem-Curchorem,4,KTCL Routes Operated 2026,Routes-2026.pdf
+210,Margao to Mollem via Quepem-Curchorem-Shigao-Collem,4,KTCL Routes Operated 2026,Routes-2026.pdf
+211,Margao to Panaji via Borim-Ponda-OldGoa,4,KTCL Routes Operated 2026,Routes-2026.pdf
+212,Panaji to Margao via Ponda-Borim-Verna Ind. Est.-Nuvem,4,KTCL Routes Operated 2026,Routes-2026.pdf
+213,Margao to Sada via Birla-Vasco,4,KTCL Routes Operated 2026,Routes-2026.pdf
+214,Margao to Panaji via Borim-Ponda-Ussgao-Palli-Honda-Sankhali-Bicholim-Mapusa,4,KTCL Routes Operated 2026,Routes-2026.pdf
+215,Panaji to Patradevi via Mapusa-Colvale-Dhargal-Pernem-Torxem,4,KTCL Routes Operated 2026,Routes-2026.pdf
+216,Margao to Patradevi via Verna Ind. Est.-Cortalim-Panaji-Mapusa-Pernem,4,KTCL Routes Operated 2026,Routes-2026.pdf
+217,Vasco to Shiroda via Verna Ind.Est.-Borim-Ponda,4,KTCL Routes Operated 2026,Routes-2026.pdf
+218,Margao to Verna Ind. Est. Via Nuvem,4,KTCL Routes Operated 2026,Routes-2026.pdf
+219,Panaji to Verna Ind. Est. via Bambolim-Cortalim,4,KTCL Routes Operated 2026,Routes-2026.pdf
+220,Margao to Netravali via Curchorem-Sanguem,4,KTCL Routes Operated 2026,Routes-2026.pdf
+221,Panaji to Netravali via Bambolim-Cortalim-Curchorem-Sanguem,4,KTCL Routes Operated 2026,Routes-2026.pdf
+222,Margao to Panaji via Rai-Lotulim-Cortalim-Bambolim,4,KTCL Routes Operated 2026,Routes-2026.pdf
+223,Margao to Velsao via Nuvem-Utorda-Cansaulim,4,KTCL Routes Operated 2026,Routes-2026.pdf
+224,Margao to Vasco via Utorda-Cansaulim-Birla,4,KTCL Routes Operated 2026,Routes-2026.pdf
+225,Margao to Agonda via Balli-Khangini-Molorem-Khola,4,KTCL Routes Operated 2026,Routes-2026.pdf
+226,Margao to Cabo-de-Ram via Balli-Khangini-Molorem,4,KTCL Routes Operated 2026,Routes-2026.pdf
+227,Panaji to Cabo-de-Ram via Bambolim-Cortalim-Balli-Khangini-Molorem,4,KTCL Routes Operated 2026,Routes-2026.pdf
+228,Margao to Canacona via Chinchinim-Betul-Khangini-Khola,4,KTCL Routes Operated 2026,Routes-2026.pdf
+229,Margao to Bicholim via Verna Ind .Est.-Neura-OldGoa-Banastari-Sankhali-Bicholim,5,KTCL Routes Operated 2026,Routes-2026.pdf
+230,Canacona to Matimol via Agonda-Saleri,5,KTCL Routes Operated 2026,Routes-2026.pdf
+231,Canacona to Popaidando via Agonda-Saleri-Kajumol,5,KTCL Routes Operated 2026,Routes-2026.pdf
+232,Margao to Popaidando via Cuncolim-Balli-Khangini-Khola,5,KTCL Routes Operated 2026,Routes-2026.pdf
+233,Panaji to Popaidando via  Bamboilm-Cortalim-Margao-Cuncolim-Balli-Khangini-Khola,5,KTCL Routes Operated 2026,Routes-2026.pdf
+234,Margao to Guirdolim via Maina-Curtorim-Macazan,5,KTCL Routes Operated 2026,Routes-2026.pdf
+235,Margao to Gaondongri via Cuncolim-Canacona-Bhatpal-Tudal,5,KTCL Routes Operated 2026,Routes-2026.pdf
+236,Panaji to Gaondongri via Cortalim-Margao-Cuncolim-Canacona-Bhatpal-Tudal,5,KTCL Routes Operated 2026,Routes-2026.pdf
+237,Margao to Tirvon via Cuncolim-Canacona-Poinguinim,5,KTCL Routes Operated 2026,Routes-2026.pdf
+238,Panaji to Tirvon via Bamboilm-Cortalim-Margao-Cuncolim-Canacona-Poinguinim,5,KTCL Routes Operated 2026,Routes-2026.pdf
+239,Margao to Val via Cuncolim-Balli-Canacona-Agonda,5,KTCL Routes Operated 2026,Routes-2026.pdf
+240,Panaji to Val via Bamboilm-Cortalim-Margao-Cuncolim-Balli-Canacona-Agonda,5,KTCL Routes Operated 2026,Routes-2026.pdf
+241,Margao to Dabe via Cuncolim-Balli-Fatorpha-Morpirla,5,KTCL Routes Operated 2026,Routes-2026.pdf
+242,Margao to Subdale via Cuncolim-Balli,5,KTCL Routes Operated 2026,Routes-2026.pdf
+243,Panaji to Subdale via Cortalim-Margao-Cuncolim-Balli,5,KTCL Routes Operated 2026,Routes-2026.pdf
+244,Margao to Talvado via Cuncolim-Sanvorcotto,5,KTCL Routes Operated 2026,Routes-2026.pdf
+245,Margao to Betul via Cuncolim-Vellim,5,KTCL Routes Operated 2026,Routes-2026.pdf
+246,Curchorem to Collem via Shigao,5,KTCL Routes Operated 2026,Routes-2026.pdf
+247,Panaji to Collem via Old Goa-Ponda-Ussgaon-Dharbandora-Mollem,5,KTCL Routes Operated 2026,Routes-2026.pdf
+248,Curchorem to Margao via Quepem-Amona,5,KTCL Routes Operated 2026,Routes-2026.pdf
+249,Margao to Pirla via Gudi-Paroda-Quepem-Cavrem,5,KTCL Routes Operated 2026,Routes-2026.pdf
+250,Panaji to Pirla via Bamboilm-Cortalim-Margao-Gudi-Paroda-Quepem-Cavrem,5,KTCL Routes Operated 2026,Routes-2026.pdf
+251,Margao to Panaji via Cuncolim-Adnem-Curchorem-Shiroda-Ponda-Old Goa,5,KTCL Routes Operated 2026,Routes-2026.pdf
+252,Curchorem  to Vagon via Guddemol-Bandol,5,KTCL Routes Operated 2026,Routes-2026.pdf
+253,Curchorem  to Vaddem via Zambaulim-Rivona-Sulcorna-Netravali,5,KTCL Routes Operated 2026,Routes-2026.pdf
+254,Panaji to Vaddem via Margao-Quepem-Tilamol-Rivona-Sulcorna-Netravali,5,KTCL Routes Operated 2026,Routes-2026.pdf
+255,Margao to Mangal via Quepem-Sulcorna-Netravali,5,KTCL Routes Operated 2026,Routes-2026.pdf
+256,Curchorem to Mangal via Tilamaol-Rivona-Sulcorna-Netravali,5,KTCL Routes Operated 2026,Routes-2026.pdf
+257,Curchorem to  Mangal  via Sanguem-Bhati-Villian-Vade-Netravali,5,KTCL Routes Operated 2026,Routes-2026.pdf
+258,Margao to  Verlem via  Quepem-Curchorem-Sanguem-Netravali,5,KTCL Routes Operated 2026,Routes-2026.pdf
+259,Curchorem  to Saljini via Sanguem-Netravali-Verlem,5,KTCL Routes Operated 2026,Routes-2026.pdf
+260,Margao to Saljini via Quepem-Curchorem-Tilamaol-Rivona-Sulkorna-Netravali-Verlem,5,KTCL Routes Operated 2026,Routes-2026.pdf
+261,Margao to Molcornem via Quepem-Tilamaol-Zambaulim-Rivona,5,KTCL Routes Operated 2026,Routes-2026.pdf
+262,Panaji to Molcornem via  Cortalim-Margao-Quepem-Tilamaol-Zambaulim-Rivona,5,KTCL Routes Operated 2026,Routes-2026.pdf
+263,Margao to Molcopon via Quepem-Tilamol,5,KTCL Routes Operated 2026,Routes-2026.pdf
+264,Molcopon to Don Bosco via Rivona-Colomb-Sulcorna,5,KTCL Routes Operated 2026,Routes-2026.pdf
+265,Margao to Don Bosco via Quepem-Rivona-Colomb-Sulcorna,5,KTCL Routes Operated 2026,Routes-2026.pdf
+266,Margao to Sal via Borim-Ponda-Palli-Ussgaon-Sankhali-Bicholim-Kasarpal,5,KTCL Routes Operated 2026,Routes-2026.pdf
+267,Margao to Sinquetim via Pajifond-Rawanfond-Mandopa-Navelim,5,KTCL Routes Operated 2026,Routes-2026.pdf
+268,Margao to Panaji via Utorda-Velsao-Sancoale-Cortalim-Bambolim,5,KTCL Routes Operated 2026,Routes-2026.pdf
+269,Panaji to Shiroda via Bamboilm-Cortalim-Verna Ind. Est.-Borim,5,KTCL Routes Operated 2026,Routes-2026.pdf
+270,Panaji to Zarme via Old Goa-Ponda-Ussgao-Guleli-Khotode-Valpoi-Mauxi,5,KTCL Routes Operated 2026,Routes-2026.pdf
+271,Margao to Dhave via Ponda-Ussgao-Guleli-Khotode-Valpoi,5,KTCL Routes Operated 2026,Routes-2026.pdf
+272,Margao to Cuncoliem via VernaInd.Est.-Cortalim-Lotulim-Ponda-Mardol,5,KTCL Routes Operated 2026,Routes-2026.pdf
+273,Panaji to Cuncoliem via Bambolim-Cortalim-Verna Ind. Est.-Lotulim-Ponda-Mardol,5,KTCL Routes Operated 2026,Routes-2026.pdf
+274,Margao to Dabal via Borim-Ponda-Shiroda-Paz-Nirankal,5,KTCL Routes Operated 2026,Routes-2026.pdf
+275,Panaji Market to Panaji-Dabal via Bambolim-Cortalim-Margao-Borim-Shiroda-Paz-Nirankal,5,KTCL Routes Operated 2026,Routes-2026.pdf
+276,Margao to Volvoi via Borim-Ponda-Curti-Keri,5,KTCL Routes Operated 2026,Routes-2026.pdf
+277,Panaji to Kalay via Kundai-Ponda-Shiroda-Curchorem-Costi,5,KTCL Routes Operated 2026,Routes-2026.pdf
+278,Curchorem to Kalay via Costi,5,KTCL Routes Operated 2026,Routes-2026.pdf
+279,Vasco to Verna Ind. Est. via Birla,5,KTCL Routes Operated 2026,Routes-2026.pdf
+280,Vasco to Pollem via Margao-Cuncolim-Canacona,5,KTCL Routes Operated 2026,Routes-2026.pdf
+281,Panaji to Bibal via Bambolim-Cortalim-Lotulim-Borim-Shiroda,6,KTCL Routes Operated 2026,Routes-2026.pdf
+282,Vasco to Agapur via Birla-Verna Ind. Est.-Cortalim-Lotulim-Borim,6,KTCL Routes Operated 2026,Routes-2026.pdf
+283,Ponda to Agapur via Durbhat,6,KTCL Routes Operated 2026,Routes-2026.pdf
+284,Panaji to Agapur via Bambolim-Cortalim-Verna Ind. Est.-Lotulim-Borim,6,KTCL Routes Operated 2026,Routes-2026.pdf
+285,Vasco to Assolda via Birla-Margao-Quepem,6,KTCL Routes Operated 2026,Routes-2026.pdf
+286,Harbour to Akhada via Vasco-Cortalim-Neura-Marcel,6,KTCL Routes Operated 2026,Routes-2026.pdf
+287,Harbour to Devsu via Vasco-Cortalim-Bambolim-Mapusa-Siolim-Harmal,6,KTCL Routes Operated 2026,Routes-2026.pdf
+288,Panaji to Bhutwadi via Mapusa-Pernem,6,KTCL Routes Operated 2026,Routes-2026.pdf
+289,Panaji to Morjim via Mapusa-Siolim,6,KTCL Routes Operated 2026,Routes-2026.pdf
+290,Morjim to Mandrem via Chopdem-Junuswada,6,KTCL Routes Operated 2026,Routes-2026.pdf
+291,Panaji to Mandrem via Mapusa-Siolim-Junuswada,6,KTCL Routes Operated 2026,Routes-2026.pdf
+292,Vasco to Hedode via Cortalim-Neura-Marcel-Sankhali-Honda-Valpoi,6,KTCL Routes Operated 2026,Routes-2026.pdf
+293,Vasco to Hedode via Birla-Verna Ind. Est.-Cortalim-Neura-Marcel-Sankhali-Valpoi,6,KTCL Routes Operated 2026,Routes-2026.pdf
+294,Vasco to Sonal via Cortalim-Neura-Marcel-Sankhali-Honda-Valpoi-Kadtari,6,KTCL Routes Operated 2026,Routes-2026.pdf
+295,Panaji to Sonal via Marcel-Sankhali-Honda-Valpoi-Kadtari,6,KTCL Routes Operated 2026,Routes-2026.pdf
+296,Vasco to Bharade via Cortalim-Lotulim-Ponda-Marcel-Sankhali-Bicholim- Kudchirem,6,KTCL Routes Operated 2026,Routes-2026.pdf
+297,Vasco to Bharade via Birla-Margao-Rai-Ponda-Marcel-Sankhali-Bicholim- Kudchirem,6,KTCL Routes Operated 2026,Routes-2026.pdf
+298,Panaji to Ansolem via Marcel-Sankhali-Savarshe-Valpoi,6,KTCL Routes Operated 2026,Routes-2026.pdf
+299,Panaji Market to Hankhane via Panaji-Mapusa-Colvale-Dhargal-Kulan-Nagzar-Hali,6,KTCL Routes Operated 2026,Routes-2026.pdf
+300,Mapusa to Hali via Colvale-Dhargal-Kulan-Nagzar,6,KTCL Routes Operated 2026,Routes-2026.pdf
+301,Panaji Market to Warkhand via Mapusa-Panaji-Colvale-Dhargal-Pernem,6,KTCL Routes Operated 2026,Routes-2026.pdf
+302,Mapusa to Warkhand via Colvale-Dhargal-Pernem,6,KTCL Routes Operated 2026,Routes-2026.pdf
+303,Mapusa to Mopa Pednekarwada via Colvale-Dhargal-Pernem,6,KTCL Routes Operated 2026,Routes-2026.pdf
+304,Panaji to Sal via Mapusa-Assonora-Vadaval,6,KTCL Routes Operated 2026,Routes-2026.pdf
+305,Mapusa to Sal via Assonora-Vadaval,6,KTCL Routes Operated 2026,Routes-2026.pdf
+306,Panaji  to Siolim via Mapusa-Marna-Agarwada,6,KTCL Routes Operated 2026,Routes-2026.pdf
+307,Panaji to Cupa via Marcel-St.Estevem,6,KTCL Routes Operated 2026,Routes-2026.pdf
+308,Panaji to Panaji via Bhatle-St Inez-Panaji Market,6,KTCL Routes Operated 2026,Routes-2026.pdf
+309,Panaji Market to Menkure via Panaji-Mapusa-Colvale-Revora-Pirna,6,KTCL Routes Operated 2026,Routes-2026.pdf
+310,Panaji to Menkure via  Mapusa-Colvale-Revora-Pirna,6,KTCL Routes Operated 2026,Routes-2026.pdf
+311,Margao to Xeldem via Guirdolim-Macazan,6,KTCL Routes Operated 2026,Routes-2026.pdf
+312,Margao to Secretariate via Cortalim,6,KTCL Routes Operated 2026,Routes-2026.pdf
+313,Margao to Goa University via Cortalim,6,KTCL Routes Operated 2026,Routes-2026.pdf
+314,Margao to Goa Pollution Control Board Saligao via Cortalim,6,KTCL Routes Operated 2026,Routes-2026.pdf
+315,Ponda to Altinho via Panaji,6,KTCL Routes Operated 2026,Routes-2026.pdf
+316,Ponda to Panaji Market via Panaji,6,KTCL Routes Operated 2026,Routes-2026.pdf
+317,Ponda to Secretariate via Panaji,6,KTCL Routes Operated 2026,Routes-2026.pdf
+318,Mapusa to Goa University via Panaji,6,KTCL Routes Operated 2026,Routes-2026.pdf
+319,Panaji to Goa University via GMC,6,KTCL Routes Operated 2026,Routes-2026.pdf
+320,Panaji to Secreatriate,6,KTCL Routes Operated 2026,Routes-2026.pdf
+321,Margao to Kala Acadamy via Cortalim,6,KTCL Routes Operated 2026,Routes-2026.pdf
+322,Dabolim Airport to Calangute via Panaji,6,KTCL Routes Operated 2026,Routes-2026.pdf
+323,Manohar International Airport Mopa to Mapusa,6,KTCL Routes Operated 2026,Routes-2026.pdf
+324,Manohar International Airport Mopa to Calangute via Mapusa,6,KTCL Routes Operated 2026,Routes-2026.pdf
+325,Manohar International Airport Mopa to Panaji via Mapusa,6,KTCL Routes Operated 2026,Routes-2026.pdf
+326,Manohar International Airport Mopa to Margao via Mapusa-Panaji,6,KTCL Routes Operated 2026,Routes-2026.pdf
+327,Margao to Canacona via Cuncolim-Balli,6,KTCL Routes Operated 2026,Routes-2026.pdf
+328,Margao to Curchorem via Paddi-Quepem,6,KTCL Routes Operated 2026,Routes-2026.pdf
+329,Margao to Ponda via Borim,6,KTCL Routes Operated 2026,Routes-2026.pdf
+330,Margao to Vasco via Birla,6,KTCL Routes Operated 2026,Routes-2026.pdf
+331,Margao to Harbour via Birla-Vasco,6,KTCL Routes Operated 2026,Routes-2026.pdf
+332,Margao to Harbour via Cortalim-Vasco,6,KTCL Routes Operated 2026,Routes-2026.pdf
+333,Margao to Bicholim via Rai-Ponda-Banastari-Marcel-Sankhali,6,KTCL Routes Operated 2026,Routes-2026.pdf
+334,Margao to Shiroda via Borim,6,KTCL Routes Operated 2026,Routes-2026.pdf
+335,Panaji to Margao via Bambolim-Cortalim,7,KTCL Routes Operated 2026,Routes-2026.pdf
+336,Panaji to Vasco via Bamboilm-Cortalim,7,KTCL Routes Operated 2026,Routes-2026.pdf
+337,Panaji to Sada via Bamboilm-Cortalim-Vasco,7,KTCL Routes Operated 2026,Routes-2026.pdf
+338,Panaji to Harbour via Bamboilm-Cortalim-Vasco,7,KTCL Routes Operated 2026,Routes-2026.pdf
+339,Panaji to Vasco via Bamboilm-Cortalim-Sancoale-Birla,7,KTCL Routes Operated 2026,Routes-2026.pdf
+340,Vasco to Ponda via Cortalim-Lotulim,7,KTCL Routes Operated 2026,Routes-2026.pdf
+341,Harbour to Ponda via Cortalim-Lotulim-Ponda,7,KTCL Routes Operated 2026,Routes-2026.pdf
+342,Vasco to Farmagudi via Cortalim-Lotulim-Ponda,7,KTCL Routes Operated 2026,Routes-2026.pdf
+343,Panaji to Ponda via Old Goa-Kundai,7,KTCL Routes Operated 2026,Routes-2026.pdf
+344,Panaji to Curchorem via Old Goa-Ponda-Shiroda,7,KTCL Routes Operated 2026,Routes-2026.pdf
+345,Panaji to Valpoi via Marcel-Sankhali-Honda,7,KTCL Routes Operated 2026,Routes-2026.pdf
+346,Panaji to Valpoi via Mapusa-Assonora-Bicholim-Sankahli-Honda,7,KTCL Routes Operated 2026,Routes-2026.pdf
+347,Panaji to Honda via Marcel-Sankhali,7,KTCL Routes Operated 2026,Routes-2026.pdf
+348,Panaji to Bicholim via Old Goa-Marcel-Sankhali,7,KTCL Routes Operated 2026,Routes-2026.pdf
+349,Bicholim to Ponda via Marcel-Kundai,7,KTCL Routes Operated 2026,Routes-2026.pdf
+350,Panaji to Bicholim via Mapusa-Assonora,7,KTCL Routes Operated 2026,Routes-2026.pdf
+351,Panaji to Pernem via Mapusa-Colvale-Dhargal,7,KTCL Routes Operated 2026,Routes-2026.pdf
+352,Panaji to Sankhali via Marcel,7,KTCL Routes Operated 2026,Routes-2026.pdf
+353,Panaji to Sankhali via Mapusa-Assonora-Bicholim,7,KTCL Routes Operated 2026,Routes-2026.pdf
+354,Panaji to Sankhali via Bypass-Assonora-Bicholim,7,KTCL Routes Operated 2026,Routes-2026.pdf
+355,Mapusa to Valpoi via Assonora-Bicholim-Sankahli-Honda,7,KTCL Routes Operated 2026,Routes-2026.pdf
+356,Panaji to Margao via Old Goa-Ponda,7,KTCL Routes Operated 2026,Routes-2026.pdf
+357,Panaji to Ponda via Bambolim-Cortalim-Lotulim,7,KTCL Routes Operated 2026,Routes-2026.pdf
+358,Ponda to Curchorem via Shiroda,7,KTCL Routes Operated 2026,Routes-2026.pdf
+359,Mapusa to Bicholim via Thivim-Assonora,7,KTCL Routes Operated 2026,Routes-2026.pdf
+360,Mapusa to Hankhane via Dadachiwadi-Nagzar-Hasapur,7,KTCL Routes Operated 2026,Routes-2026.pdf
+361,Mapusa to Hankhane via Kulan-Nagzar-Hasapur,7,KTCL Routes Operated 2026,Routes-2026.pdf
+362,Mapusa to Morjim via Colvale-Dhargal-Pernem-Tuem,7,KTCL Routes Operated 2026,Routes-2026.pdf
+363,Morjim to Patradevi via Tuem-Pernem-Torxem,7,KTCL Routes Operated 2026,Routes-2026.pdf
+364,Morjim to Mapusa via Siolim-Sodiem,7,KTCL Routes Operated 2026,Routes-2026.pdf
+365,Mapusa to Keri via Dhargal-Pernem-Harmal,7,KTCL Routes Operated 2026,Routes-2026.pdf
+366,Margao to Cutbona via Chinchinim-Vellim,7,KTCL Routes Operated 2026,Routes-2026.pdf
+367,Margao to Mobor via Chinchinim-Cavelossim,7,KTCL Routes Operated 2026,Routes-2026.pdf
+368,Mapusa to Sangolda via Ballotwado-Saligao,7,KTCL Routes Operated 2026,Routes-2026.pdf
+369,Mapusa to Vadaval via Assonora-Kasarpal,7,KTCL Routes Operated 2026,Routes-2026.pdf
+370,Mapusa to Dodamarg via Assonora-Kasarpal,7,KTCL Routes Operated 2026,Routes-2026.pdf
+371,Valpoi to Parye via Honda-Morle Colony,7,KTCL Routes Operated 2026,Routes-2026.pdf
+372,Ravan to Panaji via Keri-Sankhali-Mapusa,7,KTCL Routes Operated 2026,Routes-2026.pdf
+373,Panaji to Santana via Merces-Curca,7,KTCL Routes Operated 2026,Routes-2026.pdf
+374,Vasco to Bogmalo via Chicalim-Dabolim Airport,7,KTCL Routes Operated 2026,Routes-2026.pdf
+375,Mapusa to Madkai via Revora-Pirna-Ozarim,7,KTCL Routes Operated 2026,Routes-2026.pdf
+376,Madkai to Sankhali via Advalpal-Assonora-Bicholim,7,KTCL Routes Operated 2026,Routes-2026.pdf
+377,Amona to Margao via Marcel-Banastari-Ponda,7,KTCL Routes Operated 2026,Routes-2026.pdf
+378,Margao to Sankhali via Dhavali Bypass-Usgao,7,KTCL Routes Operated 2026,Routes-2026.pdf
+379,Panaji to Mapusa via Saligao-Ballotwado-Guirim,7,KTCL Routes Operated 2026,Routes-2026.pdf
+380,Panaji to Marcaim via Old Goa-Banastari,7,KTCL Routes Operated 2026,Routes-2026.pdf
+381,Margao To Shirdi via Panaji-Mapusa-Kolhapur-Pune,7,KTCL Routes Operated 2026,Routes-2026.pdf
+382,Margao To Mumbai via Panaji-Mapusa-Kolhapur,7,KTCL Routes Operated 2026,Routes-2026.pdf
+383,Margao To Borivalli via Panaji-Mapusa-Kolhapur,7,KTCL Routes Operated 2026,Routes-2026.pdf
+384,Margao To Pune via Ponda-Panaji-Mapusa-Kolhapur,7,KTCL Routes Operated 2026,Routes-2026.pdf
+385,Vasco To Akkalkot via Panaji-Mapusa-Kankavli-Gaganbauda-Kolhapur-Miraj- Pandharpur-Mohol-Solapur,7,KTCL Routes Operated 2026,Routes-2026.pdf
+386,Panaji To Solapur  via  Mapusa-Kankavli-Gaganbauda-Kolhapur-Miraj- Pandharpur-Mohol,7,KTCL Routes Operated 2026,Routes-2026.pdf
+387,Vasco To Miraj via Gaganbauda-Kolhapur,7,KTCL Routes Operated 2026,Routes-2026.pdf
+388,Margao To Miraj via Panaji-Radhanagari-Kolhapur,7,KTCL Routes Operated 2026,Routes-2026.pdf
+389,Margao To Kolhapur via Panaji-Gaganbauda,7,KTCL Routes Operated 2026,Routes-2026.pdf
+390,Panaji To Kolhapur via Gaganbauda,7,KTCL Routes Operated 2026,Routes-2026.pdf
+391,Panaji To Kolhapur via Radahanagari,8,KTCL Routes Operated 2026,Routes-2026.pdf
+392,Panaji To Kolhapur via Sawantwadi-Ajara-Gargoti-Admapur,8,KTCL Routes Operated 2026,Routes-2026.pdf
+393,Margao To Kolhapur via Anmod-Belagavi,8,KTCL Routes Operated 2026,Routes-2026.pdf
+394,Panaji To Vijaydurga via Patradevi-Kankavli,8,KTCL Routes Operated 2026,Routes-2026.pdf
+395,Vasco To Malvan via Panaji-Malewad-Dhamapur,8,KTCL Routes Operated 2026,Routes-2026.pdf
+396,Margao To Malvan via Panaji-Malewad-Nerurpar,8,KTCL Routes Operated 2026,Routes-2026.pdf
+397,Panaji To Malvan via Malewad-Kudal,8,KTCL Routes Operated 2026,Routes-2026.pdf
+398,Vasco To Korjai via Panaji-Malewad-Vengurla-Karli,8,KTCL Routes Operated 2026,Routes-2026.pdf
+399,Vasco To Vengurla via Panaji-Malewad,8,KTCL Routes Operated 2026,Routes-2026.pdf
+400,Panaji To Vengurla via Malewad-Vengurla,8,KTCL Routes Operated 2026,Routes-2026.pdf
+401,Panaji To Terekhol via Malewad-Shiroda,8,KTCL Routes Operated 2026,Routes-2026.pdf
+402,Mapusa To Terekhol via Harmal-Aronda,8,KTCL Routes Operated 2026,Routes-2026.pdf
+403,Panaji To Ghodgewadi via Dodamarg-Tillari,8,KTCL Routes Operated 2026,Routes-2026.pdf
+404,Panaji To Morle via Dodamarg-Tillari-Ghodgewadi,8,KTCL Routes Operated 2026,Routes-2026.pdf
+405,Panaji To Ker via Dodamarg-Tillari-Ghodgewadi,8,KTCL Routes Operated 2026,Routes-2026.pdf
+406,Mapusa To Dodamarg via Assonora-Sankhali-Ayee,8,KTCL Routes Operated 2026,Routes-2026.pdf
+407,Panaji To Usap via Assonora-Dodamarg,8,KTCL Routes Operated 2026,Routes-2026.pdf
+408,Margao To Sawantwadi via Panaji-Patradevi,8,KTCL Routes Operated 2026,Routes-2026.pdf
+409,Vasco To Sawantwadi via Panaji-Patradevi,8,KTCL Routes Operated 2026,Routes-2026.pdf
+410,Panaji To Sawantwadi via Pernem-Patradevi-Banda,8,KTCL Routes Operated 2026,Routes-2026.pdf
+411,Panaji To Sawantwadi via Assonora-Dodamarg-Banda,8,KTCL Routes Operated 2026,Routes-2026.pdf
+412,Panaji To Banda via Pedne-Satarda-Madura,8,KTCL Routes Operated 2026,Routes-2026.pdf
+413,Panaji To Vazre via Mapusa-Sankhali-Ayee-Dodamarg,8,KTCL Routes Operated 2026,Routes-2026.pdf
+414,Panaji To Talekhol via Mapusa-Sankhali-Parye,8,KTCL Routes Operated 2026,Routes-2026.pdf
+415,Mapusa To Zholambe via Kulan-Chandel-Talkat,8,KTCL Routes Operated 2026,Routes-2026.pdf
+416,Vasco To Muddebihal via Margao-Anmod-Bagalkot,8,KTCL Routes Operated 2026,Routes-2026.pdf
+417,Vasco To Raichur via Birla-Panaji-Ponda-Anmod-Belagavi-Ilkal,8,KTCL Routes Operated 2026,Routes-2026.pdf
+418,Vasco To Raichur via Margao-Ponda-Anmod-Belagavi-Ilkal,8,KTCL Routes Operated 2026,Routes-2026.pdf
+419,Vasco To Indi via Birla-Panaji-Bicholim-Chorla-Belagavi-Vijayapura,8,KTCL Routes Operated 2026,Routes-2026.pdf
+420,Vasco To Shahpur via Birla-Panaji-Anmod-Belagavi-Bagalkot-Hunasgi-Naraynpura,8,KTCL Routes Operated 2026,Routes-2026.pdf
+421,Vasco To Bellari via Panaji-Anmod-Hubballi-Gadag-Hospete,8,KTCL Routes Operated 2026,Routes-2026.pdf
+422,Panaji To Kalaburagi via Anmod-Vijayapura-Gangapur,8,KTCL Routes Operated 2026,Routes-2026.pdf
+423,Panaji To Badami via Anmod-Belagavi-Bagalkot,8,KTCL Routes Operated 2026,Routes-2026.pdf
+424,Panaji To Saundatti via Chorla-Belagavi-Belawadi,8,KTCL Routes Operated 2026,Routes-2026.pdf
+425,Panaji To Belagavi via Sawantwadi-Amboli,8,KTCL Routes Operated 2026,Routes-2026.pdf
+426,Panaji To Belagavi via Ponda-Anmod,8,KTCL Routes Operated 2026,Routes-2026.pdf
+427,Panaji To Belagavi via Assonora-Chorla,8,KTCL Routes Operated 2026,Routes-2026.pdf
+428,Vasco To Belagavi via Margao-Anmod,8,KTCL Routes Operated 2026,Routes-2026.pdf
+429,Vasco To Belagavi via Mapusa-Chorla,8,KTCL Routes Operated 2026,Routes-2026.pdf
+430,Margao To Belagavi via Ponda-Anmod,8,KTCL Routes Operated 2026,Routes-2026.pdf
+431,Marago To Belagavi via Ponda-Marcel-Chorla,8,KTCL Routes Operated 2026,Routes-2026.pdf
+432,Marago To Belagavi via Curchorem-Anmod,8,KTCL Routes Operated 2026,Routes-2026.pdf
+433,Panaji To Hubballi via Ponda-Anmod,8,KTCL Routes Operated 2026,Routes-2026.pdf
+434,Vasco To Hubballi via Margao-Anmod,8,KTCL Routes Operated 2026,Routes-2026.pdf
+435,Margao To Hubballi via Ponda-Anmod,8,KTCL Routes Operated 2026,Routes-2026.pdf
+436,Vasco To Honnawar via Vasco-Margao,8,KTCL Routes Operated 2026,Routes-2026.pdf
+437,Margao To Gokarna via Canacona-Karwar,8,KTCL Routes Operated 2026,Routes-2026.pdf
+438,Vasco To Karwar via Margao-Cuncolim-Canacona,8,KTCL Routes Operated 2026,Routes-2026.pdf
+439,Panaji To Karwar via Cortalim-Margao-Cuncolim-Canacona,8,KTCL Routes Operated 2026,Routes-2026.pdf
+440,Curchorem To Karwar via Canacona,8,KTCL Routes Operated 2026,Routes-2026.pdf
+441,Margao To Karwar via Cuncolim-Canacona,8,KTCL Routes Operated 2026,Routes-2026.pdf
+442,Panaji To Hospete via Ponda-Anmod-Hubballi-Gadag,8,KTCL Routes Operated 2026,Routes-2026.pdf
+443,Mapusa To Mangaluru via Panaji-Karwar-Kumta-Bhatkal-Kundapura,8,KTCL Routes Operated 2026,Routes-2026.pdf
+444,Mapusa To Bengaluru via Panaji-Margao-Ponda-Hubballi,8,KTCL Routes Operated 2026,Routes-2026.pdf
+445,Mapusa To Mysuru via Panaji-Margao-Karwar-Shivamogga,8,KTCL Routes Operated 2026,Routes-2026.pdf
+446,Margao To Hyderabad via Panaji-Mapusa-Bicholim-Sankhali-Belagavi,8,KTCL Routes Operated 2026,Routes-2026.pdf
+447,Indigo Onward : Panaji Bus Stand-Panaji Market (DB Marg) - Kala Academy-Campal Parade Ground-Tambdi Mati-TB Hospital-Bhatlem Masjid-St. Cruz Church-Goa Medical College- Cujira School Complex Indigo Return : Cujira School Complex - Panaji Market (DB Marg) - Goa Medical College- Cabessa-St. Cruz Church-Bhatlem Masjid-TB Hospital-Tambdi Mati-Campal Parade Ground- Kala Academy-Panaji Market-Panaji Bus Stand,8,KTCL Routes Operated 2026,Routes-2026.pdf
+448,Violet Onward : Panaji Bus Stand-Patto Plaza-Portais-TB Hospital-St. Inez Church-Kala Academy-Panaji Market-Panaji Ferry-Panaji Bus Stand Violet Return : Panaji Bus Stand-Panaji Ferry-St. Inez Church-TB Hospital-Bhatlem Masjid- Portais-People's High School-Old Patto Bridge-Patto Plaza-Panaji Bus Stand,9,KTCL Routes Operated 2026,Routes-2026.pdf
+449,Red Onward : Panaji Bus Stand-Panaji Market (DB Marg)-Kala Academy-Campal Parade Ground-TB Hospital-Taleigao Market-SFX Chapel-Dona Paula Circle-Miramar Beach-Kala Academy-Panaji Market-Panaji Market (DB Marg)- Panaji Bus Stand Red Return : Panaji Bus Stand-Panaji Market (DB Marg)-Kala Academy-Campal Parade Ground-Miramar Beach-Tonca Junction-SFX Chapel-Rosary Church-Dona Paula Circle- Taleigao Church-TB Hospital-Campal Parade Ground-Panaji Market-Panaji Bus Stand,9,KTCL Routes Operated 2026,Routes-2026.pdf
+450,Orange (Loop): Panaji Bus Stand-Patto Plaza-Mala Lake-Bhatlem Masjid-TB Hospital- Shankarwadi-Taleigao Market-St. Agostinho Road-St. Cruz Church-Portais-Old Patto Bridge- Patto Plaza-Panaji Bus Stand,9,KTCL Routes Operated 2026,Routes-2026.pdf
+451,Blue (Loop) : Panaji Bus stand-Multi Level Car Park-Azad Maidan-St. Inez Junction-Campal Parade Ground-Fire station-Junta House-Church Square-Old Patto Bridge-Panaji Bus Stand,9,KTCL Routes Operated 2026,Routes-2026.pdf
+452,Green Onward : Panaji Bus Stand-Fazenda Building-Portuguese Consulate-Joggers Park Circle-Factories and Boilers Office-Kala Academy-Panaji Market-Panaji Police Station-Panaji Ferry-Panaji Bus Stand Green Return : Panaji Bus Stand-Panaji Post Office-Kala Academy-St. Inez Junction-Joggers Park Circle-All India Radio-Portuguese Consulate-Old Patto Bridge-Patto Plaza-Panaji Bus Stand,9,KTCL Routes Operated 2026,Routes-2026.pdf
+453,Yellow Onward : Panaji Bus Stand-Patto Plaza-Portais-St. Cruz Church-Goa Medical College- AIR Tower-Goa University-Dona Paula Circle-Miramar Beach-Panaji Bus Stand Yellow Return : Panaji Bus Stand-Panaji Market (DB Marg)-Miramar Beach-Dona Paula Circle-Goa University-Goa Medical College-St. Cruz Church-St. Cruz Church-Panaji Bus Stand,9,KTCL Routes Operated 2026,Routes-2026.pdf

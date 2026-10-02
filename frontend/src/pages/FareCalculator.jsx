@@ -84,6 +84,8 @@ export default function FareCalculator() {
       
       if (!res.ok) {
         setError(data.error || `Server error: ${res.status}`);
+      } else if (data.success === false) {
+        setError(data.message || "Unable to calculate fare.");
       } else if (data.directServiceAvailable === false) {
         setError("No direct scheduled bus found for these stops.");
       } else {
