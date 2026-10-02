@@ -3,6 +3,8 @@ import { useNavigate, Link } from "react-router-dom";
 import { User, Bus, Shield, ArrowRight, UserCircle, Key, Loader2 } from "lucide-react";
 import "./Login.css";
 
+const API_BASE = import.meta.env.VITE_API_BASE || "https://busmitra-goa.onrender.com";
+
 export default function Login() {
   const [activeTab, setActiveTab] = useState("public"); // "public" or "transport"
   const [role, setRole] = useState("driver"); // "driver" or "admin" for transport tab
@@ -60,7 +62,7 @@ export default function Login() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/login", {
+      const response = await fetch(`${API_BASE}/api/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

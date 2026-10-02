@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Search, ChevronDown, MapPin, Navigation, Loader2 } from "lucide-react";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5001";
+const API_BASE = import.meta.env.VITE_API_BASE || "https://busmitra-goa.onrender.com";
 
 export default function Stops() {
   const [stops, setStops] = useState([]);

@@ -4,7 +4,7 @@ import { ArrowLeft, Share2, Map as MapIcon, Info, Bus, Bookmark, AlertTriangle, 
 import LiveMap from "../components/LiveMap";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5001";
+const API_BASE = import.meta.env.VITE_API_BASE || "https://busmitra-goa.onrender.com";
 
 export default function Passenger() {
   const { busId } = useParams();

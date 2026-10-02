@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Bus, Map as MapIcon, Bookmark, Search, ChevronRight, Crosshair, X, ArrowUpDown, Clock, ChevronDown } from "lucide-react";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5001";
+const API_BASE = import.meta.env.VITE_API_BASE || "https://busmitra-goa.onrender.com";
 
 export default function RoutesPage() {
   const [routes, setRoutes] = useState([]);

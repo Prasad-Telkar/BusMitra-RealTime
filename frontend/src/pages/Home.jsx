@@ -1,10 +1,70 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Search, MapPin, Calculator, History, Bookmark } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { Search, MapPin, Calculator, History, Bookmark, Navigation, Loader2 } from "lucide-react";
+
+const API_BASE = import.meta.env.VITE_API_BASE || "https://busmitra-goa.onrender.com";
 
 export default function Home() {
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
+  const [stops, setStops] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [locationStatus, setLocationStatus] = useState("idle");
+
+  useEffect(() => {
+    fetchStops();
+  }, []);
+
+  const fetchStops = async (searchQuery = "") => {
+    setIsLoading(true);
+    try {
+      const url = searchQuery 
+        ? `${API_BASE}/api/search/stops?q=${encodeURIComponent(searchQuery)}`
+        : `${API_BASE}/api/stops?limit=5`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const data = await res.json();
+        setStops(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch stops", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const findNearbyStops = () => {
+    setLocationStatus("locating");
+    if (!navigator.geolocation) {
+      setLocationStatus("error");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        setLocationStatus("found");
+        setIsLoading(true);
+        try {
+          const { latitude, longitude } = position.coords;
+          const res = await fetch(`${API_BASE}/api/stops/nearby?lat=${latitude}&lng=${longitude}&radius=5`);
+          if (res.ok) {
+            const data = await res.json();
+            setStops(data);
+            setQuery("");
+          }
+        } catch (err) {
+          console.error("Failed to fetch nearby stops", err);
+        } finally {
+          setIsLoading(false);
+        }
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+        setLocationStatus("error");
+      },
+      { timeout: 10000 }
+    );
+  };
 
   return (
     <div className="home-screen">
@@ -24,15 +84,33 @@ export default function Home() {
               type="text" 
               placeholder="Search destination, bus or route..." 
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                if (e.target.value.length > 2) fetchStops(e.target.value);
+                else if (e.target.value.length === 0) fetchStops();
+              }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && query) {
                   navigate(`/journey-planner?to=${encodeURIComponent(query)}`);
                 }
               }}
             />
+            {isLoading && <Loader2 className="spinner" size={16} color="var(--teal-600)" />}
           </div>
           
+          <button 
+            className="btn-outline nearby-btn" 
+            onClick={findNearbyStops}
+            disabled={locationStatus === "locating"}
+            style={{ width: '100%', marginTop: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', padding: '12px', background: 'white', border: '1px solid #E2E8F0', borderRadius: '12px', cursor: 'pointer', color: 'var(--teal-700)', fontWeight: '600' }}
+          >
+            {locationStatus === "locating" ? (
+              <><Loader2 className="spinner" size={18} /> Locating you...</>
+            ) : (
+              <><Navigation size={18} /> Find stops near me</>
+            )}
+          </button>
+
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '16px' }}>
             <button 
               onClick={() => navigate('/journey-planner')}
@@ -67,6 +145,44 @@ export default function Home() {
             <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '14px' }}>Live arrivals unavailable</p>
           </div>
         </section>
+
+        <section className="stops-section" style={{ marginTop: '24px' }}>
+          <div className="section-header">
+            <h3>{query ? "Search Results" : (locationStatus === "found" ? "Nearby Stops" : "Popular Stops")}</h3>
+          </div>
+
+          <div className="stop-cards" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {stops.length === 0 && !isLoading ? (
+              <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                No stops found. Try a different search.
+              </div>
+            ) : (
+              stops.map((stop) => (
+                <Link
+                  key={stop.stopId || stop._id}
+                  to={`/stop/${stop.stopId || stop._id}`}
+                  className="bus-card"
+                  style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', padding: '16px', gap: '12px', background: 'white', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}
+                >
+                  <div style={{ background: 'var(--teal-50)', padding: '10px', borderRadius: '12px' }}>
+                    <MapPin size={24} color="var(--teal-600)" />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <h4 style={{ margin: 0, fontSize: '16px', color: 'var(--text-main)' }}>{stop.name}</h4>
+                    <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>
+                      {stop.distance_km ? `${stop.distance_km} km away` : "KTCL Bus Stop"}
+                    </p>
+                    <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>
+                      {stop.route_count !== undefined 
+                        ? (stop.route_count > 0 ? `${stop.route_count} route${stop.route_count > 1 ? 's' : ''} serving this stop` : "No scheduled routes")
+                        : ""}
+                    </p>
+                  </div>
+                </Link>
+              ))
+            )}
+          </div>
+        </section>
         
         <section className="recent-section" style={{ marginTop: '24px' }}>
           <div className="section-header">
@@ -91,3 +207,4 @@ export default function Home() {
     </div>
   );
 }
+

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { ArrowLeft, MapPin, Clock, Info, Bus, Map as MapIcon, Bookmark } from "lucide-react";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5001";
+const API_BASE = import.meta.env.VITE_API_BASE || "https://busmitra-goa.onrender.com";
 
 export default function BusDetail() {
   const { busId } = useParams();

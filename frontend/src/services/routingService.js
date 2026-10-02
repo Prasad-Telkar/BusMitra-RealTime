@@ -1,6 +1,6 @@
 import ktcStops from "../data/stops.json";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5001";
+const API_BASE = import.meta.env.VITE_API_BASE || "https://busmitra-goa.onrender.com";
 
 /**
  * Calculates a walking route using OSRM public API.
@@ -91,9 +91,14 @@ export async function getTransitJourney(origin, destination) {
       })
     });
     
-    if (!res.ok) return [];
+    if (!res.ok) return { error: "SERVER_ERROR" };
     const data = await res.json();
-    if (!data.success || !data.journeys) return [];
+    if (!data.success || !data.journeys) {
+      if (data.reason === "NO_CURRENT_SCHEDULE_DATA") {
+        return { error: "NO_CURRENT_SCHEDULE_DATA" };
+      }
+      return [];
+    }
     
     // Map backend 'legs' to frontend 'segments'
     return data.journeys.map(j => ({

@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import io from "socket.io-client";
 import { HelpCircle, Radio, MapPin, ShieldAlert, Square, Play, ChevronDown, Wifi, Key, AlertTriangle } from "lucide-react";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5001";
+const API_BASE = import.meta.env.VITE_API_BASE || "https://busmitra-goa.onrender.com";
 
 const AVAILABLE_ROUTES = [
   { id: "route4_bus1", number: "K01", from: "Panaji", to: "Margao", next: "Porvorim" },

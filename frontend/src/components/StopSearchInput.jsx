@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Search } from "lucide-react";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5001";
+const API_BASE = import.meta.env.VITE_API_BASE || "https://busmitra-goa.onrender.com";
 
 export default function StopSearchInput({ value, onChange, placeholder, autoFocus }) {
   const [query, setQuery] = useState(value);

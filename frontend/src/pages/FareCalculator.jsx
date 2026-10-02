@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { Search, ArrowUpDown, ChevronRight, Calculator, IndianRupee, MapPin } from "lucide-react";
 import "./FareCalculator.css";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "https://busmitra-backend-uskr.onrender.com";
+const API_BASE = import.meta.env.VITE_API_BASE || "https://busmitra-goa.onrender.com";
 
 export default function FareCalculator() {
   const [searchParams] = useSearchParams();
@@ -19,6 +19,8 @@ export default function FareCalculator() {
   const [isLoading, setIsLoading] = useState(false);
   const [fareResult, setFareResult] = useState(null);
   const [error, setError] = useState("");
+  const [isSearchingFrom, setIsSearchingFrom] = useState(false);
+  const [isSearchingTo, setIsSearchingTo] = useState(false);
 
   const searchTimeout = useRef(null);
 
@@ -62,14 +64,20 @@ export default function FareCalculator() {
 
     if (searchTimeout.current) clearTimeout(searchTimeout.current);
 
+    if (type === 'from') setIsSearchingFrom(true);
+    if (type === 'to') setIsSearchingTo(true);
+
     searchTimeout.current = setTimeout(async () => {
       try {
         const res = await fetch(`${API_BASE}/api/search/stops?q=${encodeURIComponent(query)}&limit=10`);
         const data = await res.json();
-        if (type === 'from') setFromResults(data);
-        if (type === 'to') setToResults(data);
+        if (type === 'from') setFromResults(data || []);
+        if (type === 'to') setToResults(data || []);
       } catch (err) {
         console.error("Stop search error:", err);
+      } finally {
+        if (type === 'from') setIsSearchingFrom(false);
+        if (type === 'to') setIsSearchingTo(false);
       }
     }, 300);
   };
@@ -152,7 +160,7 @@ export default function FareCalculator() {
             <input 
               type="text" 
               placeholder="Search starting stop" 
-              value={fromStop ? fromStop.name : fromQuery}
+              value={fromQuery}
               onChange={(e) => {
                 setFromStop(null); // Clear selected object on manual edit
                 setFromQuery(e.target.value);
@@ -166,31 +174,37 @@ export default function FareCalculator() {
               onBlur={() => {
                 setTimeout(() => {
                   setActiveSearch((prev) => prev === 'from' ? null : prev);
-                  setFromStop((prevStop) => {
-                    if (!prevStop) setFromQuery(""); // Prevent pretending a stop is selected
-                    return prevStop;
-                  });
                 }, 200);
               }}
             />
           </div>
-          {activeSearch === 'from' && fromResults.length > 0 && (
+          {activeSearch === 'from' && fromQuery && (
             <div className="fc-autocomplete">
-              {fromResults.map(stop => (
-                <div 
-                  key={stop.stopId} 
-                  className="fc-autocomplete-item"
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    setFromStop(stop);
-                    setFromQuery(stop.name);
-                    setFromResults([]);
-                    setActiveSearch(null);
-                  }}
-                >
-                  <MapPin size={16} /> {stop.name}
-                </div>
-              ))}
+              {isSearchingFrom ? (
+                <div className="fc-autocomplete-item" style={{ color: '#6b7280' }}>Searching stops...</div>
+              ) : fromResults.length > 0 ? (
+                fromResults.map(stop => (
+                  <div 
+                    key={stop.stopId || stop._id} 
+                    className="fc-autocomplete-item"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      setFromStop(stop);
+                      setFromQuery(stop.name);
+                      setFromResults([]);
+                      setActiveSearch(null);
+                    }}
+                  >
+                    <MapPin size={16} style={{ flexShrink: 0 }} /> 
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <span>{stop.name}</span>
+                      {stop.area && <span style={{ fontSize: '12px', color: '#6b7280' }}>{stop.area}</span>}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="fc-autocomplete-item" style={{ color: '#6b7280' }}>No matching stops found</div>
+              )}
             </div>
           )}
         </div>
@@ -210,7 +224,7 @@ export default function FareCalculator() {
             <input 
               type="text" 
               placeholder="Search destination" 
-              value={toStop ? toStop.name : toQuery}
+              value={toQuery}
               onChange={(e) => {
                 setToStop(null); // Clear selected object on manual edit
                 setToQuery(e.target.value);
@@ -224,31 +238,37 @@ export default function FareCalculator() {
               onBlur={() => {
                 setTimeout(() => {
                   setActiveSearch((prev) => prev === 'to' ? null : prev);
-                  setToStop((prevStop) => {
-                    if (!prevStop) setToQuery(""); // Prevent pretending a stop is selected
-                    return prevStop;
-                  });
                 }, 200);
               }}
             />
           </div>
-          {activeSearch === 'to' && toResults.length > 0 && (
+          {activeSearch === 'to' && toQuery && (
             <div className="fc-autocomplete">
-              {toResults.map(stop => (
-                <div 
-                  key={stop.stopId} 
-                  className="fc-autocomplete-item"
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    setToStop(stop);
-                    setToQuery(stop.name);
-                    setToResults([]);
-                    setActiveSearch(null);
-                  }}
-                >
-                  <MapPin size={16} /> {stop.name}
-                </div>
-              ))}
+              {isSearchingTo ? (
+                <div className="fc-autocomplete-item" style={{ color: '#6b7280' }}>Searching stops...</div>
+              ) : toResults.length > 0 ? (
+                toResults.map(stop => (
+                  <div 
+                    key={stop.stopId || stop._id} 
+                    className="fc-autocomplete-item"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      setToStop(stop);
+                      setToQuery(stop.name);
+                      setToResults([]);
+                      setActiveSearch(null);
+                    }}
+                  >
+                    <MapPin size={16} style={{ flexShrink: 0 }} /> 
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <span>{stop.name}</span>
+                      {stop.area && <span style={{ fontSize: '12px', color: '#6b7280' }}>{stop.area}</span>}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="fc-autocomplete-item" style={{ color: '#6b7280' }}>No matching stops found</div>
+              )}
             </div>
           )}
         </div>

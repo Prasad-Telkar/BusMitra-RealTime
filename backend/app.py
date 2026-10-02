@@ -523,8 +523,14 @@ def calculate_fare():
 # ==========================================
 # JOURNEY PLANNER ENDPOINT
 # ==========================================
+@app.route("/api/ping", methods=["GET"])
+def ping():
+    print("PINGED!", flush=True)
+    return jsonify({"success": True})
+
 @app.route("/api/journey/plan", methods=["POST"])
 def plan_journey():
+    import datetime
     try:
         data = request.json
         origin = data.get("origin")
@@ -536,18 +542,22 @@ def plan_journey():
         dt_time = None
         dep_str = data.get("departureTime")
         date_str = data.get("date")
+        
         if dep_str and date_str:
-            import datetime
             try:
                 dt_time = datetime.datetime.strptime(f"{date_str} {dep_str}", "%Y-%m-%d %H:%M")
             except:
                 pass
                 
+        # print(f"[{datetime.datetime.now()}] Calling plan_transit_journey for {origin} to {destination}", flush=True)
         result = routing_engine.plan_transit_journey(origin, destination, dt_time, live_buses)
+        # print(f"[{datetime.datetime.now()}] Returned from plan_transit_journey", flush=True)
         return jsonify(result)
     except Exception as e:
+        import traceback
+        tb = traceback.format_exc()
         print(f"Journey Plan Error: {e}")
-        return jsonify({"success": False, "reason": "INTERNAL_ERROR"}), 500
+        return jsonify({"success": False, "reason": "INTERNAL_ERROR", "traceback": tb}), 500
 
 @app.route("/api/buses/<bus_id>/live", methods=["GET"])
 def get_live_bus(bus_id):
@@ -668,5 +678,5 @@ def health():
 if __name__ == "__main__":
     import os
     port = int(os.environ.get("PORT", 5001)) # Enforce 5001 to match frontend API_BASE
-    socketio.run(app, host="0.0.0.0", port=port, debug=True, use_reloader=False)
+    socketio.run(app, host="0.0.0.0", port=port, debug=True, use_reloader=False, allow_unsafe_werkzeug=True)
 

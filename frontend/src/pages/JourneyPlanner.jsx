@@ -5,7 +5,7 @@ import LiveMap from "../components/LiveMap";
 import { getTransitJourney } from "../services/routingService";
 import "./JourneyPlanner.css";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5001";
+const API_BASE = import.meta.env.VITE_API_BASE || "https://busmitra-goa.onrender.com";
 
 export default function JourneyPlanner() {
   const [fromQuery, setFromQuery] = useState("");
@@ -15,6 +15,7 @@ export default function JourneyPlanner() {
   const [journeys, setJourneys] = useState([]);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [searchError, setSearchError] = useState(null);
   const [selectedJourney, setSelectedJourney] = useState(null);
   const [mapCenter, setMapCenter] = useState([15.2993, 74.1240]);
   const [passengerPos, setPassengerPos] = useState(null);
@@ -130,7 +131,13 @@ export default function JourneyPlanner() {
       if (Array.isArray(origin)) originCoord = origin;
       
       const results = await getTransitJourney({ lat: originCoord[0], lng: originCoord[1] }, dest);
-      setJourneys(results);
+      if (results && results.error) {
+        setJourneys([]);
+        setSearchError(results.error);
+      } else {
+        setJourneys(results || []);
+        setSearchError(null);
+      }
     } catch (err) {
       console.error("Failed to fetch journeys", err);
     } finally {
@@ -149,6 +156,7 @@ export default function JourneyPlanner() {
       setHasSearched(false);
       setJourneys([]);
       setSelectedJourney(null);
+      setSearchError(null);
     }
   }, [fromQuery, toQuery]);
 
@@ -342,7 +350,14 @@ export default function JourneyPlanner() {
                   </div>
                 ) : (
                   <div className="jp-results">
-                    {journeys.length === 0 ? (
+                    {searchError === "NO_CURRENT_SCHEDULE_DATA" ? (
+                      <div className="jp-no-results" style={{ color: '#be185d', padding: '16px', background: '#fff1f2', borderRadius: '8px', border: '1px solid #fda4af', margin: '16px' }}>
+                        <strong>⚠️ Schedule Data Expired</strong>
+                        <p style={{ margin: '8px 0 0 0', fontSize: '14px', color: '#881337' }}>
+                          Current bus schedules are out of date and need updating. No live journeys are available for today.
+                        </p>
+                      </div>
+                    ) : journeys.length === 0 ? (
                       <p className="jp-no-results">No routes found matching your search.</p>
                     ) : (
                       <div className="jp-journey-list">
