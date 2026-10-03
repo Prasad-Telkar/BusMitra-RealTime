@@ -1,4 +1,4 @@
-import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline, CircleMarker } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline, CircleMarker, Circle } from "react-leaflet";
 import { useEffect } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -73,13 +73,22 @@ export default function LiveMap({ center, busPosition, destination, stopLabel, p
       ))}
 
       {passengerPosition && (
-        <CircleMarker 
-          center={passengerPosition} 
-          radius={8} 
-          pathOptions={{ color: 'white', fillColor: '#3b82f6', fillOpacity: 1, weight: 3 }}
-        >
-          <Popup>You are here</Popup>
-        </CircleMarker>
+        <>
+          {passengerPosition.accuracy && (
+            <Circle 
+              center={passengerPosition} 
+              radius={passengerPosition.accuracy} 
+              pathOptions={{ color: '#3b82f6', fillColor: '#3b82f6', fillOpacity: 0.15, weight: 1 }} 
+            />
+          )}
+          <CircleMarker 
+            center={passengerPosition} 
+            radius={8} 
+            pathOptions={{ color: 'white', fillColor: '#3b82f6', fillOpacity: 1, weight: 3 }}
+          >
+            <Popup>You are here</Popup>
+          </CircleMarker>
+        </>
       )}
 
       {busPosition && (

@@ -91,7 +91,17 @@ export default function RoutesPage() {
                     onChange={(e) => setFromQuery(e.target.value)}
                   />
                 </div>
-                <div style={{ padding: "4px", color: "var(--teal-800)", cursor: "pointer" }}>
+                <div 
+                  style={{ padding: "4px", color: "var(--teal-800)", cursor: "pointer" }}
+                  onClick={() => {
+                    // Redirect to journey planner since it has map and routing logic for current location
+                    if ("geolocation" in navigator) {
+                      window.location.href = "/journey-planner?to="; 
+                    } else {
+                      alert("Geolocation is not supported by your browser.");
+                    }
+                  }}
+                >
                   <Crosshair size={18} />
                 </div>
               </div>

@@ -56,11 +56,11 @@ function getNearbyStops(lat, lng, maxStops = 3) {
 }
 
 export async function getTransitJourney(origin, destination) {
-  // Origin: { lat, lng }
+  // Origin: { lat, lng } or stop name string
   // Destination: { name, lat, lng } or stop name string
 
   let destLat, destLng;
-  if (destination.lat && destination.lng) {
+  if (destination && destination.lat && destination.lng) {
     destLat = destination.lat;
     destLng = destination.lng;
   } else {
@@ -77,7 +77,28 @@ export async function getTransitJourney(origin, destination) {
       }
     } catch (e) {
       console.error(e);
-      return [];
+      return { error: "Destination not found" };
+    }
+  }
+
+  let origLat, origLng;
+  if (origin && origin.lat && origin.lng) {
+    origLat = origin.lat;
+    origLng = origin.lng;
+  } else {
+    try {
+      const q = typeof origin === 'string' ? origin : origin.name;
+      const res = await fetch(`${API_BASE}/api/search/stops?q=${encodeURIComponent(q)}`);
+      const stops = await res.json();
+      if (stops.length > 0) {
+        origLat = stops[0].lat || (ktcStops.find(s => s.id === stops[0].stopId)?.lat);
+        origLng = stops[0].lng || (ktcStops.find(s => s.id === stops[0].stopId)?.lng);
+      } else {
+        throw new Error("Origin not found");
+      }
+    } catch (e) {
+      console.error(e);
+      return { error: "Origin not found" };
     }
   }
 
@@ -86,7 +107,7 @@ export async function getTransitJourney(origin, destination) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        origin: { lat: origin.lat, lng: origin.lng },
+        origin: { lat: origLat, lng: origLng },
         destination: { lat: destLat, lng: destLng }
       })
     });

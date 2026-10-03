@@ -38,22 +38,23 @@ export default function JourneyPlanner() {
       
       // Auto-set origin to current location and plan journey if permission granted
       if ("geolocation" in navigator) {
-        setFromQuery("My Current Location");
+        setFromQuery("Locating...");
         navigator.geolocation.getCurrentPosition(
           (pos) => {
-            const { latitude, longitude } = pos.coords;
-            setPassengerPos([latitude, longitude]);
+            const { latitude, longitude, accuracy, speed, heading } = pos.coords;
+            setPassengerPos({ lat: latitude, lng: longitude, accuracy, timestamp: pos.timestamp, speed, heading });
             setMapCenter([latitude, longitude]);
+            setFromQuery("📍 Your current location");
             
             // Auto search
-            executeSearch([latitude, longitude], toParam);
+            executeSearch({ lat: latitude, lng: longitude }, toParam);
           },
           (err) => {
             console.warn("Location error:", err);
             // Default to panaji if location fails
             setFromQuery("");
           },
-          { enableHighAccuracy: true }
+          { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
         );
       }
     }
@@ -66,35 +67,45 @@ export default function JourneyPlanner() {
   }, [gpsWatchId]);
 
   const requestLocation = () => {
+    setFromQuery("Locating...");
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          const { latitude, longitude } = pos.coords;
-          setPassengerPos([latitude, longitude]);
+          const { latitude, longitude, accuracy, speed, heading } = pos.coords;
+          setPassengerPos({ lat: latitude, lng: longitude, accuracy, timestamp: pos.timestamp, speed, heading });
           setMapCenter([latitude, longitude]);
-          setFromQuery("My Current Location");
+          setFromQuery("📍 Your current location");
         },
         (err) => {
           console.warn("Location error:", err);
-          alert("Could not get your location. Please check permissions.");
+          if (err.code === 1) { // PERMISSION_DENIED
+             alert("Location access is turned off. Enable location permission in your browser settings to use your current location.");
+          } else if (err.code === 2) { // POSITION_UNAVAILABLE
+             alert("Getting your location... GPS is temporarily unavailable. Please try again.");
+          } else { // TIMEOUT or other
+             alert("Could not get your location. Please check your signal and try again.");
+          }
+          setFromQuery("");
         },
-        { enableHighAccuracy: true }
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
       );
     } else {
       alert("Geolocation is not supported by your browser.");
+      setFromQuery("");
     }
   };
 
   const startJourney = () => {
     setActiveJourney(true);
     if ("geolocation" in navigator) {
+      if (gpsWatchId) navigator.geolocation.clearWatch(gpsWatchId);
       const id = navigator.geolocation.watchPosition(
         (pos) => {
-          const { latitude, longitude } = pos.coords;
-          setPassengerPos([latitude, longitude]);
+          const { latitude, longitude, accuracy, speed, heading } = pos.coords;
+          setPassengerPos({ lat: latitude, lng: longitude, accuracy, timestamp: pos.timestamp, speed, heading });
         },
         (err) => console.warn(err),
-        { enableHighAccuracy: true }
+        { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
       );
       setGpsWatchId(id);
     }
@@ -126,12 +137,9 @@ export default function JourneyPlanner() {
     setHasSearched(true);
     setSelectedJourney(null);
     try {
-      // Use routingService for multi-modal path
-      // Handle the origin parameter gracefully
-      let originCoord = passengerPos || [15.2993, 74.1240];
-      if (Array.isArray(origin)) originCoord = origin;
-      
-      const results = await getTransitJourney({ lat: originCoord[0], lng: originCoord[1] }, dest);
+      // Pass origin and dest directly to getTransitJourney
+      // getTransitJourney will resolve strings or use coordinates directly
+      const results = await getTransitJourney(origin, dest);
       if (results && results.error) {
         setJourneys([]);
         setSearchError(results.error);
@@ -152,7 +160,8 @@ export default function JourneyPlanner() {
 
   const handleSearch = () => {
     if (!fromQuery || !toQuery) return;
-    executeSearch(fromQuery === "My Current Location" ? passengerPos : fromQuery, toQuery);
+    const isCurrentLocation = fromQuery === "📍 Your current location" || fromQuery === "My Current Location";
+    executeSearch(isCurrentLocation ? passengerPos : fromQuery, toQuery);
   };
 
   // Reset if manually cleared
@@ -182,10 +191,19 @@ export default function JourneyPlanner() {
           passengerPosition={passengerPos} 
           journeySegments={selectedJourney ? selectedJourney.segments : null}
         />
+        {passengerPos && passengerPos.accuracy > 50 && (
+          <div style={{
+            position: 'absolute', top: '80px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000,
+            background: 'rgba(255, 255, 255, 0.9)', padding: '6px 12px', borderRadius: '16px',
+            fontSize: '12px', color: '#854d0e', border: '1px solid #fef08a', fontWeight: 'bold', boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          }}>
+            Location accuracy is low
+          </div>
+        )}
         {/* Recenter Button */}
         {passengerPos && (
           <button 
-            onClick={() => setMapCenter([...passengerPos])}
+            onClick={() => setMapCenter([passengerPos.lat, passengerPos.lng])}
             style={{
               position: 'absolute', top: '80px', right: '16px', zIndex: 1000,
               background: 'white', border: 'none', borderRadius: '50%', width: '44px', height: '44px',
@@ -229,7 +247,7 @@ export default function JourneyPlanner() {
                   "SCHEDULED — Live tracking unavailable"
                 )}
               </div>
-              <button className="jp-plan-btn" onClick={() => setMapCenter([...passengerPos])} style={{ marginBottom: '12px', background: '#f1f5f9', color: '#333' }}>
+              <button className="jp-plan-btn" onClick={() => setMapCenter([passengerPos.lat, passengerPos.lng])} style={{ marginBottom: '12px', background: '#f1f5f9', color: '#333' }}>
                 ◎ Recenter
               </button>
               <button className="jp-track-btn" onClick={endJourney} style={{ background: '#be185d' }}>
