@@ -36,7 +36,16 @@ export default function RoutesPage() {
       const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
-        setRoutes(data);
+        const uniqueRoutes = [];
+        const seenNames = new Set();
+        for (const route of data) {
+          const name = route.routeName || route.longName;
+          if (!seenNames.has(name)) {
+            seenNames.add(name);
+            uniqueRoutes.push(route);
+          }
+        }
+        setRoutes(uniqueRoutes);
       }
     } catch (err) {
       console.error("Failed to fetch routes", err);
@@ -168,11 +177,20 @@ export default function RoutesPage() {
             </div>
 
             <div className="route-cards">
-              {loading && routes.length === 0 ? (
-                <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                  Loading routes...
-                </div>
-              ) : !loading && routes.length === 0 ? (
+              {loading ? (
+                Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="route-result-card" style={{ opacity: 0.6, marginBottom: '12px', display: 'block', padding: '16px', background: 'white', borderRadius: '12px' }}>
+                    <div className="r-card-top" style={{ display: 'flex', alignItems: 'center' }}>
+                      <div style={{ width: '40px', height: '24px', background: '#E2E8F0', borderRadius: '12px' }} />
+                      <div style={{ height: '20px', background: '#E2E8F0', borderRadius: '4px', width: '60%', marginLeft: '12px' }} />
+                    </div>
+                    <div className="r-card-bottom" style={{ marginTop: '16px', display: 'flex', justifyContent: 'space-between' }}>
+                      <div style={{ height: '16px', background: '#E2E8F0', borderRadius: '4px', width: '30%' }} />
+                      <div style={{ height: '16px', background: '#E2E8F0', borderRadius: '4px', width: '25%' }} />
+                    </div>
+                  </div>
+                ))
+              ) : routes.length === 0 ? (
                 <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
                   No routes match your search.
                 </div>

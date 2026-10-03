@@ -18,6 +18,48 @@ from bson import ObjectId
 from fare_engine import calculate_fare as calculate_fare_engine
 from auth import auth_bp
 import routing_engine
+import threading
+
+# ---- In-memory GTFS cache ----
+_cached_stops = []
+_cached_route_counts = {}
+_cache_ready = False
+
+def init_gtfs_cache():
+    global _cached_stops, _cached_route_counts, _cache_ready
+    try:
+        print("Loading GTFS cache in background...", flush=True)
+        t0 = time.time()
+        
+        # 1. Load stops
+        stops = list(stops_col.find({}, {"_id": 0, "stopId": 1, "name": 1, "latitude": 1, "longitude": 1, "code": 1}))
+        _cached_stops = stops
+        
+        # 2. Calculate route counts efficiently without heavy aggregation
+        # Since calculating all route counts for all stops takes 30-40s, we will do it lazily or optimized.
+        # Actually, if we just find all trips and group them by stop in python, it takes ~5-10 seconds.
+        print("Fetching stop_times for cache...", flush=True)
+        all_stop_times = list(stop_times_col.find({}, {"_id": 0, "stopId": 1, "tripId": 1}))
+        all_trips = list(trips_col.find({}, {"_id": 0, "tripId": 1, "routeId": 1}))
+        
+        trip_to_route = {t["tripId"]: t["routeId"] for t in all_trips}
+        
+        counts = collections.defaultdict(set)
+        for st in all_stop_times:
+            if st["tripId"] in trip_to_route:
+                counts[st["stopId"]].add(trip_to_route[st["tripId"]])
+                
+        for stop_id, r_set in counts.items():
+            _cached_route_counts[stop_id] = len(r_set)
+            
+        _cache_ready = True
+        print(f"GTFS cache ready in {time.time()-t0:.2f}s: {len(_cached_stops)} stops", flush=True)
+    except Exception as e:
+        print("Error loading GTFS cache:", e, flush=True)
+
+# Start background thread immediately
+threading.Thread(target=init_gtfs_cache, daemon=True).start()
+
 
 app = Flask(__name__)
 allowed_origins = [
@@ -307,6 +349,9 @@ def get_stop_schedules(stop_id):
     }))
 
 def get_route_counts_for_stops(stop_ids):
+    if _cache_ready:
+        return {sid: _cached_route_counts.get(sid, 0) for sid in stop_ids}
+        
     if not stop_ids:
         return {}
     stop_times = list(stop_times_col.find({"stopId": {"$in": stop_ids}}, {"stopId": 1, "tripId": 1}))
@@ -316,7 +361,7 @@ def get_route_counts_for_stops(stop_ids):
     
     counts = {}
     for stop_id in stop_ids:
-        s_trips = set(st["tripId"] for st in stop_times if st["stopId"] == stop_id)
+        s_trips = set(st["tripId"] for st in stop_times if st.get("stopId") == stop_id)
         s_routes = set(trip_to_route.get(tid) for tid in s_trips if tid in trip_to_route)
         counts[stop_id] = len(s_routes)
     return counts
@@ -369,28 +414,42 @@ def get_nearby_stops():
 @app.route("/api/search/stops", methods=["GET"])
 @app.route("/api/stops", methods=["GET"])
 def get_stops():
-    query = request.args.get("query", request.args.get("q", "")).strip()
+    query = request.args.get("query", request.args.get("q", "")).strip().lower()
     limit = int(request.args.get("limit", 50))
     
     try:
-        if query:
-            import re
-            stops_cursor = stops_col.find({
-                "name": re.compile(query, re.IGNORECASE)
-            }).limit(limit)
+        stops_list = []
+        if _cache_ready:
+            if query:
+                for s in _cached_stops:
+                    if query in (s.get("name") or "").lower():
+                        stops_list.append(s)
+                        if len(stops_list) >= limit: break
+            else:
+                stops_list = _cached_stops[:limit]
         else:
-            stops_cursor = stops_col.find().limit(limit)
+            if query:
+                import re
+                stops_cursor = stops_col.find({
+                    "name": re.compile(query, re.IGNORECASE)
+                }).limit(limit)
+            else:
+                stops_cursor = stops_col.find().limit(limit)
+            stops_list = list(stops_cursor)
             
-        stops_list = list(stops_cursor)
-        
-        # Add route_count
+        # Ensure route counts are present
         stop_ids = [s.get("stopId") or str(s.get("_id")) for s in stops_list]
         counts = get_route_counts_for_stops(stop_ids)
+        
+        # Build independent objects so we don't mutate the cache directly
+        result = []
         for s in stops_list:
-            sid = s.get("stopId") or str(s.get("_id"))
-            s["route_count"] = counts.get(sid, 0)
+            item = dict(s)
+            sid = item.get("stopId") or str(item.get("_id"))
+            item["route_count"] = counts.get(sid, 0)
+            result.append(item)
             
-        return jsonify(json_serialize(stops_list))
+        return jsonify(json_serialize(result))
     except Exception as e:
         print("Database error in /api/stops:", e)
         return jsonify([]), 503

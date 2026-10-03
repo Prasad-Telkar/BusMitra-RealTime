@@ -7,7 +7,8 @@ const API_BASE = import.meta.env.VITE_API_BASE || "https://busmitra-goa.onrender
 export default function Stops() {
   const [stops, setStops] = useState([]);
   const [query, setQuery] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [locationStatus, setLocationStatus] = useState("idle");
   const navigate = useNavigate();
 
@@ -17,6 +18,7 @@ export default function Stops() {
 
   const fetchStops = async (searchQuery = "") => {
     setIsLoading(true);
+    setError(false);
     try {
       const url = searchQuery 
         ? `${API_BASE}/api/search/stops?q=${encodeURIComponent(searchQuery)}`
@@ -25,9 +27,12 @@ export default function Stops() {
       if (res.ok) {
         const data = await res.json();
         setStops(data);
+      } else {
+        setError(true);
       }
     } catch (err) {
       console.error("Failed to fetch stops", err);
+      setError(true);
     } finally {
       setIsLoading(false);
     }
@@ -68,12 +73,28 @@ export default function Stops() {
           setIsLoading(false);
         }
       },
-      (error) => {
-        console.error("Geolocation error:", error);
+      (err) => {
+        console.error("Geolocation error:", err);
         setLocationStatus("error");
       },
       { timeout: 10000 }
     );
+  };
+
+  const renderSkeletons = () => {
+    return Array.from({ length: 5 }).map((_, i) => (
+      <div key={`skeleton-${i}`} className="bus-card" style={{ display: 'flex', flexDirection: 'column', padding: '16px', gap: '12px', background: 'white', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', opacity: 0.6 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+          <div style={{ background: '#E2E8F0', padding: '10px', borderRadius: '12px', width: '44px', height: '44px' }} />
+          <div style={{ flex: 1 }}>
+            <div style={{ height: '16px', background: '#E2E8F0', borderRadius: '4px', width: '70%', marginBottom: '8px' }} />
+            <div style={{ height: '12px', background: '#E2E8F0', borderRadius: '4px', width: '40%', marginBottom: '4px' }} />
+            <div style={{ height: '12px', background: '#E2E8F0', borderRadius: '4px', width: '50%' }} />
+          </div>
+        </div>
+        <div style={{ background: '#F1F5F9', height: '40px', borderRadius: '8px', width: '100%' }} />
+      </div>
+    ));
   };
 
   return (
@@ -118,7 +139,13 @@ export default function Stops() {
           </div>
 
           <div className="stop-cards" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {stops.length === 0 && !isLoading ? (
+            {isLoading && stops.length === 0 ? (
+              renderSkeletons()
+            ) : error ? (
+              <div style={{ padding: '20px', textAlign: 'center', color: '#ef4444' }}>
+                Unable to load stops. Try again.
+              </div>
+            ) : stops.length === 0 ? (
               <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
                 No stops found. Try a different search.
               </div>

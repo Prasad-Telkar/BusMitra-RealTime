@@ -5,6 +5,27 @@ import "./FareCalculator.css";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "https://busmitra-goa.onrender.com";
 
+const normalizeStop = (apiStop) => ({
+  ...apiStop,
+  stopId: apiStop.stopId || apiStop.stop_id || apiStop._id,
+  name: apiStop.name || apiStop.stop_name || "Unknown Stop",
+  latitude: apiStop.latitude || apiStop.lat,
+  longitude: apiStop.longitude || apiStop.lng,
+  route_count: apiStop.route_count || 0
+});
+
+const deduplicateStops = (stops) => {
+  const seen = new Set();
+  return (stops || []).map(normalizeStop).filter(stop => {
+    if (!stop.stopId) return false;
+    if (seen.has(stop.stopId)) return false;
+    seen.add(stop.stopId);
+    return true;
+  });
+};
+
+const autocompleteCache = new Map();
+
 export default function FareCalculator() {
   const [searchParams] = useSearchParams();
   const [fromQuery, setFromQuery] = useState("");
@@ -22,6 +43,8 @@ export default function FareCalculator() {
   const [error, setError] = useState("");
   const [isSearchingFrom, setIsSearchingFrom] = useState(false);
   const [isSearchingTo, setIsSearchingTo] = useState(false);
+  const [fromSearchError, setFromSearchError] = useState(false);
+  const [toSearchError, setToSearchError] = useState(false);
 
   const fromSearchTimeout = useRef(null);
   const toSearchTimeout = useRef(null);
@@ -49,8 +72,9 @@ export default function FareCalculator() {
         const res = await fetch(`${API_BASE}/api/search/stops?q=${encodeURIComponent(query)}&limit=1`);
         const data = await res.json();
         if (data && data.length > 0) {
-          setStop(data[0]);
-          setQueryVal(data[0].name);
+          const norm = normalizeStop(data[0]);
+          setStop(norm);
+          setQueryVal(norm.name);
         } else {
           setQueryVal(""); // Clear if unable to resolve
         }
@@ -71,66 +95,98 @@ export default function FareCalculator() {
   }, [searchParams]);
 
   const fetchStops = (query, type) => {
-    if (!query) {
+    if (!query || query.length < 2) {
       if (type === 'from') {
         setFromResults([]);
         setIsSearchingFrom(false);
+        setFromSearchError(false);
       }
       if (type === 'to') {
         setToResults([]);
         setIsSearchingTo(false);
+        setToSearchError(false);
       }
       return;
     }
+
+    const normQuery = query.trim().toLowerCase();
 
     if (type === 'from') {
       if (fromSearchTimeout.current) clearTimeout(fromSearchTimeout.current);
       if (fromAbortController.current) fromAbortController.current.abort();
       
+      if (autocompleteCache.has(normQuery)) {
+        setIsSearchingFrom(false);
+        setFromSearchError(false);
+        setFromResults(deduplicateStops(autocompleteCache.get(normQuery)));
+        return;
+      }
+      
       setIsSearchingFrom(true);
+      setFromSearchError(false);
+      const controller = new AbortController();
+      fromAbortController.current = controller;
+
       fromSearchTimeout.current = setTimeout(async () => {
-        const controller = new AbortController();
-        fromAbortController.current = controller;
         try {
-          const res = await fetch(`${API_BASE}/api/search/stops?q=${encodeURIComponent(query)}&limit=10`, {
+          const res = await fetch(`${API_BASE}/api/search/stops?q=${encodeURIComponent(query)}&limit=15`, {
             signal: controller.signal
           });
+          if (!res.ok) throw new Error("API failed");
           const data = await res.json();
           if (!controller.signal.aborted) {
-            setFromResults(data || []);
+            autocompleteCache.set(normQuery, data);
+            setFromResults(deduplicateStops(data));
           }
         } catch (err) {
-          if (err.name !== 'AbortError') console.error("Stop search error:", err);
+          if (err.name !== 'AbortError') {
+            console.error("Stop search error:", err);
+            if (!controller.signal.aborted) setFromSearchError(true);
+          }
         } finally {
           if (!controller.signal.aborted) {
             setIsSearchingFrom(false);
           }
         }
-      }, 300);
+      }, 150);
     } else if (type === 'to') {
       if (toSearchTimeout.current) clearTimeout(toSearchTimeout.current);
       if (toAbortController.current) toAbortController.current.abort();
 
+      if (autocompleteCache.has(normQuery)) {
+        setIsSearchingTo(false);
+        setToSearchError(false);
+        setToResults(deduplicateStops(autocompleteCache.get(normQuery)));
+        return;
+      }
+
       setIsSearchingTo(true);
+      setToSearchError(false);
+      const controller = new AbortController();
+      toAbortController.current = controller;
+
       toSearchTimeout.current = setTimeout(async () => {
-        const controller = new AbortController();
-        toAbortController.current = controller;
         try {
-          const res = await fetch(`${API_BASE}/api/search/stops?q=${encodeURIComponent(query)}&limit=10`, {
+          const res = await fetch(`${API_BASE}/api/search/stops?q=${encodeURIComponent(query)}&limit=15`, {
             signal: controller.signal
           });
+          if (!res.ok) throw new Error("API failed");
           const data = await res.json();
           if (!controller.signal.aborted) {
-            setToResults(data || []);
+            autocompleteCache.set(normQuery, data);
+            setToResults(deduplicateStops(data));
           }
         } catch (err) {
-          if (err.name !== 'AbortError') console.error("Stop search error:", err);
+          if (err.name !== 'AbortError') {
+            console.error("Stop search error:", err);
+            if (!controller.signal.aborted) setToSearchError(true);
+          }
         } finally {
           if (!controller.signal.aborted) {
             setIsSearchingTo(false);
           }
         }
-      }, 300);
+      }, 150);
     }
   };
 
@@ -146,8 +202,8 @@ export default function FareCalculator() {
   };
 
   const calculateFare = async () => {
-    const originId = fromStop?.stopId || fromStop?._id;
-    const destId = toStop?.stopId || toStop?._id;
+    const originId = fromStop?.stopId;
+    const destId = toStop?.stopId;
 
     if (!originId || !destId) {
       setError("Please select both stops from the search dropdown.");
@@ -231,23 +287,18 @@ export default function FareCalculator() {
               }}
             />
           </div>
-          {isFromOpen && fromQuery && (
+          {isFromOpen && fromQuery && fromQuery.length >= 2 && (
             <div className="fc-autocomplete">
               {isSearchingFrom ? (
-                <div className="fc-autocomplete-item" style={{ color: '#6b7280' }}>Searching stops...</div>
+                <div className="fc-autocomplete-item" style={{ color: '#6b7280' }}>Searching...</div>
+              ) : fromSearchError ? (
+                <div className="fc-autocomplete-item" style={{ color: '#ef4444' }}>Unable to load stops. Try again.</div>
               ) : fromResults.length > 0 ? (
                 fromResults.map(stop => (
                   <div 
-                    key={stop.stopId || stop._id} 
+                    key={stop.stopId} 
                     className="fc-autocomplete-item"
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      setFromStop(stop);
-                      setFromQuery(stop.name);
-                      setFromResults([]);
-                      setIsFromOpen(false);
-                    }}
-                    onTouchStart={(e) => {
+                    onPointerDown={(e) => {
                       e.preventDefault();
                       setFromStop(stop);
                       setFromQuery(stop.name);
@@ -258,7 +309,9 @@ export default function FareCalculator() {
                     <MapPin size={16} style={{ flexShrink: 0 }} /> 
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                       <span>{stop.name}</span>
-                      {stop.area && <span style={{ fontSize: '12px', color: '#6b7280' }}>{stop.area}</span>}
+                      <span style={{ fontSize: '12px', color: '#6b7280' }}>
+                        {stop.route_count > 0 ? `${stop.route_count} routes` : `Stop ID: ${stop.stopId}`}
+                      </span>
                     </div>
                   </div>
                 ))
@@ -303,23 +356,18 @@ export default function FareCalculator() {
               }}
             />
           </div>
-          {isToOpen && toQuery && (
+          {isToOpen && toQuery && toQuery.length >= 2 && (
             <div className="fc-autocomplete">
               {isSearchingTo ? (
-                <div className="fc-autocomplete-item" style={{ color: '#6b7280' }}>Searching stops...</div>
+                <div className="fc-autocomplete-item" style={{ color: '#6b7280' }}>Searching...</div>
+              ) : toSearchError ? (
+                <div className="fc-autocomplete-item" style={{ color: '#ef4444' }}>Unable to load stops. Try again.</div>
               ) : toResults.length > 0 ? (
                 toResults.map(stop => (
                   <div 
-                    key={stop.stopId || stop._id} 
+                    key={stop.stopId} 
                     className="fc-autocomplete-item"
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      setToStop(stop);
-                      setToQuery(stop.name);
-                      setToResults([]);
-                      setIsToOpen(false);
-                    }}
-                    onTouchStart={(e) => {
+                    onPointerDown={(e) => {
                       e.preventDefault();
                       setToStop(stop);
                       setToQuery(stop.name);
@@ -330,7 +378,9 @@ export default function FareCalculator() {
                     <MapPin size={16} style={{ flexShrink: 0 }} /> 
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                       <span>{stop.name}</span>
-                      {stop.area && <span style={{ fontSize: '12px', color: '#6b7280' }}>{stop.area}</span>}
+                      <span style={{ fontSize: '12px', color: '#6b7280' }}>
+                        {stop.route_count > 0 ? `${stop.route_count} routes` : `Stop ID: ${stop.stopId}`}
+                      </span>
                     </div>
                   </div>
                 ))

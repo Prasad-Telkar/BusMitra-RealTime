@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Bookmark, Bus, Map as MapIcon, LocateFixed } from "lucide-react";
+import { formatTime } from "../utils/timeFormat";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "https://busmitra-goa.onrender.com";
 
@@ -96,7 +97,7 @@ export default function TripDetail() {
                         {isLast && <span className="t-sub">Last stop</span>}
                       </div>
                       <div style={{ textAlign: "right", color: "var(--teal-800)", fontWeight: "600" }}>
-                        {stop.arrivalTime || "--:--:--"}
+                        {formatTime(stop.arrivalTime) || "--:--"}
                       </div>
                     </div>
                   </div>

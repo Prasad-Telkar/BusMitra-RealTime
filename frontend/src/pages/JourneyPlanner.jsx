@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Bus, MapPin, Search, Crosshair, ArrowUpDown, Clock, X, ChevronRight, ArrowLeft, Navigation } from "lucide-react";
 import LiveMap from "../components/LiveMap";
 import { getTransitJourney } from "../services/routingService";
+import { formatTime } from "../utils/timeFormat";
 import "./JourneyPlanner.css";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "https://busmitra-goa.onrender.com";
@@ -273,7 +274,7 @@ export default function JourneyPlanner() {
               <div className={`jp-status-banner ${selectedJourney.isLive ? 'live' : 'scheduled'}`}>
                 {selectedJourney.isLive ? (
                   <>
-                    <span className="live-dot"></span> LIVE — ETA {selectedJourney.arrivalTime}
+                    <span className="live-dot"></span> LIVE — ETA {formatTime(selectedJourney.arrivalTime)}
                   </>
                 ) : (
                   "SCHEDULED — Live tracking unavailable"
@@ -354,7 +355,7 @@ export default function JourneyPlanner() {
                   </div>
                 ) : (
                   <div className="jp-results">
-                    {searchError === "SCHEDULE_EXPIRED_WARNING" && (
+                    {searchError === "SCHEDULE_EXPIRED_WARNING" && !loading && (
                       <div className="jp-schedule-warning" style={{ color: '#854d0e', padding: '12px 16px', background: '#fef9c3', borderRadius: '8px', border: '1px solid #fef08a', margin: '0 16px 16px 16px' }}>
                         <strong>⚠️ Schedule Data May Be Outdated</strong>
                         <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#713f12' }}>
@@ -362,7 +363,19 @@ export default function JourneyPlanner() {
                         </p>
                       </div>
                     )}
-                    {journeys.length === 0 ? (
+                    {loading ? (
+                      <div className="jp-journey-list">
+                        {[1, 2, 3].map(i => (
+                          <div key={i} className="jp-journey-card" style={{ opacity: 0.6, padding: '16px' }}>
+                            <div style={{ height: '24px', background: '#E2E8F0', borderRadius: '4px', width: '60%', marginBottom: '16px' }} />
+                            <div style={{ height: '16px', background: '#E2E8F0', borderRadius: '4px', width: '80%', marginBottom: '8px' }} />
+                            <div style={{ height: '16px', background: '#E2E8F0', borderRadius: '4px', width: '40%' }} />
+                          </div>
+                        ))}
+                      </div>
+                    ) : searchError && searchError !== "SCHEDULE_EXPIRED_WARNING" ? (
+                      <p className="jp-no-results">Error: {searchError}</p>
+                    ) : journeys.length === 0 ? (
                       <p className="jp-no-results">No routes found matching your search.</p>
                     ) : (
                       <div className="jp-journey-list">
@@ -385,7 +398,7 @@ export default function JourneyPlanner() {
                             </div>
                             <div className="jp-card-times" style={{ marginTop: '12px' }}>
                               <div>
-                                <strong>{journey.departureTime}</strong> &rarr; <strong>{journey.arrivalTime}</strong>
+                                <strong>{formatTime(journey.departureTime)}</strong> &rarr; <strong>{formatTime(journey.arrivalTime)}</strong>
                               </div>
                               <div className="jp-card-duration">{journey.totalDuration} min</div>
                             </div>

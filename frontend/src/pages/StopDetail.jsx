@@ -5,6 +5,7 @@ import io from "socket.io-client";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+import { formatTime } from "../utils/timeFormat";
 
 // Fix Leaflet default marker icon issue
 delete L.Icon.Default.prototype._getIconUrl;
@@ -20,10 +21,17 @@ export default function StopDetail() {
   const { stopId } = useParams();
   const navigate = useNavigate();
   const [stopDetails, setStopDetails] = useState(null);
+  const [isStopLoading, setIsStopLoading] = useState(true);
+
   const [schedules, setSchedules] = useState([]);
+  const [isSchedulesLoading, setIsSchedulesLoading] = useState(true);
+
   const [routes, setRoutes] = useState([]);
+  const [isRoutesLoading, setIsRoutesLoading] = useState(true);
+
   const [liveBuses, setLiveBuses] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLiveBusesLoading, setIsLiveBusesLoading] = useState(true);
+
   const [isSaved, setIsSaved] = useState(false);
 
   useEffect(() => {
@@ -64,6 +72,7 @@ export default function StopDetail() {
   };
 
   const fetchStopDetails = async () => {
+    setIsStopLoading(true);
     try {
       const res = await fetch(`${API_BASE}/api/search/stops?q=`);
       if (res.ok) {
@@ -73,10 +82,13 @@ export default function StopDetail() {
       }
     } catch (err) {
       console.error(err);
+    } finally {
+      setIsStopLoading(false);
     }
   };
 
   const fetchSchedules = async () => {
+    setIsSchedulesLoading(true);
     try {
       const res = await fetch(`${API_BASE}/api/stops/${stopId}/schedules`);
       if (res.ok) {
@@ -86,11 +98,12 @@ export default function StopDetail() {
     } catch (err) {
       console.error(err);
     } finally {
-      setIsLoading(false);
+      setIsSchedulesLoading(false);
     }
   };
 
   const fetchRoutes = async () => {
+    setIsRoutesLoading(true);
     try {
       const res = await fetch(`${API_BASE}/api/stops/${stopId}/routes`);
       if (res.ok) {
@@ -99,13 +112,26 @@ export default function StopDetail() {
       }
     } catch (err) {
       console.error(err);
+    } finally {
+      setIsRoutesLoading(false);
     }
   };
 
   const fetchLiveBuses = async () => {
-    // For now no live buses mock
-    setLiveBuses([]);
+    setIsLiveBusesLoading(true);
+    try {
+      // For now no live buses mock
+      setLiveBuses([]);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLiveBusesLoading(false);
+    }
   };
+
+  const renderSkeleton = (height = "60px") => (
+    <div style={{ background: '#E2E8F0', height, borderRadius: '12px', width: '100%', marginBottom: '12px', opacity: 0.6 }} />
+  );
 
   return (
     <div className="home-screen" style={{ backgroundColor: '#F8FAFC', paddingBottom: '80px' }}>
@@ -140,14 +166,10 @@ export default function StopDetail() {
       </header>
 
       <div className="home-content" style={{ padding: '20px' }}>
-        {isLoading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}>
-            <Loader2 className="spinner" size={32} color="var(--teal-600)" />
-          </div>
-        ) : (
-          <>
-            {/* MAP SECTION */}
-            {stopDetails && stopDetails.latitude && stopDetails.longitude && (
+        {/* MAP SECTION */}
+        {isStopLoading ? (
+          renderSkeleton("200px")
+        ) : stopDetails && stopDetails.latitude && stopDetails.longitude ? (
               <div style={{ marginBottom: '24px', borderRadius: '12px', overflow: 'hidden', height: '200px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
                 <MapContainer 
                   center={[stopDetails.latitude, stopDetails.longitude]} 
@@ -161,7 +183,7 @@ export default function StopDetail() {
                   </Marker>
                 </MapContainer>
               </div>
-            )}
+            ) : null}
 
             {/* LIVE ARRIVALS SECTION */}
             <div style={{ marginBottom: '24px' }}>
@@ -170,7 +192,9 @@ export default function StopDetail() {
                 <h3 style={{ margin: 0, fontSize: '16px', color: 'var(--text-main)' }}>Live Arrivals</h3>
               </div>
               
-              {liveBuses.length === 0 ? (
+              {isLiveBusesLoading ? (
+                renderSkeleton("80px")
+              ) : liveBuses.length === 0 ? (
                 <div style={{ background: 'white', padding: '16px', borderRadius: '12px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
                   <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '14px' }}>Live tracking unavailable</p>
                 </div>
@@ -205,7 +229,12 @@ export default function StopDetail() {
                 <h3 style={{ margin: 0, fontSize: '16px', color: 'var(--text-main)' }}>Scheduled Services</h3>
               </div>
               
-              {schedules.length === 0 ? (
+              {isSchedulesLoading ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {renderSkeleton("60px")}
+                  {renderSkeleton("60px")}
+                </div>
+              ) : schedules.length === 0 ? (
                 <div style={{ background: 'white', padding: '16px', borderRadius: '12px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
                   <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '14px' }}>No scheduled services found</p>
                 </div>
@@ -218,8 +247,8 @@ export default function StopDetail() {
                         <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-muted)' }}>To: {trip.headsign}</p>
                       </div>
                       <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: '15px', fontWeight: '600', color: 'var(--text-main)', marginBottom: '4px' }}>{trip.arrivalTime || "Scheduled"}</div>
-                        <div style={{ fontSize: '10px', background: '#F1F5F9', color: 'var(--text-muted)', padding: '2px 6px', borderRadius: '4px', display: 'inline-block', fontWeight: 'bold' }}>SCHEDULED</div>
+                        <div style={{ fontSize: '15px', fontWeight: '600', color: '#f59e0b', marginBottom: '4px' }}>{formatTime(trip.arrivalTime) || "Scheduled"}</div>
+                        <div style={{ fontSize: '10px', background: '#fef3c7', color: '#d97706', padding: '2px 6px', borderRadius: '4px', display: 'inline-block', fontWeight: 'bold' }}>SCHEDULED</div>
                       </div>
                     </div>
                   ))}
@@ -234,7 +263,12 @@ export default function StopDetail() {
                 <h3 style={{ margin: 0, fontSize: '16px', color: 'var(--text-main)' }}>Routes Serving This Stop</h3>
               </div>
               
-              {routes.length === 0 ? (
+              {isRoutesLoading ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {renderSkeleton("40px")}
+                  {renderSkeleton("40px")}
+                </div>
+              ) : routes.length === 0 ? (
                 <div style={{ background: 'white', padding: '16px', borderRadius: '12px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
                   <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '14px' }}>No routes found</p>
                 </div>
@@ -280,9 +314,7 @@ export default function StopDetail() {
                 </button>
               </div>
             )}
-          </>
-        )}
-      </div>
+          </div>
     </div>
   );
 }
