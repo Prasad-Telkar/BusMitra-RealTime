@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Search, ArrowUpDown, ChevronRight, Calculator, IndianRupee, MapPin } from "lucide-react";
+import ktcStops from "../data/stops.json";
 import "./FareCalculator.css";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "https://busmitra-goa.onrender.com";
@@ -111,6 +112,16 @@ export default function FareCalculator() {
 
     const normQuery = query.trim().toLowerCase();
 
+    // 1. Instant Local Filter
+    const localMatches = ktcStops.filter(s => {
+      if (!s.name && !s.stop_name) return false;
+      const n = (s.name || s.stop_name).toLowerCase();
+      return n.includes(normQuery);
+    });
+    
+    // Convert local match formats to normalized format
+    const normalizedLocal = deduplicateStops(localMatches);
+    
     if (type === 'from') {
       if (fromSearchTimeout.current) clearTimeout(fromSearchTimeout.current);
       if (fromAbortController.current) fromAbortController.current.abort();
@@ -122,7 +133,14 @@ export default function FareCalculator() {
         return;
       }
       
-      setIsSearchingFrom(true);
+      // Immediately display local results if any
+      if (normalizedLocal.length > 0) {
+        setFromResults(normalizedLocal);
+        setIsSearchingFrom(false);
+      } else {
+        setIsSearchingFrom(true);
+      }
+      
       setFromSearchError(false);
       const controller = new AbortController();
       fromAbortController.current = controller;
@@ -136,12 +154,17 @@ export default function FareCalculator() {
           const data = await res.json();
           if (!controller.signal.aborted) {
             autocompleteCache.set(normQuery, data);
-            setFromResults(deduplicateStops(data));
+            
+            // Merge backend results with local results safely without removing existing ones immediately
+            setFromResults(prev => {
+              const combined = [...prev, ...data];
+              return deduplicateStops(combined);
+            });
           }
         } catch (err) {
           if (err.name !== 'AbortError') {
             console.error("Stop search error:", err);
-            if (!controller.signal.aborted) setFromSearchError(true);
+            if (!controller.signal.aborted && normalizedLocal.length === 0) setFromSearchError(true);
           }
         } finally {
           if (!controller.signal.aborted) {
@@ -160,7 +183,14 @@ export default function FareCalculator() {
         return;
       }
 
-      setIsSearchingTo(true);
+      // Immediately display local results if any
+      if (normalizedLocal.length > 0) {
+        setToResults(normalizedLocal);
+        setIsSearchingTo(false);
+      } else {
+        setIsSearchingTo(true);
+      }
+
       setToSearchError(false);
       const controller = new AbortController();
       toAbortController.current = controller;
@@ -174,12 +204,17 @@ export default function FareCalculator() {
           const data = await res.json();
           if (!controller.signal.aborted) {
             autocompleteCache.set(normQuery, data);
-            setToResults(deduplicateStops(data));
+            
+            // Merge backend results with local results safely
+            setToResults(prev => {
+              const combined = [...prev, ...data];
+              return deduplicateStops(combined);
+            });
           }
         } catch (err) {
           if (err.name !== 'AbortError') {
             console.error("Stop search error:", err);
-            if (!controller.signal.aborted) setToSearchError(true);
+            if (!controller.signal.aborted && normalizedLocal.length === 0) setToSearchError(true);
           }
         } finally {
           if (!controller.signal.aborted) {
@@ -199,6 +234,7 @@ export default function FareCalculator() {
     const tempS = fromStop;
     setFromStop(toStop);
     setToStop(tempS);
+    setFareResult(null);
   };
 
   const calculateFare = async () => {
@@ -272,6 +308,7 @@ export default function FareCalculator() {
               onChange={(e) => {
                 setFromStop(null); // Clear selected object on manual edit
                 setFromQuery(e.target.value);
+                setFareResult(null); // Clear fare result
                 setIsFromOpen(true);
                 fetchStops(e.target.value, 'from');
               }}
@@ -289,32 +326,38 @@ export default function FareCalculator() {
           </div>
           {isFromOpen && fromQuery && fromQuery.length >= 2 && (
             <div className="fc-autocomplete">
-              {isSearchingFrom ? (
+              {fromResults.length > 0 ? (
+                <>
+                  {fromResults.map(stop => (
+                    <div 
+                      key={stop.stopId} 
+                      className="fc-autocomplete-item"
+                      onPointerDown={(e) => {
+                        e.preventDefault();
+                        setFromStop(stop);
+                        setFromQuery(stop.name);
+                        setFromResults([]);
+                        setIsFromOpen(false);
+                        setFareResult(null); // Clear fare result on selection
+                      }}
+                    >
+                      <MapPin size={16} style={{ flexShrink: 0 }} /> 
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span>{stop.name}</span>
+                        <span style={{ fontSize: '12px', color: '#6b7280' }}>
+                          {stop.route_count > 0 ? `${stop.route_count} routes` : `Stop ID: ${stop.stopId}`}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                  {isSearchingFrom && (
+                    <div className="fc-autocomplete-item" style={{ color: '#9ca3af', fontSize: '12px', justifyContent: 'center' }}>Updating...</div>
+                  )}
+                </>
+              ) : isSearchingFrom ? (
                 <div className="fc-autocomplete-item" style={{ color: '#6b7280' }}>Searching...</div>
               ) : fromSearchError ? (
                 <div className="fc-autocomplete-item" style={{ color: '#ef4444' }}>Unable to load stops. Try again.</div>
-              ) : fromResults.length > 0 ? (
-                fromResults.map(stop => (
-                  <div 
-                    key={stop.stopId} 
-                    className="fc-autocomplete-item"
-                    onPointerDown={(e) => {
-                      e.preventDefault();
-                      setFromStop(stop);
-                      setFromQuery(stop.name);
-                      setFromResults([]);
-                      setIsFromOpen(false);
-                    }}
-                  >
-                    <MapPin size={16} style={{ flexShrink: 0 }} /> 
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <span>{stop.name}</span>
-                      <span style={{ fontSize: '12px', color: '#6b7280' }}>
-                        {stop.route_count > 0 ? `${stop.route_count} routes` : `Stop ID: ${stop.stopId}`}
-                      </span>
-                    </div>
-                  </div>
-                ))
               ) : (
                 <div className="fc-autocomplete-item" style={{ color: '#6b7280' }}>No matching stops found</div>
               )}
@@ -341,6 +384,7 @@ export default function FareCalculator() {
               onChange={(e) => {
                 setToStop(null); // Clear selected object on manual edit
                 setToQuery(e.target.value);
+                setFareResult(null); // Clear fare result
                 setIsToOpen(true);
                 fetchStops(e.target.value, 'to');
               }}
@@ -358,32 +402,38 @@ export default function FareCalculator() {
           </div>
           {isToOpen && toQuery && toQuery.length >= 2 && (
             <div className="fc-autocomplete">
-              {isSearchingTo ? (
-                <div className="fc-autocomplete-item" style={{ color: '#6b7280' }}>Searching...</div>
+              {toResults.length > 0 ? (
+                <>
+                  {toResults.map(stop => (
+                    <div 
+                      key={stop.stopId} 
+                      className="fc-autocomplete-item"
+                      onPointerDown={(e) => {
+                        e.preventDefault();
+                        setToStop(stop);
+                        setToQuery(stop.name);
+                        setToResults([]);
+                        setIsToOpen(false);
+                        setFareResult(null); // Clear fare result on selection
+                      }}
+                    >
+                      <MapPin size={16} style={{ flexShrink: 0 }} /> 
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span>{stop.name}</span>
+                        <span style={{ fontSize: '12px', color: '#6b7280' }}>
+                          {stop.route_count > 0 ? `${stop.route_count} routes` : `Stop ID: ${stop.stopId}`}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                  {isSearchingTo && (
+                    <div className="fc-autocomplete-item" style={{ color: '#9ca3af', fontSize: '12px', justifyContent: 'center' }}>Updating...</div>
+                  )}
+                </>
+              ) : isSearchingTo ? (
+                 <div className="fc-autocomplete-item" style={{ color: '#6b7280' }}>Searching...</div>
               ) : toSearchError ? (
                 <div className="fc-autocomplete-item" style={{ color: '#ef4444' }}>Unable to load stops. Try again.</div>
-              ) : toResults.length > 0 ? (
-                toResults.map(stop => (
-                  <div 
-                    key={stop.stopId} 
-                    className="fc-autocomplete-item"
-                    onPointerDown={(e) => {
-                      e.preventDefault();
-                      setToStop(stop);
-                      setToQuery(stop.name);
-                      setToResults([]);
-                      setIsToOpen(false);
-                    }}
-                  >
-                    <MapPin size={16} style={{ flexShrink: 0 }} /> 
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <span>{stop.name}</span>
-                      <span style={{ fontSize: '12px', color: '#6b7280' }}>
-                        {stop.route_count > 0 ? `${stop.route_count} routes` : `Stop ID: ${stop.stopId}`}
-                      </span>
-                    </div>
-                  </div>
-                ))
               ) : (
                 <div className="fc-autocomplete-item" style={{ color: '#6b7280' }}>No matching stops found</div>
               )}
