@@ -13,7 +13,8 @@ export default function FareCalculator() {
   const [toStop, setToStop] = useState(null);
   const [fromResults, setFromResults] = useState([]);
   const [toResults, setToResults] = useState([]);
-  const [activeSearch, setActiveSearch] = useState(null); // 'from' or 'to'
+  const [isFromOpen, setIsFromOpen] = useState(false);
+  const [isToOpen, setIsToOpen] = useState(false);
   
   const [passengerType, setPassengerType] = useState("GENERAL");
   const [isLoading, setIsLoading] = useState(false);
@@ -26,6 +27,17 @@ export default function FareCalculator() {
   const toSearchTimeout = useRef(null);
   const fromAbortController = useRef(null);
   const toAbortController = useRef(null);
+
+  const fromStopRef = useRef(fromStop);
+  const toStopRef = useRef(toStop);
+
+  useEffect(() => {
+    fromStopRef.current = fromStop;
+  }, [fromStop]);
+
+  useEffect(() => {
+    toStopRef.current = toStop;
+  }, [toStop]);
 
   // Reconstruct from URL parameters or previous navigation state
   useEffect(() => {
@@ -60,8 +72,14 @@ export default function FareCalculator() {
 
   const fetchStops = (query, type) => {
     if (!query) {
-      if (type === 'from') setFromResults([]);
-      if (type === 'to') setToResults([]);
+      if (type === 'from') {
+        setFromResults([]);
+        setIsSearchingFrom(false);
+      }
+      if (type === 'to') {
+        setToResults([]);
+        setIsSearchingTo(false);
+      }
       return;
     }
 
@@ -71,17 +89,22 @@ export default function FareCalculator() {
       
       setIsSearchingFrom(true);
       fromSearchTimeout.current = setTimeout(async () => {
-        fromAbortController.current = new AbortController();
+        const controller = new AbortController();
+        fromAbortController.current = controller;
         try {
           const res = await fetch(`${API_BASE}/api/search/stops?q=${encodeURIComponent(query)}&limit=10`, {
-            signal: fromAbortController.current.signal
+            signal: controller.signal
           });
           const data = await res.json();
-          setFromResults(data || []);
+          if (!controller.signal.aborted) {
+            setFromResults(data || []);
+          }
         } catch (err) {
           if (err.name !== 'AbortError') console.error("Stop search error:", err);
         } finally {
-          setIsSearchingFrom(false);
+          if (!controller.signal.aborted) {
+            setIsSearchingFrom(false);
+          }
         }
       }, 300);
     } else if (type === 'to') {
@@ -90,17 +113,22 @@ export default function FareCalculator() {
 
       setIsSearchingTo(true);
       toSearchTimeout.current = setTimeout(async () => {
-        toAbortController.current = new AbortController();
+        const controller = new AbortController();
+        toAbortController.current = controller;
         try {
           const res = await fetch(`${API_BASE}/api/search/stops?q=${encodeURIComponent(query)}&limit=10`, {
-            signal: toAbortController.current.signal
+            signal: controller.signal
           });
           const data = await res.json();
-          setToResults(data || []);
+          if (!controller.signal.aborted) {
+            setToResults(data || []);
+          }
         } catch (err) {
           if (err.name !== 'AbortError') console.error("Stop search error:", err);
         } finally {
-          setIsSearchingTo(false);
+          if (!controller.signal.aborted) {
+            setIsSearchingTo(false);
+          }
         }
       }, 300);
     }
@@ -188,25 +216,22 @@ export default function FareCalculator() {
               onChange={(e) => {
                 setFromStop(null); // Clear selected object on manual edit
                 setFromQuery(e.target.value);
-                setActiveSearch('from');
+                setIsFromOpen(true);
                 fetchStops(e.target.value, 'from');
               }}
               onFocus={() => {
-                setActiveSearch('from');
+                setIsFromOpen(true);
                 if (!fromStop && fromQuery) fetchStops(fromQuery, 'from');
               }}
               onBlur={() => {
                 setTimeout(() => {
-                  setActiveSearch((prev) => prev === 'from' ? null : prev);
-                  setFromStop((prevStop) => {
-                    if (!prevStop) setFromQuery(""); // Prevent pretending a stop is selected
-                    return prevStop;
-                  });
+                  setIsFromOpen(false);
+                  if (!fromStopRef.current) setFromQuery("");
                 }, 200);
               }}
             />
           </div>
-          {activeSearch === 'from' && fromQuery && (
+          {isFromOpen && fromQuery && (
             <div className="fc-autocomplete">
               {isSearchingFrom ? (
                 <div className="fc-autocomplete-item" style={{ color: '#6b7280' }}>Searching stops...</div>
@@ -220,14 +245,14 @@ export default function FareCalculator() {
                       setFromStop(stop);
                       setFromQuery(stop.name);
                       setFromResults([]);
-                      setActiveSearch(null);
+                      setIsFromOpen(false);
                     }}
                     onTouchStart={(e) => {
                       e.preventDefault();
                       setFromStop(stop);
                       setFromQuery(stop.name);
                       setFromResults([]);
-                      setActiveSearch(null);
+                      setIsFromOpen(false);
                     }}
                   >
                     <MapPin size={16} style={{ flexShrink: 0 }} /> 
@@ -263,25 +288,22 @@ export default function FareCalculator() {
               onChange={(e) => {
                 setToStop(null); // Clear selected object on manual edit
                 setToQuery(e.target.value);
-                setActiveSearch('to');
+                setIsToOpen(true);
                 fetchStops(e.target.value, 'to');
               }}
               onFocus={() => {
-                setActiveSearch('to');
+                setIsToOpen(true);
                 if (!toStop && toQuery) fetchStops(toQuery, 'to');
               }}
               onBlur={() => {
                 setTimeout(() => {
-                  setActiveSearch((prev) => prev === 'to' ? null : prev);
-                  setToStop((prevStop) => {
-                    if (!prevStop) setToQuery(""); // Prevent pretending a stop is selected
-                    return prevStop;
-                  });
+                  setIsToOpen(false);
+                  if (!toStopRef.current) setToQuery("");
                 }, 200);
               }}
             />
           </div>
-          {activeSearch === 'to' && toQuery && (
+          {isToOpen && toQuery && (
             <div className="fc-autocomplete">
               {isSearchingTo ? (
                 <div className="fc-autocomplete-item" style={{ color: '#6b7280' }}>Searching stops...</div>
@@ -295,14 +317,14 @@ export default function FareCalculator() {
                       setToStop(stop);
                       setToQuery(stop.name);
                       setToResults([]);
-                      setActiveSearch(null);
+                      setIsToOpen(false);
                     }}
                     onTouchStart={(e) => {
                       e.preventDefault();
                       setToStop(stop);
                       setToQuery(stop.name);
                       setToResults([]);
-                      setActiveSearch(null);
+                      setIsToOpen(false);
                     }}
                   >
                     <MapPin size={16} style={{ flexShrink: 0 }} /> 
