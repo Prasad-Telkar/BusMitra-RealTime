@@ -105,11 +105,12 @@ def search_routes():
     
     if query:
         import re
+        regex = re.compile(query, re.IGNORECASE)
         routes = list(routes_col.find({
             "$or": [
-                {"shortName": {"$regex": query, "$options": "i"}},
-                {"longName": {"$regex": query, "$options": "i"}},
-                {"routeName": {"$regex": query, "$options": "i"}}
+                {"shortName": regex},
+                {"longName": regex},
+                {"routeName": regex}
             ]
         }).limit(limit))
     elif from_query or to_query:
@@ -136,17 +137,19 @@ def search_routes():
         
         and_conditions = []
         if from_q:
+            regex_from = re.compile(from_q, re.IGNORECASE)
             and_conditions.append({
                 "$or": [
-                    {"longName": {"$regex": from_q, "$options": "i"}},
-                    {"routeName": {"$regex": from_q, "$options": "i"}}
+                    {"longName": regex_from},
+                    {"routeName": regex_from}
                 ]
             })
         if to_q:
+            regex_to = re.compile(to_q, re.IGNORECASE)
             and_conditions.append({
                 "$or": [
-                    {"longName": {"$regex": to_q, "$options": "i"}},
-                    {"routeName": {"$regex": to_q, "$options": "i"}}
+                    {"longName": regex_to},
+                    {"routeName": regex_to}
                 ]
             })
             
@@ -306,9 +309,9 @@ def get_stop_schedules(stop_id):
 def get_route_counts_for_stops(stop_ids):
     if not stop_ids:
         return {}
-    stop_times = list(stop_times_col.find({"stopId": {"$in": stop_ids}}))
+    stop_times = list(stop_times_col.find({"stopId": {"$in": stop_ids}}, {"stopId": 1, "tripId": 1}))
     trip_ids = list(set(st["tripId"] for st in stop_times))
-    trips = list(trips_col.find({"tripId": {"$in": trip_ids}}))
+    trips = list(trips_col.find({"tripId": {"$in": trip_ids}}, {"tripId": 1, "routeId": 1}))
     trip_to_route = {t["tripId"]: t["routeId"] for t in trips}
     
     counts = {}
@@ -371,8 +374,9 @@ def get_stops():
     
     try:
         if query:
+            import re
             stops_cursor = stops_col.find({
-                "name": {"$regex": query, "$options": "i"}
+                "name": re.compile(query, re.IGNORECASE)
             }).limit(limit)
         else:
             stops_cursor = stops_col.find().limit(limit)
@@ -399,8 +403,9 @@ def get_buses():
     
     if query:
         # Search by bus registration number
+        import re
         buses = list(buses_col.find({
-            "registrationNumber": {"$regex": query, "$options": "i"}
+            "registrationNumber": re.compile(query, re.IGNORECASE)
         }).limit(limit))
     else:
         buses = list(buses_col.find().limit(limit))

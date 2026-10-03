@@ -4,10 +4,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+import certifi
+
 MONGO_URI = os.getenv("MONGODB_URI")
 if not MONGO_URI:
     raise RuntimeError("MONGODB_URI environment variable is not configured")
-client = MongoClient(MONGO_URI)
+client = MongoClient(MONGO_URI, tlsCAFile=certifi.where())
 db = client["busmitra"]
 
 # Collections
