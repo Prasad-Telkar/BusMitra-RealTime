@@ -25,6 +25,12 @@ const deduplicateStops = (stops) => {
   });
 };
 
+// Precompute indexed ktcStops outside component to avoid repeated normalization
+const indexedKtcStops = deduplicateStops(ktcStops).map(s => ({
+  ...s,
+  normalizedName: (s.name).toLowerCase()
+}));
+
 const autocompleteCache = new Map();
 
 export default function FareCalculator() {
@@ -112,35 +118,39 @@ export default function FareCalculator() {
 
     const normQuery = query.trim().toLowerCase();
 
-    // 1. Instant Local Filter
-    const localMatches = ktcStops.filter(s => {
-      if (!s.name && !s.stop_name) return false;
-      const n = (s.name || s.stop_name).toLowerCase();
-      return n.includes(normQuery);
-    });
-    
-    // Convert local match formats to normalized format
-    const normalizedLocal = deduplicateStops(localMatches);
+    // 1. Instant Local Filter (with priority)
+    const exactPrefixMatches = [];
+    const wordPrefixMatches = [];
+    const includesMatches = [];
+
+    for (const s of indexedKtcStops) {
+      if (!s.normalizedName) continue;
+      if (s.normalizedName.startsWith(normQuery)) {
+        exactPrefixMatches.push(s);
+      } else if (s.normalizedName.includes(` ${normQuery}`)) {
+        wordPrefixMatches.push(s);
+      } else if (s.normalizedName.includes(normQuery)) {
+        includesMatches.push(s);
+      }
+    }
+
+    const normalizedLocal = [...exactPrefixMatches, ...wordPrefixMatches, ...includesMatches].slice(0, 15);
     
     if (type === 'from') {
       if (fromSearchTimeout.current) clearTimeout(fromSearchTimeout.current);
       if (fromAbortController.current) fromAbortController.current.abort();
       
+      // Immediately display local results
+      setFromResults(normalizedLocal);
+      
       if (autocompleteCache.has(normQuery)) {
         setIsSearchingFrom(false);
         setFromSearchError(false);
-        setFromResults(deduplicateStops(autocompleteCache.get(normQuery)));
+        setFromResults(deduplicateStops([...normalizedLocal, ...autocompleteCache.get(normQuery)]).slice(0, 15));
         return;
       }
       
-      // Immediately display local results if any
-      if (normalizedLocal.length > 0) {
-        setFromResults(normalizedLocal);
-        setIsSearchingFrom(false);
-      } else {
-        setIsSearchingFrom(true);
-      }
-      
+      setIsSearchingFrom(true);
       setFromSearchError(false);
       const controller = new AbortController();
       fromAbortController.current = controller;
@@ -158,7 +168,7 @@ export default function FareCalculator() {
             // Merge backend results with local results safely without removing existing ones immediately
             setFromResults(prev => {
               const combined = [...prev, ...data];
-              return deduplicateStops(combined);
+              return deduplicateStops(combined).slice(0, 15);
             });
           }
         } catch (err) {
@@ -176,21 +186,17 @@ export default function FareCalculator() {
       if (toSearchTimeout.current) clearTimeout(toSearchTimeout.current);
       if (toAbortController.current) toAbortController.current.abort();
 
+      // Immediately display local results
+      setToResults(normalizedLocal);
+
       if (autocompleteCache.has(normQuery)) {
         setIsSearchingTo(false);
         setToSearchError(false);
-        setToResults(deduplicateStops(autocompleteCache.get(normQuery)));
+        setToResults(deduplicateStops([...normalizedLocal, ...autocompleteCache.get(normQuery)]).slice(0, 15));
         return;
       }
 
-      // Immediately display local results if any
-      if (normalizedLocal.length > 0) {
-        setToResults(normalizedLocal);
-        setIsSearchingTo(false);
-      } else {
-        setIsSearchingTo(true);
-      }
-
+      setIsSearchingTo(true);
       setToSearchError(false);
       const controller = new AbortController();
       toAbortController.current = controller;
@@ -208,7 +214,7 @@ export default function FareCalculator() {
             // Merge backend results with local results safely
             setToResults(prev => {
               const combined = [...prev, ...data];
-              return deduplicateStops(combined);
+              return deduplicateStops(combined).slice(0, 15);
             });
           }
         } catch (err) {
