@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import io from "socket.io-client";
-import { ArrowLeft, Share2, Map as MapIcon, Info, Bus, Bookmark, AlertTriangle, RefreshCw } from "lucide-react";
+import { ArrowLeft, Share2, Map as MapIcon, Info, Bus, AlertTriangle, RefreshCw, Navigation, Check } from "lucide-react";
 import LiveMap from "../components/LiveMap";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import "./Passenger.css";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "https://busmitra-goa.onrender.com";
 
@@ -10,14 +11,18 @@ export default function Passenger() {
   const { busId } = useParams();
   const [busLocation, setBusLocation] = useState(null);
   const [etaData, setEtaData] = useState(null);
+  const [copied, setCopied] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const navigate = useNavigate();
 
   // Determine signal status based on backend ETA data
   const isSignalWeak = etaData?.status === "stale";
   const isOffline = etaData?.status === "offline" || !etaData;
+  const isLive = !isSignalWeak && !isOffline && etaData;
 
   // Poll for ETA
   const fetchEta = async () => {
+    setIsRefreshing(true);
     try {
       const res = await fetch(`${API_BASE}/api/eta/${busId}`);
       if (res.ok) {
@@ -26,6 +31,8 @@ export default function Passenger() {
       }
     } catch (err) {
       console.error("Failed to fetch ETA", err);
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -38,7 +45,9 @@ export default function Passenger() {
     });
 
     socket.on("bus_update", (data) => {
-      setBusLocation({ lat: data.lat, lng: data.lng });
+      if (data && data.lat && data.lng) {
+        setBusLocation({ lat: data.lat, lng: data.lng });
+      }
     });
 
     fetchEta();
@@ -52,146 +61,128 @@ export default function Passenger() {
 
   const activeLocation = busLocation || (etaData?.lat ? { lat: etaData.lat, lng: etaData.lng } : null);
 
+  const handleShare = async () => {
+    const shareData = {
+      title: `BusMitra — Track Bus ${etaData?.bus_number || busId}`,
+      text: `Live tracking for ${etaData?.route_name || 'bus route'} on BusMitra Goa`,
+      url: window.location.href,
+    };
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        console.warn("Share cancelled or failed", err);
+      }
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
   return (
-    <div className="home-screen">
-      <div className="passenger-map-layer" style={{ height: "100%", width: "100%", position: "absolute", top: 0, left: 0, zIndex: 0 }}>
+    <div className="tracker-layout">
+      {/* FULL MAP CANVAS */}
+      <div className="tracker-map-canvas">
         <LiveMap 
           busPosition={activeLocation ? [activeLocation.lat, activeLocation.lng] : null} 
           center={activeLocation ? [activeLocation.lat, activeLocation.lng] : [15.35, 73.95]} 
         />
       </div>
 
-      <div className="passenger-ui-layer">
-        {/* TOP UI */}
-        <div className="track-top-section">
-          <header className="track-header">
-            <button className="icon-btn" onClick={() => navigate(-1)}><ArrowLeft size={24} color="var(--text-main)" /></button>
-            <div className="track-title-group">
-              <h1>Track your bus</h1>
-              <p>{etaData ? etaData.route_name : "Loading route..."}</p>
-            </div>
-            <button className="icon-btn"><Share2 size={24} color="var(--teal-800)" /></button>
-          </header>
+      {/* FLOATING TELEMETRY HUD */}
+      <div className="tracker-hud">
+        <div className="tracker-card">
+          {/* Top Bar with Navigation & Actions */}
+          <div className="tracker-nav-bar">
+            <button type="button" className="tracker-back-btn" onClick={() => navigate(-1)} title="Back">
+              <ArrowLeft size={18} />
+            </button>
 
-          {(isSignalWeak || isOffline) ? (
-            <div className="track-eta-banner weak-mode">
-              <div className="track-eta-left">
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span className="t-label">To your stop</span>
-                  <h2 style={{ fontSize: '20px', margin: '4px 0', color: 'var(--text-main)' }}>{etaData?.stops?.[1] || "..."}</h2>
-                  <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Current ETA unavailable</span>
-                </div>
+            <div className="tracker-bus-identity">
+              <span className="tracker-bus-pill">{etaData?.bus_number || busId}</span>
+              <div className="tracker-bus-titles">
+                <h1>{etaData?.route_name || "Bus Tracking"}</h1>
+                <p>KTCL Network</p>
               </div>
             </div>
-          ) : (
-            <div className="track-eta-banner">
-              <div className="track-eta-left">
-                <span className="massive-min teal">{Math.floor(etaData?.eta_minutes || 0)}</span>
-                <span className="min-label teal">min</span>
-              </div>
-              <div className="track-eta-right">
-                <span className="t-label" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  To your stop
-                  <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--teal-800)', background: 'var(--teal-100)', padding: '2px 6px', borderRadius: '4px' }}>
-                    {etaData?.trip_status || "On Time"}
-                  </span>
-                </span>
-                <h2>{etaData?.stops?.[1] || "..."}</h2>
-                <div className="live-status teal">
-                  <span className="live-dot teal"></span> Live GPS &middot; {Math.floor(etaData?.signal_age_sec || 0)} sec ago
-                </div>
-              </div>
-            </div>
-          )}
 
-          {isOffline && etaData && (
-            <div className="weak-signal-banner" style={{ borderLeft: '4px solid #991B1B', backgroundColor: '#FEF2F2' }}>
-              <AlertTriangle size={14} color="#991B1B" style={{ marginTop: '2px' }} />
-              <div>
-                <strong style={{ display: 'block', fontSize: '12px', color: '#7F1D1D', margin: '0 0 2px 0', padding: 0 }}>Offline - last received {(etaData.signal_age_sec / 60).toFixed(0)} min ago</strong>
-                <span style={{ fontSize: '11px', color: '#991B1B', margin: 0 }}>bus is disconnected from network</span>
-              </div>
-            </div>
-          )}
-          {isSignalWeak && !isOffline && etaData && (
-            <div className="weak-signal-banner">
-              <div style={{ width: '4px', height: '100%', backgroundColor: '#D97706', position: 'absolute', left: 0, top: 0 }}></div>
-              <AlertTriangle size={14} color="#D97706" style={{ marginTop: '2px' }} />
-              <div>
-                <strong style={{ display: 'block', fontSize: '12px', color: '#92400E', margin: '0 0 2px 0', padding: 0 }}>Signal Weak - last received {(etaData.signal_age_sec / 60).toFixed(0)} min ago</strong>
-                <span style={{ fontSize: '11px', color: '#B45309', margin: 0 }}>location cannot reliably refresh</span>
-              </div>
-            </div>
-          )}
-          
-          <div className="map-badge-top" style={{ marginTop: (isSignalWeak || isOffline) ? '12px' : '0' }}>Route schematic &middot; not to scale</div>
-        </div>
-
-        {/* BOTTOM UI */}
-        <div className="track-bottom-section">
-          <div className="map-legend">
-            <span className="legend-item"><span className="dot dark"></span> You</span>
-            <span className="legend-item"><span className="dot amber"></span> Board here</span>
+            <button type="button" className="tracker-share-btn" onClick={handleShare} title="Share Tracking Link">
+              {copied ? <Check size={18} color="#10B981" /> : <Share2 size={18} />}
+            </button>
           </div>
 
-          <div className="track-bottom-card">
-            <div className="tbc-top">
-              <div className="tbc-left">
-                <div className={`bus-badge ${(isSignalWeak || isOffline) ? 'amber' : ''}`}>{etaData?.bus_number || "..."}</div>
-                <div className="tbc-stop-info">
-                  <span className="t-label">{(isSignalWeak || isOffline) ? 'YOUR STOP' : 'NEXT STOP'}</span>
-                  <h3>{etaData?.stops?.[1] || "..."}</h3>
+          {/* ETA Highlight Card */}
+          <div className={`tracker-eta-box ${isLive ? 'live' : isSignalWeak ? 'weak' : 'offline'}`}>
+            <div className="tracker-eta-digits">
+              {isOffline ? (
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '18px', fontWeight: 800, color: '#B91C1C' }}>Offline</span>
+                  <span style={{ fontSize: '11px', color: '#64748B' }}>Telemetry unavailable</span>
                 </div>
-              </div>
-              {(isSignalWeak || isOffline) ? (
-                <div style={{ fontSize: '12px', fontWeight: '600', color: '#92400E' }}>Cached</div>
+              ) : isSignalWeak ? (
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '18px', fontWeight: 800, color: '#B45309' }}>Weak Signal</span>
+                  <span style={{ fontSize: '11px', color: '#64748B' }}>ETA cached</span>
+                </div>
               ) : (
-                <div className="tbc-right">
-                  <span className="tbc-time">{Math.floor(etaData?.eta_minutes || 0)} min</span>
-                  <span className="tbc-time-sub">{(etaData?.distance_km || 0).toFixed(1)} km away</span>
-                </div>
+                <>
+                  <span className="tracker-eta-num">{Math.floor(etaData?.eta_minutes || 0)}</span>
+                  <span className="tracker-eta-unit">min</span>
+                </>
               )}
             </div>
-            
-            <div className="tbc-divider"></div>
 
-            {(isSignalWeak || isOffline) ? (
-              <div className="tbc-weak-details">
-                <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 4px 0' }}>Last known location &middot; {(etaData?.signal_age_sec / 60).toFixed(0)} min ago</p>
-                <p style={{ fontSize: '13px', fontWeight: '700', color: '#92400E', margin: '0 0 8px 0' }}>Old ETA: {Math.floor(etaData?.eta_minutes || 0)} min - not live</p>
-                <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.4', margin: '0 0 16px 0' }}>
-                  An old estimate, not a live countdown. Fresh estimates resume when the signal improves.
-                </p>
-                
-                <button className="btn-primary" style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', padding: '12px', marginBottom: '12px' }} onClick={fetchEta}>
-                  <RefreshCw size={16} /> Retry
-                </button>
-                <Link to={`/route-detail/${busId}`} className="btn-outline view-route-btn" style={{ width: '100%', marginBottom: '16px' }}>
-                  <MapIcon size={16} /> View Route
-                </Link>
-                
-                <div className="tbc-divider" style={{ marginBottom: '12px', marginTop: '0' }}></div>
-                <div className="tbc-middle" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '4px' }}>
-                  <span className="tbc-desc" style={{ fontSize: '11px' }}>Demo bus {etaData?.bus_number || "..."} - GPS from driver's smartphone</span>
-                  <span className="tbc-desc-sub" style={{ fontSize: '11px' }}>Demo data - No official KTC integration</span>
-                </div>
-              </div>
-            ) : (
-              <>
-                <div className="tbc-middle">
-                  <span className="tbc-desc">Demo bus {etaData?.bus_number || "..."}</span>
-                  <span className="tbc-desc-sub">GPS from driver's smartphone</span>
-                </div>
+            <div className="tracker-eta-meta">
+              <span className="tracker-eta-stop-label">APPROACHING STOP</span>
+              <span className="tracker-eta-stop-name">{etaData?.stops?.[1] || etaData?.next_stop || "Terminus"}</span>
+              {etaData?.distance_km && (
+                <span className="tracker-eta-dist">~{Number(etaData.distance_km).toFixed(1)} km away</span>
+              )}
+            </div>
+          </div>
 
-                <Link to={`/route-detail/${busId}`} className="btn-outline view-route-btn">
-                  <MapIcon size={18} /> View Route
-                </Link>
+          {/* Telemetry Status Strip */}
+          <div className="tracker-status-strip">
+            <div className={`tracker-signal-indicator ${isLive ? 'live' : isSignalWeak ? 'weak' : 'offline'}`}>
+              <span className="tracker-signal-dot"></span>
+              <span>
+                {isLive ? "Live GPS Connected" : isSignalWeak ? "Signal Weak" : "Bus GPS Disconnected"}
+              </span>
+            </div>
 
-                <div className="demo-data-note inline">
-                  <Info size={14} /> Demo data &middot; No official KTC integration
-                </div>
-              </>
-            )}
+            <div className="tracker-age">
+              {etaData?.signal_age_sec !== undefined ? (
+                etaData.signal_age_sec < 60 
+                  ? `${Math.floor(etaData.signal_age_sec)}s ago`
+                  : `${Math.floor(etaData.signal_age_sec / 60)}m ago`
+              ) : "Awaiting ping"}
+            </div>
+          </div>
+
+          {/* Action Row */}
+          <div className="tracker-actions-row">
+            <Link to={`/route-detail/${busId}`} className="tracker-btn-route">
+              <MapIcon size={15} />
+              <span>View Full Route</span>
+            </Link>
+
+            <button 
+              type="button" 
+              className="tracker-btn-refresh" 
+              onClick={fetchEta} 
+              disabled={isRefreshing}
+              title="Refresh ETA"
+            >
+              <RefreshCw size={14} className={isRefreshing ? 'spinning' : ''} />
+              <span>Refresh</span>
+            </button>
+          </div>
+
+          {/* Grounding Notice */}
+          <div className="tracker-grounding-notice">
+            <Info size={12} />
+            <span>Official KTCL Scheduled Route &amp; Driver Telemetry</span>
           </div>
         </div>
       </div>

@@ -482,11 +482,31 @@ def calculate_fare():
     if origin_id == dest_id:
         return jsonify({"error": "Origin and destination are the same"}), 400
 
-    origin_stop = stops_col.find_one({"stopId": origin_id})
-    dest_stop = stops_col.find_one({"stopId": dest_id})
+    def resolve_stop(sid):
+        if not sid:
+            return None
+        s = stops_col.find_one({"stopId": sid}) or stops_col.find_one({"id": sid})
+        if s:
+            return s
+        ktcl_map = {
+            "KTCL-001": "Panaji", "KTCL-002": "Margao", "KTCL-003": "Vasco",
+            "KTCL-004": "Mapusa", "KTCL-005": "Ponda", "KTCL-006": "Canacona",
+            "KTCL-007": "Bicholim", "KTCL-008": "Curchorem", "KTCL-009": "Sanquelim",
+            "KTCL-010": "Pernem", "KTCL-011": "Valpoi"
+        }
+        if sid in ktcl_map:
+            return stops_col.find_one({"name": {"$regex": ktcl_map[sid], "$options": "i"}})
+        import re
+        return stops_col.find_one({"name": {"$regex": f"^{re.escape(sid)}$", "$options": "i"}})
+
+    origin_stop = resolve_stop(origin_id)
+    dest_stop = resolve_stop(dest_id)
 
     if not origin_stop or not dest_stop:
         return jsonify({"error": "Stop not found"}), 404
+
+    actual_origin_id = origin_stop.get("stopId") or origin_id
+    actual_dest_id = dest_stop.get("stopId") or dest_id
 
     o_name = origin_stop.get("name", "").upper()
     d_name = dest_stop.get("name", "").upper()
@@ -521,7 +541,7 @@ def calculate_fare():
         })
 
     # 2. Check if direct service exists using stop_times
-    origin_stop_times = list(stop_times_col.find({"stopId": origin_id}, {"tripId": 1, "stopSequence": 1}))
+    origin_stop_times = list(stop_times_col.find({"stopId": actual_origin_id}, {"tripId": 1, "stopSequence": 1}))
     total_stop_times = stop_times_col.estimated_document_count()
 
     direct_service = False
@@ -534,7 +554,7 @@ def calculate_fare():
             origin_map[st["tripId"]].append(st["stopSequence"])
             
         dest_stop_times = stop_times_col.find(
-            {"stopId": dest_id, "tripId": {"$in": list(origin_map.keys())}},
+            {"stopId": actual_dest_id, "tripId": {"$in": list(origin_map.keys())}},
             {"tripId": 1, "stopSequence": 1}
         )
         for st in dest_stop_times:

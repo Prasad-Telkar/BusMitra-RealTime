@@ -1,0 +1,354 @@
+/* ==========================================================================
+   DRIVER PORTAL — IN-CAB MOBILE TERMINAL DESIGN
+   ========================================================================== */
+
+.driver-portal-layout {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: #0F172A;
+  color: #F8FAFC;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 40px;
+}
+
+.driver-login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0F172A;
+  padding: 20px;
+}
+
+.driver-login-card {
+  width: 100%;
+  max-width: 420px;
+  background: #1E293B;
+  border: 1px solid #334155;
+  border-radius: 20px;
+  padding: 32px 28px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.driver-login-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: rgba(2, 132, 199, 0.15);
+  color: #38BDF8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+
+.driver-login-title {
+  font-size: 24px;
+  font-weight: 800;
+  text-align: center;
+  color: #FFFFFF;
+  margin: 0 0 6px 0;
+}
+
+.driver-login-sub {
+  font-size: 13px;
+  text-align: center;
+  color: #94A3B8;
+  margin: 0 0 24px 0;
+}
+
+.driver-input-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.driver-input-field label {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #94A3B8;
+  letter-spacing: 0.5px;
+}
+
+.driver-input-field input, .driver-input-field select {
+  width: 100%;
+  background: #0F172A;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 15px;
+  color: #FFFFFF;
+  font-weight: 600;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.driver-input-field input:focus, .driver-input-field select:focus {
+  border-color: #38BDF8;
+}
+
+.driver-login-submit {
+  width: 100%;
+  background: #0284C7;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 8px;
+}
+
+.driver-login-submit:hover {
+  background: #0369A1;
+}
+
+/* TOP STATUS BAR */
+.driver-top-bar {
+  background: #1E293B;
+  border-bottom: 1px solid #334155;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.driver-id-badge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.driver-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #0284C7;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.driver-id-text h2 {
+  font-size: 16px;
+  font-weight: 800;
+  margin: 0;
+  color: #FFFFFF;
+}
+
+.driver-id-text p {
+  font-size: 12px;
+  color: #94A3B8;
+  margin: 2px 0 0 0;
+}
+
+.driver-socket-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.driver-socket-pill.connected {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34D399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.driver-socket-pill.disconnected {
+  background: rgba(239, 68, 68, 0.15);
+  color: #F87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.driver-main-screen {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 20px 16px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* READY CARD */
+.driver-trip-card {
+  background: #1E293B;
+  border: 1px solid #334155;
+  border-radius: 20px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.driver-trip-card.active-run {
+  border-color: #10B981;
+  background: linear-gradient(180deg, #1E293B 0%, #064E3B 100%);
+  box-shadow: 0 0 30px rgba(16, 185, 129, 0.2);
+}
+
+.dt-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dt-status-pill {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  text-transform: uppercase;
+}
+
+.dt-status-pill.ready {
+  background: #334155;
+  color: #CBD5E1;
+}
+
+.dt-status-pill.broadcasting {
+  background: #10B981;
+  color: #FFFFFF;
+  animation: pulse-badge 2s infinite;
+}
+
+@keyframes pulse-badge {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); }
+  70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.dt-bus-num {
+  font-size: 14px;
+  font-weight: 800;
+  color: #FBBF24;
+}
+
+.dt-route-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dt-route-select {
+  width: 100%;
+  background: #0F172A;
+  border: 1px solid #475569;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #FFFFFF;
+  outline: none;
+}
+
+/* TELEMETRY HUD */
+.driver-telemetry-hud {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  background: #0F172A;
+  border: 1px solid #334155;
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.d-hud-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.d-hud-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: #94A3B8;
+  text-transform: uppercase;
+}
+
+.d-hud-val {
+  font-size: 20px;
+  font-weight: 800;
+  color: #38BDF8;
+}
+
+.d-hud-val.good {
+  color: #34D399;
+}
+
+.d-hud-val.stale {
+  color: #FBBF24;
+}
+
+/* BIG IN-CAB TOUCH BUTTONS */
+.driver-start-btn {
+  width: 100%;
+  background: #10B981;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 16px;
+  padding: 20px;
+  font-size: 18px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
+}
+
+.driver-start-btn:hover {
+  background: #059669;
+  transform: translateY(-2px);
+}
+
+.driver-end-btn {
+  width: 100%;
+  background: #EF4444;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 16px;
+  padding: 20px;
+  font-size: 18px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 8px 24px rgba(239, 68, 68, 0.3);
+}
+
+.driver-end-btn:hover {
+  background: #DC2626;
+  transform: translateY(-2px);
+}
+
+.driver-safety-box {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: #FCD34D;
+}

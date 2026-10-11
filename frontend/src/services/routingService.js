@@ -59,48 +59,52 @@ export async function getTransitJourney(origin, destination) {
   // Origin: { lat, lng } or stop name string
   // Destination: { name, lat, lng } or stop name string
 
-  let destLat, destLng;
-  if (destination && destination.lat && destination.lng) {
-    destLat = destination.lat;
-    destLng = destination.lng;
-  } else {
-    // If it's just a name, search backend stops
-    try {
-      const q = typeof destination === 'string' ? destination : destination.name;
-      const res = await fetch(`${API_BASE}/api/search/stops?q=${encodeURIComponent(q)}`);
-      const stops = await res.json();
-      if (stops.length > 0) {
-        destLat = stops[0].lat || (ktcStops.find(s => s.id === stops[0].stopId)?.lat);
-        destLng = stops[0].lng || (ktcStops.find(s => s.id === stops[0].stopId)?.lng);
-      } else {
-        throw new Error("Destination not found");
-      }
-    } catch (e) {
-      console.error(e);
-      return { error: "Destination not found" };
-    }
-  }
+  const resolveCoords = async (point, label) => {
+    if (!point) return null;
+    if (point.lat && point.lng) return { lat: point.lat, lng: point.lng };
+    if (point.latitude && point.longitude) return { lat: point.latitude, lng: point.longitude };
 
-  let origLat, origLng;
-  if (origin && origin.lat && origin.lng) {
-    origLat = origin.lat;
-    origLng = origin.lng;
-  } else {
+    const nameStr = (typeof point === 'string' ? point : (point.name || "")).trim();
+    if (!nameStr) return null;
+
+    // 1. Check local ktcStops by exact or fuzzy name
+    const local = ktcStops.find(s => 
+      s.name.toLowerCase() === nameStr.toLowerCase() ||
+      s.name.toLowerCase().includes(nameStr.toLowerCase()) ||
+      nameStr.toLowerCase().includes(s.name.toLowerCase())
+    );
+    if (local && local.lat && local.lng) {
+      return { lat: local.lat, lng: local.lng };
+    }
+
+    // 2. Fetch from backend /api/search/stops
     try {
-      const q = typeof origin === 'string' ? origin : origin.name;
-      const res = await fetch(`${API_BASE}/api/search/stops?q=${encodeURIComponent(q)}`);
-      const stops = await res.json();
-      if (stops.length > 0) {
-        origLat = stops[0].lat || (ktcStops.find(s => s.id === stops[0].stopId)?.lat);
-        origLng = stops[0].lng || (ktcStops.find(s => s.id === stops[0].stopId)?.lng);
-      } else {
-        throw new Error("Origin not found");
+      const res = await fetch(`${API_BASE}/api/search/stops?q=${encodeURIComponent(nameStr)}&limit=1`);
+      if (res.ok) {
+        const stops = await res.json();
+        if (stops && stops.length > 0) {
+          const s = stops[0];
+          const lat = s.latitude || s.lat || (ktcStops.find(k => k.id === s.stopId || k.name === s.name)?.lat);
+          const lng = s.longitude || s.lng || (ktcStops.find(k => k.id === s.stopId || k.name === s.name)?.lng);
+          if (lat && lng) return { lat, lng };
+        }
       }
     } catch (e) {
-      console.error(e);
-      return { error: "Origin not found" };
+      console.warn(`Could not resolve coordinates for ${label}:`, nameStr, e);
     }
-  }
+    return null;
+  };
+
+  const destCoords = await resolveCoords(destination, "destination");
+  if (!destCoords) return { error: "Destination not found" };
+
+  const origCoords = await resolveCoords(origin, "origin");
+  if (!origCoords) return { error: "Origin not found" };
+
+  const origLat = origCoords.lat;
+  const origLng = origCoords.lng;
+  const destLat = destCoords.lat;
+  const destLng = destCoords.lng;
 
   try {
     const res = await fetch(`${API_BASE}/api/journey/plan`, {

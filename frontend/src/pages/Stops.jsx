@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, ChevronDown, MapPin, Navigation, Loader2 } from "lucide-react";
+import { Search, MapPin, Navigation, Loader2, ArrowRight, Bus } from "lucide-react";
+import "./Stops.css";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "https://busmitra-goa.onrender.com";
 
@@ -22,7 +23,7 @@ export default function Stops() {
     try {
       const url = searchQuery 
         ? `${API_BASE}/api/search/stops?q=${encodeURIComponent(searchQuery)}`
-        : `${API_BASE}/api/stops?limit=15`;
+        : `${API_BASE}/api/stops?limit=24`;
       const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
@@ -41,7 +42,7 @@ export default function Stops() {
   const handleSearch = (e) => {
     const val = e.target.value;
     setQuery(val);
-    if (val.length > 2) {
+    if (val.length >= 2) {
       fetchStops(val);
     } else if (val.length === 0) {
       fetchStops();
@@ -52,6 +53,7 @@ export default function Stops() {
     setLocationStatus("locating");
     if (!navigator.geolocation) {
       setLocationStatus("error");
+      alert("Geolocation is not supported by your browser.");
       return;
     }
 
@@ -61,7 +63,7 @@ export default function Stops() {
         setIsLoading(true);
         try {
           const { latitude, longitude } = position.coords;
-          const res = await fetch(`${API_BASE}/api/stops/nearby?lat=${latitude}&lng=${longitude}&radius=5`);
+          const res = await fetch(`${API_BASE}/api/stops/nearby?lat=${latitude}&lng=${longitude}&radius=10`);
           if (res.ok) {
             const data = await res.json();
             setStops(data);
@@ -76,119 +78,121 @@ export default function Stops() {
       (err) => {
         console.error("Geolocation error:", err);
         setLocationStatus("error");
+        alert("Unable to acquire your GPS location. Please check location permissions.");
       },
-      { timeout: 10000 }
+      { timeout: 10000, enableHighAccuracy: true }
     );
   };
 
-  const renderSkeletons = () => {
-    return Array.from({ length: 5 }).map((_, i) => (
-      <div key={`skeleton-${i}`} className="bus-card" style={{ display: 'flex', flexDirection: 'column', padding: '16px', gap: '12px', background: 'white', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', opacity: 0.6 }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-          <div style={{ background: '#E2E8F0', padding: '10px', borderRadius: '12px', width: '44px', height: '44px' }} />
-          <div style={{ flex: 1 }}>
-            <div style={{ height: '16px', background: '#E2E8F0', borderRadius: '4px', width: '70%', marginBottom: '8px' }} />
-            <div style={{ height: '12px', background: '#E2E8F0', borderRadius: '4px', width: '40%', marginBottom: '4px' }} />
-            <div style={{ height: '12px', background: '#E2E8F0', borderRadius: '4px', width: '50%' }} />
-          </div>
-        </div>
-        <div style={{ background: '#F1F5F9', height: '40px', borderRadius: '8px', width: '100%' }} />
-      </div>
-    ));
-  };
-
   return (
-    <div className="home-screen">
-      <div className="home-content">
-        <header className="home-header">
-          <div className="header-top">
-            <h1 style={{ margin: 0, fontSize: '24px', color: 'white' }}>Bus Stops</h1>
-          </div>
-          <p className="tagline">Find a stop and see buses serving it.</p>
-        </header>
+    <div className="stops-page-container">
+      {/* HEADER */}
+      <div className="stops-header">
+        <span className="stops-badge">Transit Network</span>
+        <h1 className="stops-title">Bus Stops Directory</h1>
+        <p className="stops-subtitle">
+          Explore all official Kadamba Transport Corporation (KTCL) stands and local stops across Goa.
+        </p>
+      </div>
 
-        <section className="search-section">
-          <div className="search-box">
-            <Search size={18} color="var(--text-muted)" />
-            <input 
-              type="text" 
-              placeholder="Search bus stop..." 
-              value={query}
-              onChange={handleSearch}
-            />
-            {isLoading && <Loader2 className="spinner" size={16} color="var(--teal-600)" />}
-          </div>
-          
-          <button 
-            className="btn-outline nearby-btn" 
-            onClick={findNearbyStops}
-            disabled={locationStatus === "locating"}
-            style={{ width: '100%', marginTop: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}
-          >
-            {locationStatus === "locating" ? (
-              <><Loader2 className="spinner" size={18} /> Locating you...</>
-            ) : (
-              <><Navigation size={18} /> Use My Location</>
-            )}
-          </button>
-        </section>
+      {/* SEARCH & GEOLOCATION CONTROLS */}
+      <div className="stops-controls-card">
+        <div className="stops-search-wrapper">
+          <Search size={18} color="#0284C7" />
+          <input 
+            type="text" 
+            className="stops-search-input"
+            placeholder="Search stop name (e.g. Panaji, Margao, Mapusa)..." 
+            value={query}
+            onChange={handleSearch}
+          />
+          {isLoading && <Loader2 className="spinner" size={16} color="#0284C7" />}
+        </div>
 
-        <section className="live-buses-section" style={{ marginTop: '24px' }}>
-          <div className="section-header">
-            <h3>{query ? "Search Results" : (locationStatus === "found" ? "Stops near you" : "Popular Stops")}</h3>
-          </div>
+        <button 
+          type="button"
+          className="stops-nearby-btn" 
+          onClick={findNearbyStops}
+          disabled={locationStatus === "locating"}
+        >
+          {locationStatus === "locating" ? (
+            <><Loader2 className="spinner" size={16} /> Locating Stops...</>
+          ) : (
+            <><Navigation size={16} /> Stops Near Me</>
+          )}
+        </button>
+      </div>
 
-          <div className="stop-cards" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {isLoading && stops.length === 0 ? (
-              renderSkeletons()
-            ) : error ? (
-              <div style={{ padding: '20px', textAlign: 'center', color: '#ef4444' }}>
-                Unable to load stops. Try again.
-              </div>
-            ) : stops.length === 0 ? (
-              <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                No stops found. Try a different search.
-              </div>
-            ) : (
-              stops.map((stop) => (
-                <div key={stop.stopId || stop._id} className="bus-card" style={{ display: 'flex', flexDirection: 'column', padding: '16px', gap: '12px', background: 'white', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                    <div style={{ background: 'var(--teal-50)', padding: '10px', borderRadius: '12px' }}>
-                      <MapPin size={24} color="var(--teal-600)" />
+      {/* STOPS LIST */}
+      <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+          <h2 style={{ fontSize: '16px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
+            {query ? `Search Results for "${query}"` : locationStatus === "found" ? "Stops Nearest to You" : "Official Bus Stands"}
+          </h2>
+          <span style={{ fontSize: '13px', color: '#64748B', fontWeight: 600 }}>
+            {stops.length} Stops Found
+          </span>
+        </div>
+
+        {isLoading && stops.length === 0 ? (
+          <div className="stops-grid">
+            {[1, 2, 3, 4, 5, 6].map(i => (
+              <div key={i} style={{ height: '120px', background: '#FFFFFF', borderRadius: '16px', border: '1px solid #E2E8F0', opacity: 0.6 }} />
+            ))}
+          </div>
+        ) : error ? (
+          <div style={{ padding: '40px 20px', textAlign: 'center', background: '#FEF2F2', borderRadius: '16px', border: '1px solid #FECACA', color: '#B91C1C' }}>
+            Unable to load stops from server. Please verify your connection.
+          </div>
+        ) : stops.length === 0 ? (
+          <div style={{ padding: '48px 20px', textAlign: 'center', background: '#FFFFFF', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
+            <MapPin size={36} color="#94A3B8" style={{ marginBottom: '8px' }} />
+            <h3 style={{ margin: '0 0 6px 0', fontSize: '17px', color: '#0F172A' }}>No stops found</h3>
+            <p style={{ margin: 0, fontSize: '13px', color: '#64748B' }}>Try searching a different stop name like Panaji, Margao, or Vasco.</p>
+          </div>
+        ) : (
+          <div className="stops-grid">
+            {stops.map(stop => {
+              const stopId = stop.stopId || stop._id;
+              return (
+                <div key={stopId} className="stop-item-card">
+                  <div className="stop-card-head">
+                    <div className="stop-pin-icon">
+                      <MapPin size={22} />
                     </div>
-                    <div style={{ flex: 1 }}>
-                      <h4 style={{ margin: 0, fontSize: '16px', color: 'var(--text-main)' }}>{stop.name}</h4>
-                      <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>
-                        {stop.distance_km ? `${stop.distance_km} km away` : "KTCL Bus Stop"}
-                      </p>
-                      <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>
-                        {stop.route_count !== undefined 
-                          ? (stop.route_count > 0 ? `${stop.route_count} route${stop.route_count > 1 ? 's' : ''} serving this stop` : "No scheduled routes")
-                          : ""}
-                      </p>
+                    <div className="stop-card-text">
+                      <h3 className="stop-card-name">{stop.name}</h3>
+                      <div className="stop-card-meta">
+                        {stop.distance_km && (
+                          <span className="stop-dist-tag">{Number(stop.distance_km).toFixed(1)} km away</span>
+                        )}
+                        <span>
+                          {stop.route_count !== undefined && stop.route_count > 0 
+                            ? `${stop.route_count} Route${stop.route_count > 1 ? 's' : ''}` 
+                            : 'KTCL Stop'}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                  <Link
-                    to={`/stop/${stop.stopId || stop._id}`}
-                    style={{
-                      background: '#F1F5F9',
-                      color: 'var(--teal-700)',
-                      textAlign: 'center',
-                      padding: '10px',
-                      borderRadius: '8px',
-                      textDecoration: 'none',
-                      fontWeight: '600',
-                      fontSize: '14px',
-                      display: 'block'
-                    }}
-                  >
-                    View Stop
-                  </Link>
+
+                  <div className="stop-card-actions">
+                    <Link to={`/stop/${stopId}`} className="stop-btn-details">
+                      View Timetables
+                    </Link>
+                    <Link 
+                      to={`/journey-planner?to=${encodeURIComponent(stop.name)}&toId=${stopId}`} 
+                      className="stop-btn-plan"
+                      title="Plan journey to this stop"
+                    >
+                      <Navigation size={13} />
+                      <span>Plan Trip</span>
+                    </Link>
+                  </div>
                 </div>
-              ))
-            )}
+              );
+            })}
           </div>
-        </section>
+        )}
       </div>
     </div>
   );

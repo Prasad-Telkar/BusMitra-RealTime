@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Bookmark, Bus, Map as MapIcon, ChevronRight } from "lucide-react";
+import { ArrowLeft, Bookmark, Bus, ChevronRight, Clock, Loader2 } from "lucide-react";
+import "./Routes.css";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "https://busmitra-goa.onrender.com";
 
@@ -32,72 +33,88 @@ export default function RouteDetail() {
   }, [routeId]);
 
   if (loading) {
-    return <div style={{ padding: "20px" }}>Loading route details...</div>;
+    return (
+      <div className="route-detail-container" style={{ textAlign: 'center', padding: '60px 20px' }}>
+        <Loader2 className="spinner" size={24} color="#0284C7" />
+        <p style={{ marginTop: '12px', color: '#64748B' }}>Loading route trips...</p>
+      </div>
+    );
   }
 
   if (!route) {
-    return <div style={{ padding: "20px" }}>Route not found.</div>;
+    return (
+      <div className="route-detail-container" style={{ textAlign: 'center', padding: '60px 20px' }}>
+        <h2 style={{ color: '#0F172A' }}>Route Not Found</h2>
+        <p style={{ color: '#64748B' }}>The requested route could not be found.</p>
+        <button type="button" className="btn-primary" onClick={() => navigate(-1)} style={{ maxWidth: '200px', margin: '20px auto' }}>
+          Back to Routes
+        </button>
+      </div>
+    );
   }
 
+  const routeNum = route.routeNumber || route.shortName || "BUS";
+  const routeName = route.routeName || route.longName;
+
   return (
-    <div className="home-screen bg-light route-detail-screen">
-      <div className="routes-content" style={{ paddingBottom: '100px' }}>
-        
-        <header className="rd-header">
-          <button className="icon-btn" onClick={() => navigate(-1)}>
-            <ArrowLeft size={24} color="var(--text-main)" />
-          </button>
-          <div className="rd-title-group">
-            <h1>{route.routeNumber || route.shortName || "BUS"}</h1>
-            <p>Kadamba &middot; {route.routeName || route.longName}</p>
-          </div>
-          <button className="icon-btn">
-            <Bookmark size={24} color="var(--teal-800)" />
-          </button>
-        </header>
+    <div className="route-detail-container">
+      {/* HEADER CARD */}
+      <div className="rd-header-card">
+        <button type="button" className="tracker-back-btn" onClick={() => navigate(-1)} title="Back">
+          <ArrowLeft size={18} />
+        </button>
 
-        <div className="rd-main-info" style={{ marginBottom: "20px" }}>
-          <div className="bus-badge">{route.routeNumber || route.shortName || "KTC"}</div>
-          <div className="rd-dest-info">
-            <div className="rd-dest-line">{route.routeName || route.longName}</div>
-            <div className="rd-stops-count">{trips.length} scheduled trips</div>
-          </div>
+        <div className="rd-icon-box">
+          <Bus size={24} />
         </div>
 
-        <div className="timeline-section" style={{ background: "transparent", border: "none", padding: 0 }}>
-          <div className="timeline-header" style={{ marginBottom: "12px" }}>
-            <h3>Scheduled Trips</h3>
-          </div>
-
-          <div className="route-cards">
-            {trips.length === 0 ? (
-              <div style={{ color: "var(--text-muted)", textAlign: "center", padding: "20px" }}>
-                No trips scheduled for this route.
-              </div>
-            ) : (
-              trips.map(trip => (
-                <Link 
-                  key={trip.tripId} 
-                  to={`/trip/${trip.tripId}`} 
-                  className="route-result-card" 
-                  style={{ display: "block" }}
-                >
-                  <div className="r-card-top" style={{ alignItems: "center" }}>
-                    <div className="r-title-area" style={{ flex: 1 }}>
-                      <h4 style={{ margin: 0, fontSize: "16px", color: "var(--text-main)" }}>
-                        {trip.headsign || route.routeName || route.longName}
-                      </h4>
-                      <p style={{ margin: "4px 0 0 0", fontSize: "13px", color: "var(--text-light)" }}>
-                        Service: {trip.serviceId}
-                      </p>
-                    </div>
-                    <ChevronRight size={20} color="var(--border-color)" />
-                  </div>
-                </Link>
-              ))
-            )}
-          </div>
+        <div className="rd-titles">
+          <h1>Route {routeNum} &bull; {routeName}</h1>
+          <p>Kadamba Transport Corporation &bull; {trips.length} Scheduled Trips</p>
         </div>
+      </div>
+
+      {/* SCHEDULED TRIPS LIST */}
+      <div className="timetable-card">
+        <div className="timetable-header-row">
+          <h2>Scheduled Services &amp; Trips</h2>
+          <span style={{ fontSize: '12px', color: '#64748B', fontWeight: 600 }}>
+            {trips.length} Trips Listed
+          </span>
+        </div>
+
+        {trips.length === 0 ? (
+          <div style={{ color: "#64748B", textAlign: "center", padding: "30px 20px", background: "#F8FAFC", borderRadius: "12px" }}>
+            No individual trips currently published for this route in the GTFS timetable.
+          </div>
+        ) : (
+          <div className="routes-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
+            {trips.map(trip => (
+              <Link 
+                key={trip.tripId} 
+                to={`/trip/${trip.tripId}`} 
+                className="route-card-link"
+              >
+                <div>
+                  <span className="route-badge" style={{ fontSize: '11px', padding: '4px 8px' }}>
+                    {trip.serviceId || "DAILY"}
+                  </span>
+                  <h3 className="route-name-text" style={{ marginTop: '8px' }}>
+                    Towards {trip.headsign || routeName}
+                  </h3>
+                </div>
+
+                <div className="route-card-bottom">
+                  <span style={{ color: '#64748B', fontWeight: 600 }}>Trip ID: {trip.tripId}</span>
+                  <span className="route-action-link">
+                    <span>Timetable</span>
+                    <ChevronRight size={14} />
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

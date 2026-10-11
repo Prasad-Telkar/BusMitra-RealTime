@@ -4,12 +4,13 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(2px);
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   z-index: 9999;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
 }
 
 .drawer-overlay.open {
@@ -20,15 +21,16 @@
 .drawer-content {
   position: fixed;
   top: 0;
-  left: -300px; /* Start off-screen */
-  width: 280px;
+  left: -320px;
+  width: 300px;
+  max-width: 85vw;
   height: 100%;
-  background: white;
+  background: #FFFFFF;
   z-index: 10000;
   display: flex;
   flex-direction: column;
-  box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
-  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 8px 0 30px rgba(15, 23, 42, 0.15);
+  transition: left 0.28s cubic-bezier(0.16, 1, 0.3, 1);
   overflow-y: auto;
 }
 
@@ -37,75 +39,162 @@
 }
 
 .drawer-header {
-  padding: 24px 20px;
-  background: var(--teal-50);
-  border-bottom: 1px solid var(--border-color);
+  padding: 24px 20px 18px 20px;
+  background: linear-gradient(180deg, #F0F9FF 0%, #FFFFFF 100%);
+  border-bottom: 1px solid #E2E8F0;
+}
+
+.dh-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
 }
 
 .drawer-brand {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 8px;
+}
+
+.drawer-logo-icon {
+  width: 38px;
+  height: 38px;
+  background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
 }
 
 .drawer-brand h2 {
   margin: 0;
-  font-size: 20px;
-  color: var(--teal-800);
+  font-size: 19px;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.4px;
 }
 
-.drawer-header p {
+.drawer-sub {
+  font-size: 11px;
+  font-weight: 600;
+  color: #0284C7;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.drawer-close-btn {
+  background: #F1F5F9;
+  border: none;
+  color: #64748B;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.drawer-close-btn:hover {
+  background: #E2E8F0;
+  color: #0F172A;
+}
+
+.drawer-tagline {
   margin: 0;
-  font-size: 13px;
-  color: var(--text-muted);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #64748B;
+  font-style: italic;
 }
 
 .drawer-nav {
-  padding: 12px 0;
+  padding: 14px 0 32px 0;
   display: flex;
   flex-direction: column;
+}
+
+.drawer-section-title {
+  padding: 10px 20px 4px 20px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #94A3B8;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
 }
 
 .drawer-item {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 14px 20px;
-  color: var(--text-main);
+  gap: 14px;
+  padding: 12px 20px;
+  color: #334155;
   text-decoration: none;
-  font-size: 15px;
-  font-weight: 500;
-  transition: background-color 0.2s ease;
+  font-size: 14.5px;
+  font-weight: 600;
+  transition: all 0.15s ease;
   cursor: pointer;
 }
 
 .drawer-item:hover {
-  background-color: var(--teal-50);
-  color: var(--teal-800);
-}
-
-.drawer-item.disabled {
-  color: var(--text-light);
-  cursor: not-allowed;
-}
-
-.drawer-item.disabled:hover {
-  background-color: transparent;
-  color: var(--text-light);
+  background-color: #F0F9FF;
+  color: #0369A1;
+  padding-left: 24px;
 }
 
 .drawer-divider {
   height: 1px;
-  background: var(--border-color);
+  background: #E2E8F0;
   margin: 12px 0;
 }
 
-.drawer-section-title {
-  padding: 8px 20px;
-  font-size: 12px;
+.drawer-user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  background: #F8FAFC;
+  margin: 4px 16px 8px 16px;
+  border-radius: 10px;
+  border: 1px solid #E2E8F0;
+}
+
+.dui-avatar {
+  width: 32px;
+  height: 32px;
+  background: #E0F2FE;
+  color: #0284C7;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dui-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.dui-name {
+  font-size: 13px;
   font-weight: 700;
-  color: var(--text-muted);
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
+  color: #0F172A;
+}
+
+.dui-status {
+  font-size: 11px;
+  color: #10B981;
+  font-weight: 600;
+}
+
+.drawer-logout {
+  color: #DC2626 !important;
+}
+
+.drawer-logout:hover {
+  background-color: #FEF2F2 !important;
+  color: #B91C1C !important;
 }

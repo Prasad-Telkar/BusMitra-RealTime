@@ -1,118 +1,131 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Bus, Map as MapIcon, Bookmark, MoreHorizontal, MapPin, CheckSquare, ChevronRight, Plus, BookmarkMinus } from "lucide-react";
+import { MapPin, Bookmark, ChevronRight, Navigation, Trash2, Bus, Plus } from "lucide-react";
+import "./Stops.css";
 
 export default function Saved() {
+  const [savedStops, setSavedStops] = useState([]);
+
+  useEffect(() => {
+    loadSaved();
+  }, []);
+
+  const loadSaved = () => {
+    try {
+      const stops = JSON.parse(localStorage.getItem('busmitra_saved_stops') || '[]');
+      setSavedStops(stops);
+    } catch (e) {
+      setSavedStops([]);
+    }
+  };
+
+  const removeStop = (id) => {
+    const updated = savedStops.filter(s => (s.stopId || s._id) !== id);
+    setSavedStops(updated);
+    localStorage.setItem('busmitra_saved_stops', JSON.stringify(updated));
+  };
+
   return (
-    <div className="home-screen bg-light">
-      <div className="saved-content" style={{ paddingBottom: '100px' }}>
-        
-        <header className="saved-header">
-          <div className="sh-top">
-            <h1>Your everyday journeys</h1>
-            <MoreHorizontal size={24} color="var(--teal-800)" />
-          </div>
-          <p className="sh-subtitle">Your regular stops and routes, one tap away.</p>
-        </header>
-
-        <section className="saved-section">
-          <div className="section-header">
-            <h3>Saved stops</h3>
-            <span className="edit-action">Edit</span>
-          </div>
-
-          <div className="saved-cards">
-            {/* Saved Stop 1 */}
-            <div className="saved-stop-card">
-              <div className="ssc-top">
-                <div className="ssc-icon">
-                  <MapPin size={20} color="var(--teal-700)" />
-                </div>
-                <div className="ssc-info">
-                  <h4>Porvorim</h4>
-                  <p>Towards Margao &middot; Boarding stop</p>
-                </div>
-                <div className="ssc-bookmark">
-                  <CheckSquare size={20} color="var(--teal-700)" />
-                </div>
-              </div>
-              <div className="ssc-bottom">
-                <span className="ssc-route">K01 &rarr; Margao</span>
-                <span className="ssc-eta teal">8 min - Live</span>
-                <ChevronRight size={16} color="var(--teal-700)" />
-              </div>
-            </div>
-
-            {/* Saved Stop 2 */}
-            <div className="saved-stop-card">
-              <div className="ssc-top">
-                <div className="ssc-icon">
-                  <MapPin size={20} color="var(--teal-700)" />
-                </div>
-                <div className="ssc-info">
-                  <h4>Margao</h4>
-                  <p>Towards Panaji &middot; Destination stop</p>
-                </div>
-                <div className="ssc-bookmark">
-                  <CheckSquare size={20} color="var(--teal-700)" />
-                </div>
-              </div>
-              <div className="ssc-bottom">
-                <span className="ssc-route">K01 &rarr; Panaji</span>
-                <span className="ssc-eta teal">ETA unavailable</span>
-                <ChevronRight size={16} color="var(--teal-700)" />
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="saved-section mt-4">
-          <div className="section-header">
-            <h3>Saved routes</h3>
-            <span className="edit-action">Edit</span>
-          </div>
-
-          <div className="saved-routes-list">
-            {/* Saved Route 1 */}
-            <div className="saved-route-item">
-              <div className="sr-left">
-                <div className="bus-badge">K01</div>
-                <div className="sr-info">
-                  <h4>Panaji &rarr; Margao</h4>
-                  <p>Via Porvorim, Mapusa, Ponda</p>
-                  <div className="sr-status teal">
-                    <span className="live-dot teal"></span> At Porvorim - 8 min
-                  </div>
-                </div>
-              </div>
-              <ChevronRight size={18} color="var(--teal-700)" />
-            </div>
-
-            {/* Saved Route 2 */}
-            <div className="saved-route-item">
-              <div className="sr-left">
-                <div className="bus-badge">K03</div>
-                <div className="sr-info">
-                  <h4>Vasco &rarr; Panaji</h4>
-                  <p>Via Dabolim, Chicalim, Cortalim</p>
-                  <div className="sr-status teal">
-                    <span className="live-dot teal"></span> At Dabolim - 14 min
-                  </div>
-                </div>
-              </div>
-              <ChevronRight size={18} color="var(--teal-700)" />
-            </div>
-          </div>
-        </section>
-
-        <button className="btn-outline add-saved-btn">
-          <Plus size={18} /> Find a stop or route to save
-        </button>
-
-        <div className="demo-data-note inline" style={{ alignItems: 'flex-start', marginTop: '24px' }}>
-          <BookmarkMinus size={16} style={{ marginTop: '2px', flexShrink: 0 }} /> 
-          <span>Demo data &middot; No official KTC integration. Local / private buses coming soon.</span>
-        </div>
+    <div className="stops-page-container">
+      {/* HEADER */}
+      <div className="stops-header">
+        <span className="stops-badge">Saved Places</span>
+        <h1 className="stops-title">Your Saved Bus Stops</h1>
+        <p className="stops-subtitle">
+          Quickly access and navigate to your everyday stops and transit terminals in Goa.
+        </p>
       </div>
+
+      {/* SAVED STOPS LIST */}
+      {savedStops.length === 0 ? (
+        <div style={{
+          background: '#FFFFFF',
+          border: '1px solid #E2E8F0',
+          borderRadius: '20px',
+          padding: '48px 24px',
+          textAlign: 'center',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '12px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.03)'
+        }}>
+          <div style={{
+            width: '64px',
+            height: '64px',
+            borderRadius: '16px',
+            background: '#F0F9FF',
+            color: '#0284C7',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <Bookmark size={32} />
+          </div>
+          <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
+            No Saved Stops Yet
+          </h2>
+          <p style={{ fontSize: '14px', color: '#64748B', maxWidth: '380px', margin: 0, lineHeight: 1.5 }}>
+            Bookmark stops like Panaji KTC, Margao, or Mapusa to view timetables and plan your commute with one click.
+          </p>
+          <Link 
+            to="/stops" 
+            className="btn-primary" 
+            style={{ textDecoration: 'none', maxWidth: '220px', marginTop: '12px' }}
+          >
+            <Plus size={18} />
+            <span>Browse All Stops</span>
+          </Link>
+        </div>
+      ) : (
+        <div className="stops-grid">
+          {savedStops.map(stop => {
+            const stopId = stop.stopId || stop._id;
+            return (
+              <div key={stopId} className="stop-item-card">
+                <div className="stop-card-head">
+                  <div className="stop-pin-icon" style={{ background: '#FEF3C7', color: '#D97706' }}>
+                    <Bookmark size={20} fill="#D97706" />
+                  </div>
+                  <div className="stop-card-text">
+                    <h3 className="stop-card-name">{stop.name}</h3>
+                    <p className="stop-card-meta">
+                      <span>KTCL Stand</span> &bull; <span>Stop ID: {stopId}</span>
+                    </p>
+                  </div>
+                  <button 
+                    type="button"
+                    onClick={() => removeStop(stopId)}
+                    title="Remove from saved"
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#94A3B8',
+                      cursor: 'pointer',
+                      padding: '4px'
+                    }}
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+
+                <div className="stop-card-actions">
+                  <Link to={`/stop/${stopId}`} className="stop-btn-details">
+                    Timetables
+                  </Link>
+                  <Link 
+                    to={`/journey-planner?to=${encodeURIComponent(stop.name)}&toId=${stopId}`} 
+                    className="stop-btn-plan"
+                  >
+                    <Navigation size={13} />
+                    <span>Plan Trip</span>
+                  </Link>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
