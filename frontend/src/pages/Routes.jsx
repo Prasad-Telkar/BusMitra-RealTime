@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Bus, Map as MapIcon, Search, ChevronRight, ArrowUpDown, X, Loader2 } from "lucide-react";
-import "./Routes.css";
+import { Bus, Map as MapIcon, Bookmark, Search, ChevronRight, Crosshair, X, ArrowUpDown, Clock, ChevronDown } from "lucide-react";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "https://busmitra-goa.onrender.com";
 
@@ -65,132 +64,179 @@ export default function RoutesPage() {
   ];
 
   return (
-    <div className="routes-container">
-      {/* HEADER */}
-      <div className="routes-header">
-        <span className="routes-badge">Transit Network</span>
-        <h1 className="routes-title">Bus Routes &amp; Lines</h1>
-        <p className="routes-sub">
-          Search connecting Kadamba Transport Corporation (KTCL) bus services across Goa.
-        </p>
-      </div>
+    <div className="home-screen bg-light">
+      <div className="routes-content">
+        <h1 className="page-title">Find your bus</h1>
 
-      {/* SEARCH CARD */}
-      <div className="routes-search-card">
-        <div className="routes-search-fields">
-          <div className="routes-input-box">
-            <Search size={16} color="#0284C7" />
-            <input 
-              type="text" 
-              placeholder="Origin stop (e.g. Panaji)..."
-              value={fromQuery}
-              onChange={(e) => setFromQuery(e.target.value)}
-            />
-            {fromQuery && (
-              <X size={16} color="#94A3B8" style={{ cursor: 'pointer' }} onClick={() => setFromQuery("")} />
-            )}
-          </div>
-
-          <button 
-            type="button" 
-            className="routes-swap-btn" 
-            onClick={() => {
-              const temp = fromQuery;
-              setFromQuery(toQuery);
-              setToQuery(temp);
-            }}
-            title="Swap Origin and Destination"
-          >
-            <ArrowUpDown size={16} />
-          </button>
-
-          <div className="routes-input-box">
-            <Search size={16} color="#0284C7" />
-            <input 
-              type="text" 
-              placeholder="Destination stop (e.g. Margao)..."
-              value={toQuery}
-              onChange={(e) => setToQuery(e.target.value)}
-            />
-            {toQuery && (
-              <X size={16} color="#94A3B8" style={{ cursor: 'pointer' }} onClick={() => setToQuery("")} />
-            )}
+        <div className="route-search-card" style={{ padding: "16px", borderRadius: "12px", border: "1px solid #eaeaea", backgroundColor: "#fff", marginBottom: "16px", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>
+          <div style={{ display: "flex", alignItems: "flex-start" }}>
+            {/* Icons column */}
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginRight: "16px", paddingTop: "8px" }}>
+              <div style={{ width: "12px", height: "12px", borderRadius: "50%", backgroundColor: "var(--teal-800)", marginBottom: "4px" }}></div>
+              <div style={{ width: "2px", height: "30px", backgroundColor: "#eaeaea", margin: "2px 0" }}></div>
+              <div style={{ width: "12px", height: "12px", borderRadius: "50%", border: "2px solid var(--teal-800)", marginTop: "4px", backgroundColor: "white" }}></div>
+            </div>
+            
+            {/* Inputs column */}
+            <div style={{ flex: 1 }}>
+              {/* FROM Input */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: "12px", borderBottom: "1px solid #eaeaea" }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: "10px", fontWeight: "bold", color: "#888", letterSpacing: "1px", marginBottom: "4px" }}>FROM</div>
+                  <input 
+                    type="text"
+                    placeholder="Enter origin..."
+                    style={{ width: "100%", border: "none", outline: "none", fontSize: "18px", fontWeight: "600", color: "#333", background: "transparent" }}
+                    value={fromQuery}
+                    onChange={(e) => setFromQuery(e.target.value)}
+                  />
+                </div>
+                <div 
+                  style={{ padding: "4px", color: "var(--teal-800)", cursor: "pointer" }}
+                  onClick={() => {
+                    // Redirect to journey planner since it has map and routing logic for current location
+                    if ("geolocation" in navigator) {
+                      window.location.href = "/journey-planner?to="; 
+                    } else {
+                      alert("Geolocation is not supported by your browser.");
+                    }
+                  }}
+                >
+                  <Crosshair size={18} />
+                </div>
+              </div>
+              
+              {/* TO Input */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: "12px" }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: "10px", fontWeight: "bold", color: "#888", letterSpacing: "1px", marginBottom: "4px" }}>TO</div>
+                  <input 
+                    type="text"
+                    placeholder="Enter destination..."
+                    style={{ width: "100%", border: "none", outline: "none", fontSize: "18px", fontWeight: "600", color: "#333", background: "transparent" }}
+                    value={toQuery}
+                    onChange={(e) => setToQuery(e.target.value)}
+                  />
+                </div>
+                {toQuery && (
+                  <div style={{ padding: "4px", color: "#888", cursor: "pointer" }} onClick={() => setToQuery('')}>
+                    <X size={18} />
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {/* Swap icon */}
+            <div 
+              style={{ marginLeft: "12px", alignSelf: "center", padding: "8px", color: "var(--teal-800)", cursor: "pointer" }}
+              onClick={() => {
+                const temp = fromQuery;
+                setFromQuery(toQuery);
+                setToQuery(temp);
+              }}
+            >
+              <ArrowUpDown size={20} />
+            </div>
           </div>
         </div>
 
-        {/* POPULAR TRIPS */}
-        <div className="popular-chips-wrap">
-          <div className="popular-chips-label">Popular Goa Corridors</div>
-          <div className="popular-chips-grid">
-            {popularDestinations.map((dest, i) => (
-              <button 
-                key={i} 
-                type="button" 
-                className="popular-chip-btn"
-                onClick={() => {
-                  setFromQuery(dest.from);
-                  setToQuery(dest.to);
-                }}
-              >
-                <span>{dest.from}</span>
-                <span className="arr">&rarr;</span>
-                <span>{dest.to}</span>
-              </button>
-            ))}
+        {/* Filters */}
+        <div style={{ display: "flex", gap: "12px", marginBottom: "24px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px", backgroundColor: "#f0fdf4", color: "var(--teal-800)", padding: "8px 16px", borderRadius: "20px", fontSize: "14px", fontWeight: "500", border: "1px solid #bbf7d0", cursor: "pointer" }}>
+            <Clock size={16} /> Leave now <ChevronDown size={16} />
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px", backgroundColor: "#fff", color: "var(--teal-800)", padding: "8px 16px", borderRadius: "20px", fontSize: "14px", fontWeight: "500", border: "1px solid #eaeaea", cursor: "pointer" }}>
+            <Bus size={16} /> Direct buses <ChevronDown size={16} />
           </div>
         </div>
-      </div>
 
-      {/* RESULTS GRID */}
-      <div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-          <h2 style={{ fontSize: '16px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
-            {fromQuery || toQuery ? "Search Results" : "All Scheduled Routes"}
-          </h2>
-          <span style={{ fontSize: '13px', color: '#64748B', fontWeight: 600 }}>
-            {loading ? "Searching..." : `${routes.length} Routes Available`}
-          </span>
-        </div>
-
-        {loading ? (
-          <div className="routes-grid">
-            {[1, 2, 3, 4, 5, 6].map(i => (
-              <div key={i} style={{ height: '110px', background: '#FFFFFF', borderRadius: '16px', border: '1px solid #E2E8F0', opacity: 0.6 }} />
-            ))}
-          </div>
-        ) : routes.length === 0 ? (
-          <div style={{ padding: '48px 20px', textAlign: 'center', background: '#FFFFFF', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
-            <Bus size={36} color="#94A3B8" style={{ marginBottom: '8px' }} />
-            <h3 style={{ margin: '0 0 6px 0', fontSize: '17px', color: '#0F172A' }}>No matching routes found</h3>
-            <p style={{ margin: 0, fontSize: '13px', color: '#64748B' }}>Try clearing the origin or destination filter to browse all routes.</p>
+        {!fromQuery && !toQuery ? (
+          <div className="popular-routes">
+            <h3 style={{ fontSize: "16px", fontWeight: "700", marginBottom: "16px", color: "#333" }}>Popular Destinations in Goa</h3>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+              {popularDestinations.map((dest, i) => (
+                <div 
+                  key={i} 
+                  style={{ 
+                    backgroundColor: "#fff", 
+                    border: "1px solid #eaeaea", 
+                    borderRadius: "8px", 
+                    padding: "12px", 
+                    display: "flex", 
+                    alignItems: "center", 
+                    gap: "8px",
+                    cursor: "pointer",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.02)"
+                  }}
+                  onClick={() => {
+                    setFromQuery(dest.from);
+                    setToQuery(dest.to);
+                  }}
+                >
+                  <MapIcon size={16} color="var(--teal-800)" style={{ flexShrink: 0 }} />
+                  <span style={{ fontWeight: "600", fontSize: "13px", color: "#444", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{dest.from} &rarr; {dest.to}</span>
+                </div>
+              ))}
+            </div>
           </div>
         ) : (
-          <div className="routes-grid">
-            {routes.map(route => {
-              const routeId = route.routeId || route._id;
-              const routeNum = route.routeNumber || route.shortName || "KTC";
-              const routeName = route.routeName || route.longName;
-              return (
-                <Link key={routeId} to={`/route-detail/${routeId}`} className="route-card-link">
-                  <div className="route-card-head">
-                    <span className="route-badge">{routeNum}</span>
-                    <h3 className="route-name-text">{routeName}</h3>
-                  </div>
+          <>
+            <div className="results-header">
+              <h3>{loading ? 'Searching...' : `${routes.length} routes found`}</h3>
+              <span>GTFS Schedule</span>
+            </div>
 
-                  <div className="route-card-bottom">
-                    <span className="route-status-tag">
-                      <span className="live-dot" style={{ background: '#10B981', width: '6px', height: '6px', borderRadius: '50%' }}></span>
-                      Official Schedule
-                    </span>
-                    <span className="route-action-link">
-                      <span>View Trips</span>
-                      <ChevronRight size={15} />
-                    </span>
+            <div className="route-cards">
+              {loading ? (
+                Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="route-result-card" style={{ opacity: 0.6, marginBottom: '12px', display: 'block', padding: '16px', background: 'white', borderRadius: '12px' }}>
+                    <div className="r-card-top" style={{ display: 'flex', alignItems: 'center' }}>
+                      <div style={{ width: '40px', height: '24px', background: '#E2E8F0', borderRadius: '12px' }} />
+                      <div style={{ height: '20px', background: '#E2E8F0', borderRadius: '4px', width: '60%', marginLeft: '12px' }} />
+                    </div>
+                    <div className="r-card-bottom" style={{ marginTop: '16px', display: 'flex', justifyContent: 'space-between' }}>
+                      <div style={{ height: '16px', background: '#E2E8F0', borderRadius: '4px', width: '30%' }} />
+                      <div style={{ height: '16px', background: '#E2E8F0', borderRadius: '4px', width: '25%' }} />
+                    </div>
+                  </div>
+                ))
+              ) : routes.length === 0 ? (
+                <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                  No routes match your search.
+                </div>
+              ) : (
+                routes.map((route, index) => {
+              return (
+                <Link 
+                  key={route.routeId}
+                  to={`/route-detail/${route.routeId}`} 
+                  className={`route-result-card`}
+                  style={{ display: "block" }}
+                >
+                  <div className="r-card-top">
+                    <div className="r-title-area" style={{ flex: 1 }}>
+                      <div className="bus-badge">{route.routeNumber || route.shortName || "BUS"}</div>
+                      <div className="r-route-info" style={{ marginLeft: "12px", paddingRight: "16px" }}>
+                        <h4 style={{ lineHeight: "1.3" }}>{route.routeName || route.longName}</h4>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="r-card-bottom" style={{ marginTop: "12px" }}>
+                    <div className="live-status teal">
+                      <span className="live-dot teal"></span> 
+                      Scheduled
+                    </div>
+                    <div className="board-info">
+                      View Trips <ChevronRight size={16} color="var(--teal-800)" />
+                    </div>
                   </div>
                 </Link>
               );
-            })}
-          </div>
+            })
+          )}
+            </div>
+          </>
         )}
       </div>
     </div>

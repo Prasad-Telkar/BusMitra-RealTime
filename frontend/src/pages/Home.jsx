@@ -1,67 +1,26 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { 
-  Search, 
-  MapPin, 
-  Calculator, 
-  History, 
-  Bookmark, 
-  Navigation, 
-  Loader2, 
-  Radio, 
-  ArrowRight, 
-  Crosshair, 
-  ChevronRight, 
-  Clock, 
-  Bus,
-  ShieldCheck,
-  Info
-} from "lucide-react";
+import { Search, MapPin, Calculator, History, Bookmark, Navigation, Loader2 } from "lucide-react";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "https://busmitra-goa.onrender.com";
 
-const MAJOR_GOA_HUBS = [
-  { id: "1", name: "Panaji KTC Bus Stand", role: "Central Capital Terminal", routeCount: 218 },
-  { id: "135", name: "Margao KTC Bus Stand", role: "South Goa Hub", routeCount: 164 },
-  { id: "44", name: "Mapusa KTC Bus Stand", role: "North Coastal Stand", routeCount: 112 },
-  { id: "52", name: "Vasco Da Gama Bus Stand", role: "Port City Terminal", routeCount: 78 },
-  { id: "30", name: "Ponda KTC Bus Stand", role: "Central Connector", routeCount: 86 },
-];
-
 export default function Home() {
-  const navigate = useNavigate();
   const [query, setQuery] = useState("");
+  const navigate = useNavigate();
   const [stops, setStops] = useState([]);
-  const [isLoadingStops, setIsLoadingStops] = useState(false);
-  const [locationStatus, setLocationStatus] = useState("idle"); // idle | locating | found | error | denied
-  const [locationError, setLocationError] = useState("");
-
-  const [activeFleet, setActiveFleet] = useState([]);
-  const [scheduledRoutes, setScheduledRoutes] = useState([]);
-  const [savedStops, setSavedStops] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [locationStatus, setLocationStatus] = useState("idle");
 
   useEffect(() => {
     fetchStops();
-    fetchFleet();
-    fetchScheduledRoutes();
-    loadSavedStops();
   }, []);
 
-  const loadSavedStops = () => {
-    try {
-      const saved = JSON.parse(localStorage.getItem('busmitra_saved_stops') || '[]');
-      setSavedStops(saved);
-    } catch {
-      setSavedStops([]);
-    }
-  };
-
   const fetchStops = async (searchQuery = "") => {
-    setIsLoadingStops(true);
+    setIsLoading(true);
     try {
       const url = searchQuery 
-        ? `${API_BASE}/api/search/stops?q=${encodeURIComponent(searchQuery)}&limit=6`
-        : `${API_BASE}/api/stops?limit=6`;
+        ? `${API_BASE}/api/search/stops?q=${encodeURIComponent(searchQuery)}`
+        : `${API_BASE}/api/stops?limit=5`;
       const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
@@ -70,338 +29,182 @@ export default function Home() {
     } catch (err) {
       console.error("Failed to fetch stops", err);
     } finally {
-      setIsLoadingStops(false);
-    }
-  };
-
-  const fetchFleet = async () => {
-    try {
-      const res = await fetch(`${API_BASE}/api/admin/fleet`);
-      if (res.ok) {
-        const data = await res.json();
-        setActiveFleet(data.fleet || []);
-      }
-    } catch {
-      setActiveFleet([]);
-    }
-  };
-
-  const fetchScheduledRoutes = async () => {
-    try {
-      const res = await fetch(`${API_BASE}/api/routes?limit=4`);
-      if (res.ok) {
-        const data = await res.json();
-        setScheduledRoutes(data);
-      }
-    } catch {
-      setScheduledRoutes([]);
+      setIsLoading(false);
     }
   };
 
   const findNearbyStops = () => {
+    setLocationStatus("locating");
     if (!navigator.geolocation) {
       setLocationStatus("error");
-      setLocationError("Geolocation is not supported by your browser.");
       return;
     }
 
-    setLocationStatus("locating");
-    setLocationError("");
-
     navigator.geolocation.getCurrentPosition(
       async (position) => {
-        const { latitude, longitude } = position.coords;
+        setLocationStatus("found");
+        setIsLoading(true);
         try {
-          const res = await fetch(`${API_BASE}/api/stops/nearby?lat=${latitude}&lng=${longitude}&radius=5&limit=5`);
+          const { latitude, longitude } = position.coords;
+          const res = await fetch(`${API_BASE}/api/stops/nearby?lat=${latitude}&lng=${longitude}&radius=5`);
           if (res.ok) {
             const data = await res.json();
-            if (data && data.length > 0) {
-              setStops(data);
-              setLocationStatus("found");
-            } else {
-              setLocationStatus("error");
-              setLocationError("No bus stops found within 5 km of your location.");
-            }
+            setStops(data);
+            setQuery("");
           }
-        } catch {
-          setLocationStatus("error");
-          setLocationError("Failed to fetch nearby stops from server.");
+        } catch (err) {
+          console.error("Failed to fetch nearby stops", err);
+        } finally {
+          setIsLoading(false);
         }
       },
-      (err) => {
-        setLocationStatus("denied");
-        if (err.code === 1) {
-          setLocationError("Location permission was disabled. Showing major transit terminals below.");
-        } else {
-          setLocationError("GPS signal unavailable. Showing Goa transit terminals below.");
-        }
+      (error) => {
+        console.error("Geolocation error:", error);
+        setLocationStatus("error");
       },
-      { timeout: 10000, enableHighAccuracy: true }
+      { timeout: 10000 }
     );
   };
 
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    if (query.trim()) {
-      navigate(`/journey-planner?to=${encodeURIComponent(query.trim())}`);
-    } else {
-      navigate("/journey-planner");
-    }
-  };
-
   return (
-    <div className="bm-passenger-dashboard">
-      <div className="bm-dashboard-container">
-        
-        {/* Top Hero Card */}
-        <section className="bm-dash-hero">
-          <div className="bm-dash-hero-content">
-            <div className="bm-dash-badge">
-              <span className="bm-dash-beacon" />
-              <span>Goa Kadamba Transit Network</span>
-            </div>
-            <h1 className="bm-dash-title">Where are you going today?</h1>
-            <p className="bm-dash-subtitle">Real-time timetables, direct routing, and live GPS tracking across Goa.</p>
-
-            {/* Quick Search Input */}
-            <form className="bm-dash-search-form" onSubmit={handleSearchSubmit}>
-              <Search size={18} color="var(--bm-blue-600, #0284C7)" className="bm-dash-search-icon" />
-              <input 
-                type="text" 
-                className="bm-dash-search-input"
-                placeholder="Search bus stop, destination, or route name..." 
-                value={query}
-                onChange={(e) => {
-                  setQuery(e.target.value);
-                  if (e.target.value.length > 2) fetchStops(e.target.value);
-                  else if (e.target.value.length === 0) fetchStops();
-                }}
-              />
-              {isLoadingStops ? (
-                <Loader2 size={18} className="bm-spin" color="var(--bm-blue-600, #0284C7)" />
-              ) : (
-                <button type="submit" className="bm-dash-search-btn">
-                  <span>Search</span>
-                </button>
-              )}
-            </form>
+    <div className="home-screen">
+      <div className="home-content">
+        <header className="home-header">
+          <div className="header-top">
+            <h1 style={{ margin: 0, fontSize: '24px', color: 'white' }}>BusMitra</h1>
           </div>
-        </section>
+          <p className="tagline">Know your bus. Know your time.</p>
+        </header>
 
-        {/* 4-Card Quick Actions Grid */}
-        <section className="bm-dash-actions-grid" aria-label="Quick Navigation">
-          <Link to="/journey-planner" className="bm-dash-action-card">
-            <div className="bm-dac-icon-wrap bm-dac-blue">
-              <Navigation size={22} />
-            </div>
-            <div className="bm-dac-text">
-              <span className="bm-dac-title">Plan Journey</span>
-              <span className="bm-dac-desc">Point-to-point routes &amp; transfers</span>
-            </div>
-            <ChevronRight size={18} className="bm-dac-arrow" />
-          </Link>
-
-          <Link to="/fare-calculator" className="bm-dash-action-card">
-            <div className="bm-dac-icon-wrap bm-dac-amber">
-              <Calculator size={22} />
-            </div>
-            <div className="bm-dac-text">
-              <span className="bm-dac-title">Calculate Fare</span>
-              <span className="bm-dac-desc">Stage carriage &amp; concessions</span>
-            </div>
-            <ChevronRight size={18} className="bm-dac-arrow" />
-          </Link>
-
-          <Link to="/routes" className="bm-dash-action-card">
-            <div className="bm-dac-icon-wrap bm-dac-teal">
-              <Radio size={22} />
-            </div>
-            <div className="bm-dac-text">
-              <span className="bm-dac-title">Live Tracking</span>
-              <span className="bm-dac-desc">Active buses &amp; route telemetry</span>
-            </div>
-            <ChevronRight size={18} className="bm-dac-arrow" />
-          </Link>
-
-          <Link to="/stops" className="bm-dash-action-card">
-            <div className="bm-dac-icon-wrap bm-dac-emerald">
-              <MapPin size={22} />
-            </div>
-            <div className="bm-dac-text">
-              <span className="bm-dac-title">Bus Stops</span>
-              <span className="bm-dac-desc">3,800+ stands across Goa</span>
-            </div>
-            <ChevronRight size={18} className="bm-dac-arrow" />
-          </Link>
-        </section>
-
-        {/* Live Fleet Status Banner */}
-        <section className="bm-dash-fleet-section">
-          <div className="bm-dash-fleet-card">
-            <div className="bm-dfc-header">
-              <div className="bm-dfc-title-group">
-                <span className={`bm-dfc-dot ${activeFleet.length > 0 ? "active" : "offline"}`} />
-                <div>
-                  <h3 className="bm-dfc-title">
-                    {activeFleet.length > 0 ? "Live Telemetry Broadcast Active" : "Real-Time Telemetry Status"}
-                  </h3>
-                  <p className="bm-dfc-desc">
-                    {activeFleet.length > 0
-                      ? `${activeFleet.length} active bus${activeFleet.length > 1 ? "es are" : " is"} broadcasting live GPS.`
-                      : "No drivers are currently broadcasting live GPS telemetry. Verified timetable services remain operational."}
-                  </p>
-                </div>
-              </div>
-              <span className={activeFleet.length > 0 ? "bm-pill-live" : "bm-pill-timetable"}>
-                {activeFleet.length > 0 ? "LIVE GPS" : "TIMETABLE MODE"}
-              </span>
-            </div>
-
-            {/* If live buses exist, render cards */}
-            {activeFleet.length > 0 && (
-              <div className="bm-dfc-bus-list">
-                {activeFleet.map((bus) => (
-                  <div key={bus.activeTripId} className="bm-dfc-bus-item">
-                    <div className="bm-dfc-bus-info">
-                      <span className="bm-dfc-bus-badge">Bus {bus.busId || bus.activeTripId.slice(-4)}</span>
-                      <span className="bm-dfc-bus-route">{bus.routeId || "Active Route"}</span>
-                    </div>
-                    <div className="bm-dfc-bus-speed">
-                      {Math.round(bus.speed * 3.6)} km/h
-                    </div>
-                    <Link to={`/track/${bus.busId || bus.activeTripId}`} className="bm-dfc-track-btn">
-                      <span>Track</span>
-                      <ArrowRight size={14} />
-                    </Link>
-                  </div>
-                ))}
-              </div>
+        <section className="search-section">
+          <h1>Where are you going?</h1>
+          <div className="search-box">
+            <Search size={18} color="var(--text-muted)" />
+            <input 
+              type="text" 
+              placeholder="Search destination, bus or route..." 
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                if (e.target.value.length > 2) fetchStops(e.target.value);
+                else if (e.target.value.length === 0) fetchStops();
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && query) {
+                  navigate(`/journey-planner?to=${encodeURIComponent(query)}`);
+                }
+              }}
+            />
+            {isLoading && <Loader2 className="spinner" size={16} color="var(--teal-600)" />}
+          </div>
+          
+          <button 
+            className="btn-outline nearby-btn" 
+            onClick={findNearbyStops}
+            disabled={locationStatus === "locating"}
+            style={{ width: '100%', marginTop: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', padding: '12px', background: 'white', border: '1px solid #E2E8F0', borderRadius: '12px', cursor: 'pointer', color: 'var(--teal-700)', fontWeight: '600' }}
+          >
+            {locationStatus === "locating" ? (
+              <><Loader2 className="spinner" size={18} /> Locating you...</>
+            ) : (
+              <><Navigation size={18} /> Find stops near me</>
             )}
-          </div>
-        </section>
+          </button>
 
-        {/* Nearby Stops / Search Results */}
-        <section className="bm-dash-stops-section">
-          <div className="bm-dash-section-header">
-            <div>
-              <h2 className="bm-dash-section-title">
-                {query ? "Search Results" : (locationStatus === "found" ? "Stops Nearest to You" : "Major Transit Terminals")}
-              </h2>
-              <p className="bm-dash-section-sub">
-                {locationStatus === "found" ? "Sorted by distance from your coordinates" : "Official KTCL passenger boarding points"}
-              </p>
-            </div>
-
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '16px' }}>
             <button 
-              type="button" 
-              className="bm-dash-detect-btn"
-              onClick={findNearbyStops}
-              disabled={locationStatus === "locating"}
+              onClick={() => navigate('/journey-planner')}
+              style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                gap: '8px', padding: '16px', background: 'white', border: '1px solid #E2E8F0',
+                borderRadius: '12px', cursor: 'pointer', color: 'var(--teal-700)', fontWeight: '600'
+              }}
             >
-              {locationStatus === "locating" ? (
-                <>
-                  <Loader2 size={16} className="bm-spin" />
-                  <span>Locating...</span>
-                </>
-              ) : (
-                <>
-                  <Crosshair size={16} />
-                  <span>Find Stops Near Me</span>
-                </>
-              )}
+              <MapPin size={24} />
+              <span>Plan Journey</span>
+            </button>
+            <button 
+              onClick={() => navigate('/fare-calculator')}
+              style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                gap: '8px', padding: '16px', background: 'white', border: '1px solid #E2E8F0',
+                borderRadius: '12px', cursor: 'pointer', color: 'var(--teal-700)', fontWeight: '600'
+              }}
+            >
+              <Calculator size={24} />
+              <span>Calculate Fare</span>
             </button>
           </div>
+        </section>
 
-          {locationError && (
-            <div className="bm-dash-info-banner">
-              <Info size={16} />
-              <span>{locationError}</span>
-            </div>
-          )}
+        <section className="live-buses-section" style={{ marginTop: '24px' }}>
+          <div className="section-header">
+            <h3>Live buses near you</h3>
+          </div>
+          <div style={{ background: 'white', padding: '24px', borderRadius: '12px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+            <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '14px' }}>Live arrivals unavailable</p>
+          </div>
+        </section>
 
-          <div className="bm-dash-stops-grid">
-            {stops.length === 0 && !isLoadingStops ? (
-              <div className="bm-dash-empty-box">
-                <MapPin size={24} color="var(--bm-slate-400, #94A3B8)" />
-                <p>No bus stops match your search. Try searching for "Panaji", "Margao", or "Mapusa".</p>
+        <section className="stops-section" style={{ marginTop: '24px' }}>
+          <div className="section-header">
+            <h3>{query ? "Search Results" : (locationStatus === "found" ? "Nearby Stops" : "Popular Stops")}</h3>
+          </div>
+
+          <div className="stop-cards" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {stops.length === 0 && !isLoading ? (
+              <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                No stops found. Try a different search.
               </div>
             ) : (
               stops.map((stop) => (
                 <Link
                   key={stop.stopId || stop._id}
                   to={`/stop/${stop.stopId || stop._id}`}
-                  className="bm-dash-stop-card"
+                  className="bus-card"
+                  style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', padding: '16px', gap: '12px', background: 'white', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}
                 >
-                  <div className="bm-dsc-icon">
-                    <MapPin size={20} color="var(--bm-blue-600, #0284C7)" />
+                  <div style={{ background: 'var(--teal-50)', padding: '10px', borderRadius: '12px' }}>
+                    <MapPin size={24} color="var(--teal-600)" />
                   </div>
-                  <div className="bm-dsc-body">
-                    <h3 className="bm-dsc-name">{stop.name}</h3>
-                    <div className="bm-dsc-meta">
-                      <span className="bm-dsc-dist">
-                        {stop.distance_km ? `${stop.distance_km} km away` : "KTCL Bus Stand"}
-                      </span>
-                      <span className="bm-dsc-routes">
-                        {stop.route_count !== undefined 
-                          ? `${stop.route_count} route${stop.route_count === 1 ? '' : 's'}` 
-                          : "Scheduled Service"}
-                      </span>
-                    </div>
+                  <div style={{ flex: 1 }}>
+                    <h4 style={{ margin: 0, fontSize: '16px', color: 'var(--text-main)' }}>{stop.name}</h4>
+                    <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>
+                      {stop.distance_km ? `${stop.distance_km} km away` : "KTCL Bus Stop"}
+                    </p>
+                    <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>
+                      {stop.route_count !== undefined 
+                        ? (stop.route_count > 0 ? `${stop.route_count} route${stop.route_count > 1 ? 's' : ''} serving this stop` : "No scheduled routes")
+                        : ""}
+                    </p>
                   </div>
-                  <ChevronRight size={18} className="bm-dsc-arrow" />
                 </Link>
               ))
             )}
           </div>
         </section>
-
-        {/* Saved Commutes Section */}
-        <section className="bm-dash-saved-section">
-          <div className="bm-dash-section-header">
-            <div>
-              <h2 className="bm-dash-section-title">Saved Commutes &amp; Stops</h2>
-              <p className="bm-dash-section-sub">Your bookmarked stops for fast daily lookup</p>
-            </div>
-            <Link to="/saved" className="bm-dash-link-sm">
-              <span>View all</span>
-              <ChevronRight size={14} />
-            </Link>
+        
+        <section className="recent-section" style={{ marginTop: '24px' }}>
+          <div className="section-header">
+            <h3>Recent journeys</h3>
           </div>
-
-          {savedStops.length === 0 ? (
-            <div className="bm-dash-saved-empty">
-              <Bookmark size={24} color="var(--bm-slate-400, #94A3B8)" />
-              <div>
-                <strong>No saved stops yet</strong>
-                <p>Tap the bookmark icon on any stop or route detail page to save it for quick access.</p>
-              </div>
-              <Link to="/stops" className="bm-btn-sm-outline">Browse Stops</Link>
-            </div>
-          ) : (
-            <div className="bm-dash-stops-grid">
-              {savedStops.slice(0, 4).map((stop) => (
-                <Link
-                  key={stop.stopId || stop._id}
-                  to={`/stop/${stop.stopId || stop._id}`}
-                  className="bm-dash-stop-card"
-                >
-                  <div className="bm-dsc-icon bm-dsc-saved-icon">
-                    <Bookmark size={18} color="var(--bm-blue-700, #0369A1)" />
-                  </div>
-                  <div className="bm-dsc-body">
-                    <h3 className="bm-dsc-name">{stop.name}</h3>
-                    <div className="bm-dsc-meta">
-                      <span className="bm-dsc-dist">Bookmarked Stop</span>
-                    </div>
-                  </div>
-                  <ChevronRight size={18} className="bm-dsc-arrow" />
-                </Link>
-              ))}
-            </div>
-          )}
+          <div style={{ background: 'white', padding: '20px', borderRadius: '12px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+            <History size={24} color="var(--text-muted)" style={{ margin: '0 auto 8px auto' }} />
+            <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '14px' }}>No recent journeys</p>
+          </div>
         </section>
-
+        
+        <section className="saved-section" style={{ marginTop: '24px', paddingBottom: '24px' }}>
+          <div className="section-header">
+            <h3>Saved</h3>
+          </div>
+          <div style={{ background: 'white', padding: '20px', borderRadius: '12px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+            <Bookmark size={24} color="var(--text-muted)" style={{ margin: '0 auto 8px auto' }} />
+            <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '14px' }}>No saved routes</p>
+          </div>
+        </section>
       </div>
     </div>
   );
 }
+

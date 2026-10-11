@@ -1,430 +1,413 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { 
-  Bus, LayoutDashboard, Map as MapIcon, Clock, RefreshCw, 
-  HelpCircle, ChevronRight, Activity, ShieldCheck, Database,
-  Radio, ArrowRight
-} from "lucide-react";
+import { HelpCircle, ChevronDown, RefreshCw, Bus, LayoutDashboard, Map as MapIcon, Clock } from "lucide-react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import "./Admin.css";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "https://busmitra-goa.onrender.com";
 
 const createBusIcon = (busNumber, isStale) => {
   return new L.DivIcon({
-    html: `<div style="background: ${isStale ? '#D97706' : '#0284C7'}; color: white; font-weight: 800; font-size: 11px; padding: 4px 8px; border-radius: 6px; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.2); white-space: nowrap;">${busNumber}</div>`,
+    html: `<div class="bus-map-pin ${isStale ? 'amber-outline' : 'teal'}" style="position: relative !important; transform: none !important; margin: 0; border: 2px solid white;">${busNumber}</div>`,
     className: "custom-leaflet-marker",
-    iconSize: [44, 24],
-    iconAnchor: [22, 12],
+    iconSize: [40, 24],
+    iconAnchor: [20, 12],
   });
 };
 
 export default function Admin() {
   const [buses, setBuses] = useState({});
   const [routes, setRoutes] = useState([]);
-  const [activeTab, setActiveTab] = useState("fleet"); // 'fleet' | 'routes'
+  const [activeTab, setActiveTab] = useState("fleet"); // fleet or routes
   const [selectedAdminBus, setSelectedAdminBus] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-
-  const fetchBuses = async () => {
-    setIsLoading(true);
-    try {
-      const res = await fetch(`${API_BASE}/api/admin/fleet`);
-      if (res.ok) {
-        const data = await res.json();
-        const fleetData = (data.fleet || []).reduce((acc, bus) => {
-          acc[bus.activeTripId] = {
-            bus_id: bus.activeTripId,
-            bus_number: bus.busId || "Unknown",
-            route_name: bus.routeId || "Unknown Route",
-            eta_minutes: 0,
-            status: bus.stalenessSeconds > 120 ? "stale" : "live",
-            lat: bus.lat,
-            lng: bus.lng,
-            driver_id: bus.driverId || "Unassigned",
-            stalenessSeconds: bus.stalenessSeconds || 0
-          };
-          return acc;
-        }, {});
-        setBuses(fleetData);
-      }
-    } catch (err) {
-      console.error("Failed to fetch fleet telemetry", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const fetchRoutes = async () => {
-    try {
-      const res = await fetch(`${API_BASE}/api/routes?limit=100`);
-      if (res.ok) {
-        const data = await res.json();
-        setRoutes(data);
-      }
-    } catch (err) {
-      console.error("Failed to fetch routes", err);
-    }
-  };
 
   useEffect(() => {
+    const fetchBuses = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/admin/fleet`);
+        if (res.ok) {
+          const data = await res.json();
+          const fleetData = data.fleet.reduce((acc, bus) => {
+            acc[bus.activeTripId] = {
+              bus_id: bus.activeTripId,
+              bus_number: bus.busId || "Unknown",
+              route_name: bus.routeId || "Unknown Route",
+              eta_minutes: 0,
+              status: bus.stalenessSeconds > 120 ? "stale" : "live",
+              lat: bus.lat,
+              lng: bus.lng,
+              driver_id: bus.driverId
+            };
+            return acc;
+          }, {});
+          setBuses(fleetData);
+        }
+      } catch (err) {
+        console.error("Failed to fetch buses", err);
+      }
+    };
+    
+    const fetchRoutes = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/routes`);
+        if (res.ok) {
+          const data = await res.json();
+          setRoutes(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch routes", err);
+      }
+    };
+    
     fetchBuses();
     fetchRoutes();
     const interval = setInterval(fetchBuses, 5000);
     return () => clearInterval(interval);
   }, []);
 
+  // Compute active count from real data
   const activeCount = Object.keys(buses).length;
-  const liveCount = Object.values(buses).filter(b => b.status === "live").length;
-  const staleCount = Object.values(buses).filter(b => b.status === "stale").length;
-
-  const filteredRoutes = routes.filter(r => {
-    if (!searchTerm) return true;
-    const q = searchTerm.toLowerCase();
-    const name = (r.routeName || r.longName || "").toLowerCase();
-    const num = (r.routeNumber || r.shortName || "").toLowerCase();
-    return name.includes(q) || num.includes(q);
-  });
+  const totalRoutesCount = routes.length;
 
   return (
-    <div className="admin-dashboard-layout">
-      {/* SIDEBAR NAVIGATION */}
-      <aside className="admin-sidebar-nav">
-        <div className="as-brand-area">
-          <div className="as-brand-logo">
-            <Bus size={22} />
-          </div>
-          <div>
-            <h2 className="as-brand-title">BusMitra</h2>
-            <span className="as-brand-sub">Fleet Control</span>
-          </div>
+    <div className="admin-layout">
+      {/* Desktop Sidebar */}
+      <aside className="admin-sidebar">
+        <div className="as-brand">
+          <div className="as-logo-icon"><Bus size={18} color="#fff" /></div>
+          <h2>BusMitra</h2>
+        </div>
+        <p className="as-slogan">Know your bus.<br/>Know your time.</p>
+        
+        <div className="as-workspace-info">
+          <span className="as-role">GOA - FLEET ADMIN</span>
+          <span className="as-ws">Demo workspace</span>
         </div>
 
-        <nav className="as-links-list">
-          <button 
-            type="button" 
-            className={`as-nav-btn ${activeTab === 'fleet' ? 'active' : ''}`}
-            onClick={() => setActiveTab('fleet')}
-          >
-            <LayoutDashboard size={18} />
-            <span>Fleet Operations</span>
-          </button>
-
-          <button 
-            type="button" 
-            className={`as-nav-btn ${activeTab === 'routes' ? 'active' : ''}`}
-            onClick={() => setActiveTab('routes')}
-          >
-            <MapIcon size={18} />
-            <span>Route Master ({routes.length})</span>
-          </button>
-
-          <Link to="/passenger" className="as-nav-btn" style={{ textDecoration: 'none', marginTop: 'auto' }}>
-            <Activity size={18} />
-            <span>Passenger Portal</span>
-          </Link>
-
-          <Link to="/driver" className="as-nav-btn" style={{ textDecoration: 'none' }}>
-            <Radio size={18} />
-            <span>Driver Terminal</span>
-          </Link>
+        <nav className="as-nav">
+          <a href="#" className={`as-nav-item ${activeTab === 'fleet' ? 'active' : ''}`} onClick={(e) => { e.preventDefault(); setActiveTab('fleet'); }}><LayoutDashboard size={18} /> Fleet overview</a>
+          <a href="#" className={`as-nav-item ${activeTab === 'routes' ? 'active' : ''}`} onClick={(e) => { e.preventDefault(); setActiveTab('routes'); }}><MapIcon size={18} /> Route Master ({totalRoutesCount})</a>
+          <a href="#" className="as-nav-item"><HelpCircle size={18} /> Help &amp; guidance</a>
         </nav>
 
-        <div className="as-sidebar-footer">
-          <p style={{ margin: 0 }}><strong>Kadamba Transport Corp</strong></p>
-          <p style={{ margin: '4px 0 0 0', opacity: 0.7 }}>State Mobility Network &bull; Goa</p>
+        <div className="as-footer">
+          <p><strong>Kadamba demo fleet</strong></p>
+          <p>Local / private support coming soon.</p>
         </div>
       </aside>
 
-      {/* MAIN STAGE */}
-      <main className="admin-main-stage">
-        {/* TOP BAR */}
-        <header className="admin-stage-header">
-          <div className="admin-header-title">
-            <h1>{activeTab === 'fleet' ? "Live Fleet Telemetry" : "Official Route Master"}</h1>
-            <p>
-              {activeTab === 'fleet' 
-                ? "Real-time active driver GPS broadcasts connected to Goa transit network." 
-                : "Imported GTFS schedule lines and corridors for Kadamba Transport Corporation."}
-            </p>
+      <main className="admin-main">
+        {/* Mobile Header (Hidden on Desktop) */}
+        <header className="admin-header mobile-only">
+          <div className="ah-left">
+            <h1>BusMitra Fleet</h1>
+            <p>Goa &middot; Admin &middot; Demo workspace</p>
+            <p className="ah-sub">Demo data &middot; No official KTC integration</p>
           </div>
+          <HelpCircle size={24} color="var(--teal-700)" />
+        </header>
 
-          <div className="admin-header-actions">
-            <button 
-              type="button" 
-              className="admin-refresh-btn" 
-              onClick={fetchBuses} 
-              disabled={isLoading}
-            >
-              <RefreshCw size={14} className={isLoading ? 'spinning' : ''} />
-              <span>Poll Server</span>
-            </button>
+        {/* Desktop Header */}
+        <header className="admin-header desktop-only">
+          <div className="ah-left">
+            <h1>{activeTab === 'fleet' ? 'Fleet overview' : 'Route Master'}</h1>
+            <p className="ah-sub">{activeTab === 'fleet' ? 'Demo data - No official KTC integration' : `Source: KTCL Routes 2026 - ${totalRoutesCount} routes imported`}</p>
+          </div>
+          <div className="ah-right">
+            <Clock size={16} color="var(--text-muted)" />
+            <span>Demo snapshot - 8:42 AM</span>
           </div>
         </header>
 
-        {/* CONTENT BODY */}
-        <div className="admin-content-body">
-          {/* KPI CARDS */}
-          <div className="admin-stats-grid">
-            <div className="admin-kpi-card">
-              <span className="admin-kpi-label">ACTIVE BUSES IN SERVICE</span>
-              <div className="admin-kpi-value blue">{activeCount}</div>
-              <span className="admin-kpi-sub">Broadcasting telemetry</span>
-            </div>
+        <div className="admin-section-label">{activeTab === 'fleet' ? 'SAMPLE FLEET / DEMO &middot; REAL BACKEND DATA' : 'OFFICIAL ROUTE DATA'}</div>
 
-            <div className="admin-kpi-card">
-              <span className="admin-kpi-label">LIVE GPS SIGNALS</span>
-              <div className="admin-kpi-value green">{liveCount}</div>
-              <span className="admin-kpi-sub">Ping received &lt; 120 sec</span>
+        {activeTab === 'routes' ? (
+          <section className="admin-list-section">
+            <div className="al-header">
+              <h3>Imported Route Master</h3>
+              <span>{totalRoutesCount} official KTCL routes</span>
             </div>
-
-            <div className="admin-kpi-card">
-              <span className="admin-kpi-label">CACHED / STALE</span>
-              <div className="admin-kpi-value amber">{staleCount}</div>
-              <span className="admin-kpi-sub">Signal delayed or patchy</span>
+            <div className="admin-desktop-table">
+              <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "1rem" }}>
+                <thead>
+                  <tr style={{ borderBottom: "1px solid var(--border-light)", textAlign: "left" }}>
+                    <th style={{ padding: "0.75rem" }}>Route No</th>
+                    <th style={{ padding: "0.75rem" }}>Route Name</th>
+                    <th style={{ padding: "0.75rem" }}>Source</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {routes.map(r => (
+                    <tr key={r.routeId} style={{ borderBottom: "1px solid var(--border-light)" }}>
+                      <td style={{ padding: "0.75rem" }}><div className="bus-badge teal">{r.routeNumber}</div></td>
+                      <td style={{ padding: "0.75rem" }} className="fw-bold">{r.routeName || r.longName || r.shortName}</td>
+                      <td style={{ padding: "0.75rem", color: "var(--text-muted)" }}>{r.source || 'Manual'}</td>
+                    </tr>
+                  ))}
+                  {routes.length === 0 && (
+                    <tr>
+                      <td colSpan="3" style={{ padding: "2rem", textAlign: "center", color: "var(--text-muted)" }}>
+                        No routes found. Import them from the backend.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
+          </section>
+        ) : (
+          <>
 
-            <div className="admin-kpi-card">
-              <span className="admin-kpi-label">REGISTERED ROUTES</span>
-              <div className="admin-kpi-value">{routes.length}</div>
-              <span className="admin-kpi-sub">KTCL Network coverage</span>
+        <div className="stats-grid">
+          <div className="stat-card">
+            <span className="sc-label">Active</span>
+            <span className="sc-value teal">{activeCount}</span>
+            <span className="sc-sub">Live from backend</span>
+          </div>
+          <div className="stat-card">
+            <span className="sc-label">On Time</span>
+            <span className="sc-value teal">{Object.values(buses).filter(b => b.status !== "stale").length}</span>
+            <span className="sc-sub">Live tracking</span>
+          </div>
+          <div className="stat-card">
+            <span className="sc-label">Delayed</span>
+            <span className="sc-value">0</span>
+            <span className="sc-sub">Slight Delay: possible</span>
+          </div>
+          <div className="stat-card">
+            <span className="sc-label">Signal Weak</span>
+            <span className="sc-value">{Object.values(buses).filter(b => b.status === "stale").length}</span>
+            <span className="sc-sub">Cached location</span>
+          </div>
+        </div>
+        <p className="admin-note">Data from active backend.</p>
+
+        <div className="admin-filters">
+          <div className="af-tabs">
+            <div className="af-tab active">Kadamba</div>
+            <div className="af-tab disabled">Local / private - coming soon</div>
+          </div>
+          <div className="af-dropdown">
+            <span>All active routes</span>
+            <ChevronDown size={16} />
+          </div>
+        </div>
+
+        <div className="admin-split-view">
+          <section className="live-fleet-map-section">
+            <div className="lfm-header">
+              <h3>Live fleet map</h3>
+              <span className="desktop-only">Driver smartphone GPS</span>
+              <span className="mobile-only">Online</span>
+            </div>
+            
+            <div className="mock-map-container" style={{ height: '300px', width: '100%' }}>
+              <MapContainer center={[15.35, 73.95]} zoom={10} style={{ height: "100%", width: "100%" }} zoomControl={true}>
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                {Object.values(buses).map((bus) => {
+                  const isStale = bus.status === "stale";
+                  if (!bus.lat || !bus.lng) return null;
+                  return (
+                    <Marker 
+                      key={bus.bus_id} 
+                      position={[bus.lat, bus.lng]} 
+                      icon={createBusIcon(bus.bus_number, isStale)}
+                      eventHandlers={{ click: () => setSelectedAdminBus(bus) }}
+                    >
+                      <Popup>
+                        <strong>{bus.bus_number}</strong><br/>
+                        {bus.route_name}<br/>
+                        {Math.floor(bus.eta_minutes)} mins ETA
+                      </Popup>
+                    </Marker>
+                  );
+                })}
+              </MapContainer>
+            </div>
+            <div className="lfm-legend">
+              <span className="legend-item"><span className="dot teal"></span> Real GPS</span>
+              <span className="legend-item"><span className="dot amber hollow"></span> Weak / Stale</span>
+              <span className="legend-item"><span className="dot gray"></span> Offline</span>
+            </div>
+            <p className="lfm-note">Map pins are illustrative positioning for demo.</p>
+          </section>
+
+          <div className="featured-alert-col">
+            <h3 className="desktop-only fac-desktop-title">Selected bus</h3>
+            <div className="featured-alert-card">
+              {!selectedAdminBus ? (
+                <>
+                  <div className="fac-header">
+                    <div className="bus-badge amber">Demo</div>
+                    <div className="fac-h-text">
+                      <span className="fac-op">KADAMBA - DEMO BUS</span>
+                      <h4>Select a bus from list</h4>
+                    </div>
+                  </div>
+                  <div className="fac-warning-box">
+                    <strong>Fleet monitor</strong>
+                    <p>Clicking on buses will show details here.</p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="fac-header">
+                    <div className={`bus-badge ${selectedAdminBus.status === 'stale' ? 'amber' : ''}`}>{selectedAdminBus.bus_number}</div>
+                    <div className="fac-h-text">
+                      <span className="fac-op">KADAMBA</span>
+                      <h4>{selectedAdminBus.route_name}</h4>
+                    </div>
+                  </div>
+                  <div className="fac-warning-box" style={{ background: selectedAdminBus.status === 'stale' ? '#FEF3C7' : '#ECFDF5' }}>
+                    <strong style={{ color: selectedAdminBus.status === 'stale' ? '#92400E' : '#065F46' }}>
+                      {selectedAdminBus.status === 'stale' ? 'Signal Weak' : 'Live Tracking'}
+                    </strong>
+                    <p style={{ color: selectedAdminBus.status === 'stale' ? '#B45309' : '#047857' }}>
+                      Last update: {Math.floor(selectedAdminBus.signal_age_sec)} seconds ago
+                    </p>
+                  </div>
+                  <div className="fac-details" style={{ marginTop: '16px' }}>
+                    <p className="fac-desc" style={{ marginBottom: '8px' }}><strong>ETA:</strong> {Math.floor(selectedAdminBus.eta_minutes)} minutes</p>
+                    <p className="fac-desc" style={{ marginBottom: '8px' }}><strong>Speed:</strong> {Math.floor(selectedAdminBus.speed || 0)} km/h</p>
+                    <p className="fac-desc"><strong>Accuracy:</strong> &plusmn;{Math.floor(selectedAdminBus.accuracy || 10)} meters</p>
+                  </div>
+                </>
+              )}
+
+              <button className="btn-outline fac-btn" onClick={() => window.location.reload()} style={{ marginTop: '20px' }}>
+                <RefreshCw size={16} /> Refresh Backend
+              </button>
             </div>
           </div>
+        </div>
 
-          {activeTab === 'fleet' ? (
-            /* FLEET VIEW: MAP + BUS TABLE */
-            <>
-              <div className="admin-split-grid">
-                {/* LIVE MAP */}
-                <div className="admin-panel-card">
-                  <div className="admin-panel-header">
-                    <h2 className="admin-panel-title">Geospatial Fleet Map</h2>
-                    <span style={{ fontSize: '12px', color: '#64748B', fontWeight: 600 }}>
-                      Goa State Bounds
-                    </span>
-                  </div>
+        <section className="admin-list-section">
+          <div className="al-header">
+            <h3>Buses &amp; routes</h3>
+            <span>{activeCount} active trips</span>
+          </div>
 
-                  <div className="admin-map-box">
-                    <MapContainer center={[15.35, 73.95]} zoom={10} style={{ height: "100%", width: "100%" }} zoomControl={true}>
-                      <TileLayer
-                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                      />
-                      {Object.values(buses).map((bus) => {
-                        const isStale = bus.status === "stale";
-                        if (!bus.lat || !bus.lng) return null;
-                        return (
-                          <Marker 
-                            key={bus.bus_id} 
-                            position={[bus.lat, bus.lng]} 
-                            icon={createBusIcon(bus.bus_number, isStale)}
-                            eventHandlers={{ click: () => setSelectedAdminBus(bus) }}
-                          >
-                            <Popup>
-                              <strong>{bus.bus_number}</strong><br/>
-                              {bus.route_name}<br/>
-                              Driver: {bus.driver_id}
-                            </Popup>
-                          </Marker>
-                        );
-                      })}
-                    </MapContainer>
-                  </div>
-                </div>
+          <div className="al-chips">
+            <span className="al-chip active">All &middot; {activeCount}</span>
+            <span className="al-chip">Live &middot; {Object.values(buses).filter(b => b.status !== "stale").length}</span>
+            <span className="al-chip">Signal Weak &middot; {Object.values(buses).filter(b => b.status === "stale").length}</span>
+          </div>
 
-                {/* SELECTED BUS INSPECTOR */}
-                <div className="admin-panel-card">
-                  <div className="admin-panel-header">
-                    <h2 className="admin-panel-title">Vehicle Inspector</h2>
-                  </div>
-
-                  {selectedAdminBus ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span className="route-badge" style={{ fontSize: '14px', padding: '6px 12px' }}>
-                          {selectedAdminBus.bus_number}
-                        </span>
-                        <span className={`admin-status-badge ${selectedAdminBus.status}`}>
-                          {selectedAdminBus.status === 'live' ? "● ACTIVE TELEMETRY" : "▲ SIGNAL WEAK"}
-                        </span>
-                      </div>
-
-                      <div style={{ background: '#F8FAFC', padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <div>
-                          <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 800 }}>ASSIGNED ROUTE</div>
-                          <div style={{ fontSize: '15px', fontWeight: 700, color: '#0F172A' }}>{selectedAdminBus.route_name}</div>
-                        </div>
-
-                        <div>
-                          <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 800 }}>DRIVER OPERATOR ID</div>
-                          <div style={{ fontSize: '14px', fontWeight: 600, color: '#0F172A' }}>{selectedAdminBus.driver_id}</div>
-                        </div>
-
-                        <div>
-                          <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 800 }}>CURRENT COORDINATES</div>
-                          <div style={{ fontSize: '13px', color: '#475569', fontFamily: 'monospace' }}>
-                            {selectedAdminBus.lat?.toFixed(5)}, {selectedAdminBus.lng?.toFixed(5)}
-                          </div>
-                        </div>
-
-                        <div>
-                          <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 800 }}>LAST SIGNAL AGE</div>
-                          <div style={{ fontSize: '13px', color: '#475569' }}>
-                            {Math.floor(selectedAdminBus.stalenessSeconds)} seconds ago
-                          </div>
-                        </div>
-                      </div>
-
-                      <Link 
-                        to={`/track/${selectedAdminBus.bus_id}`} 
-                        className="btn-primary"
-                        style={{ textDecoration: 'none', textAlign: 'center' }}
-                      >
-                        View Public Tracking View
-                      </Link>
+          {/* Mobile Cards */}
+          <div className="admin-list-cards mobile-only">
+            {Object.entries(buses).map(([busId, bus]) => {
+              const isStale = bus.status === "stale";
+              const destination = bus.stops && bus.stops.length > 0 ? bus.stops[bus.stops.length - 1] : "Unknown";
+              const origin = bus.stops && bus.stops.length > 0 ? bus.stops[0] : "Unknown";
+              const nextStop = bus.stops && bus.stops.length > 1 ? bus.stops[1] : "Unknown";
+              
+              return (
+                <div key={busId} className={`list-route-card ${isStale ? 'border-teal alert-highlight' : ''}`} onClick={() => { setSelectedAdminBus(bus); window.scrollTo({ top: 0, behavior: 'smooth' }); }} style={{ cursor: 'pointer' }}>
+                  <div className="lrc-header">
+                    <div className={`bus-badge ${isStale ? 'amber' : ''}`}>{bus.bus_number}</div>
+                    <div className="lrc-title">
+                      <h4>{origin} &rarr; {destination}</h4>
+                      <span className={`lrc-status ${isStale ? 'gray' : 'teal'}`}>
+                        {isStale ? 'Signal Weak' : 'Live'} &middot; {Math.floor(bus.signal_age_sec)} sec ago
+                      </span>
                     </div>
+                  </div>
+                  <p className="lrc-next">
+                    {isStale 
+                      ? `Last known &middot; ${(bus.signal_age_sec / 60).toFixed(0)} min ago` 
+                      : `Next: ${nextStop} \u00B7 ETA ${Math.floor(bus.eta_minutes)} min`
+                    }
+                  </p>
+                  {isStale ? (
+                    <p className="lrc-health-row">
+                      <span className="teal">Cached -</span> <span className="gray">Current ETA unavailable</span>
+                    </p>
                   ) : (
-                    <div style={{ padding: '40px 20px', textAlign: 'center', color: '#64748B' }}>
-                      <Bus size={32} color="#94A3B8" style={{ marginBottom: '8px' }} />
-                      <p style={{ margin: 0, fontSize: '14px' }}>
-                        Click any bus pin on the map or select from the fleet table below to inspect real-time diagnostics.
-                      </p>
-                    </div>
+                    <span className="lrc-health teal">On Time</span>
                   )}
                 </div>
-              </div>
+              );
+            })}
+          </div>
 
-              {/* ACTIVE FLEET TELEMETRY TABLE */}
-              <div className="admin-panel-card">
-                <div className="admin-panel-header">
-                  <h2 className="admin-panel-title">Active Fleet Roster ({activeCount} Vehicles)</h2>
-                </div>
+          {/* Desktop Table */}
+          <div className="admin-desktop-table desktop-only">
+            <table>
+              <thead>
+                <tr>
+                  <th>Bus</th>
+                  <th>Kadamba route</th>
+                  <th>Trip timing</th>
+                  <th>GPS / connection</th>
+                  <th>Next stop / last place</th>
+                  <th>ETA</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.entries(buses).map(([busId, bus]) => {
+                  const isStale = bus.status === "stale";
+                  const destination = bus.stops && bus.stops.length > 0 ? bus.stops[bus.stops.length - 1] : "Unknown";
+                  const origin = bus.stops && bus.stops.length > 0 ? bus.stops[0] : "Unknown";
+                  const nextStop = bus.stops && bus.stops.length > 1 ? bus.stops[1] : "Unknown";
 
-                <div className="admin-table-wrapper">
-                  <table className="admin-table-view">
-                    <thead>
-                      <tr>
-                        <th>Vehicle No</th>
-                        <th>Route Service</th>
-                        <th>Driver ID</th>
-                        <th>Coordinates</th>
-                        <th>Last Ping</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {activeCount === 0 ? (
-                        <tr>
-                          <td colSpan={7} style={{ textAlign: 'center', padding: '32px', color: '#64748B' }}>
-                            No buses currently broadcasting GPS. Start a trip in the Driver Portal to view live telemetry.
-                          </td>
-                        </tr>
-                      ) : (
-                        Object.values(buses).map(bus => (
-                          <tr key={bus.bus_id} onClick={() => setSelectedAdminBus(bus)} style={{ cursor: 'pointer' }}>
-                            <td>
-                              <span style={{ fontWeight: 800, color: '#0F172A' }}>{bus.bus_number}</span>
-                            </td>
-                            <td>{bus.route_name}</td>
-                            <td>{bus.driver_id}</td>
-                            <td style={{ fontFamily: 'monospace', fontSize: '12px' }}>
-                              {bus.lat?.toFixed(4)}, {bus.lng?.toFixed(4)}
-                            </td>
-                            <td>{Math.floor(bus.stalenessSeconds)}s ago</td>
-                            <td>
-                              <span className={`admin-status-badge ${bus.status}`}>
-                                {bus.status === 'live' ? "● LIVE" : "▲ STALE"}
-                              </span>
-                            </td>
-                            <td>
-                              <span style={{ color: '#0284C7', fontWeight: 700, fontSize: '12px', display: 'flex', alignItems: 'center', gap: '2px' }}>
-                                Inspect <ChevronRight size={13} />
-                              </span>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </>
-          ) : (
-            /* ROUTE MASTER TAB */
-            <div className="admin-panel-card">
-              <div className="admin-panel-header" style={{ flexWrap: 'wrap', gap: '12px' }}>
-                <h2 className="admin-panel-title">Kadamba Route Master Directory</h2>
-                <input 
-                  type="text" 
-                  placeholder="Filter routes by name or number..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  style={{
-                    padding: '8px 14px',
-                    borderRadius: '8px',
-                    border: '1px solid #CBD5E1',
-                    fontSize: '13px',
-                    outline: 'none',
-                    minWidth: '260px'
-                  }}
-                />
-              </div>
-
-              <div className="admin-table-wrapper">
-                <table className="admin-table-view">
-                  <thead>
-                    <tr>
-                      <th>Line / Badge</th>
-                      <th>Corridor Route Name</th>
-                      <th>Route ID</th>
-                      <th>Agency</th>
-                      <th>Details</th>
+                  return (
+                    <tr key={busId} className={isStale ? "alert-highlight" : ""} onClick={() => { setSelectedAdminBus(bus); window.scrollTo({ top: 0, behavior: 'smooth' }); }} style={{ cursor: 'pointer' }}>
+                      <td><div className={`bus-badge ${isStale ? 'amber' : ''}`}>{bus.bus_number}</div></td>
+                      <td className="fw-bold text-main">{origin} &rarr; {destination}</td>
+                      <td className={isStale ? "teal fw-bold" : "teal fw-bold"}>
+                        {isStale ? "Cached Data" : "On Time"}
+                      </td>
+                      <td>
+                        <div className="td-stack">
+                          <span className={`${isStale ? 'amber' : 'teal'} fw-bold`}>{isStale ? 'Signal Weak' : 'Live GPS'}</span>
+                          <span className="text-muted">{Math.floor(bus.signal_age_sec)} sec ago</span>
+                        </div>
+                      </td>
+                      <td>
+                        <div className="td-stack">
+                          <span className="text-main">{isStale ? `Near ${origin}` : nextStop}</span>
+                          <span className="text-muted">{isStale ? 'Last known location' : 'Upcoming'}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <div className="td-stack">
+                          <span className="fw-bold text-main">{isStale ? 'Unavailable' : `${Math.floor(bus.eta_minutes)} min`}</span>
+                          {isStale && <span className="text-muted">Stale, not live</span>}
+                        </div>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {filteredRoutes.length === 0 ? (
-                      <tr>
-                        <td colSpan={5} style={{ textAlign: 'center', padding: '32px', color: '#64748B' }}>
-                          No routes matching search criteria.
-                        </td>
-                      </tr>
-                    ) : (
-                      filteredRoutes.slice(0, 50).map(r => (
-                        <tr key={r.routeId}>
-                          <td>
-                            <span className="route-badge" style={{ fontSize: '12px', padding: '4px 8px' }}>
-                              {r.routeNumber || r.shortName || "BUS"}
-                            </span>
-                          </td>
-                          <td style={{ fontWeight: 700, color: '#0F172A' }}>
-                            {r.routeName || r.longName}
-                          </td>
-                          <td style={{ color: '#64748B', fontFamily: 'monospace', fontSize: '12px' }}>
-                            {r.routeId}
-                          </td>
-                          <td>Kadamba Transport Corp</td>
-                          <td>
-                            <Link 
-                              to={`/route-detail/${r.routeId}`}
-                              style={{ color: '#0284C7', fontWeight: 700, textDecoration: 'none' }}
-                            >
-                              View Trips &rarr;
-                            </Link>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-        </div>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </section>
+        </>
+        )}
+
+        <p className="admin-footer">
+          Real-time data from backend. Map pins are illustrative.
+        </p>
       </main>
+
+      <nav className="bottom-nav mobile-only">
+        <Link to="/admin" className="nav-item active">
+          <HelpCircle size={24} style={{ transform: 'rotate(180deg)', fill: 'var(--teal-700)', color: 'white' }} />
+          Fleet
+        </Link>
+        <Link to="/routes" className="nav-item">
+          <MapIcon size={24} />
+          Routes
+        </Link>
+        <Link to="/admin" className="nav-item">
+          <HelpCircle size={24} />
+          Help
+        </Link>
+      </nav>
     </div>
   );
 }

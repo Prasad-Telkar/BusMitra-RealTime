@@ -1,19 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import io from "socket.io-client";
-import { 
-  HelpCircle, Radio, MapPin, ShieldAlert, Square, Play, 
-  ChevronDown, Wifi, Key, AlertTriangle, LogOut, CheckCircle2,
-  Navigation, RefreshCw, Smartphone
-} from "lucide-react";
-import "./Driver.css";
+import { HelpCircle, Radio, MapPin, ShieldAlert, Square, Play, ChevronDown, Wifi, Key, AlertTriangle } from "lucide-react";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "https://busmitra-goa.onrender.com";
 
 export default function Driver() {
   const location = useLocation();
   const [isLoggedIn, setIsLoggedIn] = useState(location.state?.isLoggedIn || false);
-  const [driverId, setDriverId] = useState(location.state?.driverId || "KTC-DRV-1042");
+  const [driverId, setDriverId] = useState(location.state?.driverId || "");
   const [pin, setPin] = useState("");
   const [busNumber, setBusNumber] = useState("GA-03-X-0001");
 
@@ -22,13 +17,10 @@ export default function Driver() {
   const [lastSent, setLastSent] = useState(0);
   const [isConnected, setIsConnected] = useState(false);
   const [queuedPoints, setQueuedPoints] = useState(0);
-  const [gpsAccuracy, setGpsAccuracy] = useState(null);
-  const [speedKmh, setSpeedKmh] = useState(0);
   
   const [upcomingTrips, setUpcomingTrips] = useState([]);
   const [selectedTripId, setSelectedTripId] = useState("");
   const [activeTripId, setActiveTripId] = useState(null);
-  const [confirmEnd, setConfirmEnd] = useState(false);
 
   const watchId = useRef(null);
   const offlineQueue = useRef([]);
@@ -40,10 +32,8 @@ export default function Driver() {
       fetch(`${API_BASE}/api/driver/upcoming-trips`)
         .then(res => res.json())
         .then(data => {
-          if (Array.isArray(data)) {
-            setUpcomingTrips(data);
-            if (data.length > 0) setSelectedTripId(data[0].tripId);
-          }
+          setUpcomingTrips(data);
+          if (data.length > 0) setSelectedTripId(data[0].tripId);
         })
         .catch(console.error);
     }
@@ -61,6 +51,7 @@ export default function Driver() {
       
       // Flush offline queue on reconnect
       if (offlineQueue.current.length > 0) {
+        console.log(`Syncing ${offlineQueue.current.length} queued points...`);
         offlineQueue.current.forEach(point => {
           s.emit("driver_location", point);
         });
@@ -104,12 +95,12 @@ export default function Driver() {
       }
     } catch (err) {
       console.error(err);
-      alert("Network error connecting to auth server");
+      alert("Network error");
     }
   };
 
   const startTracking = async () => {
-    if (!activeTrip) return alert("Please select an assigned trip first");
+    if (!activeTrip) return alert("Please select a trip first");
     
     try {
       const res = await fetch(`${API_BASE}/api/driver/trip/start`, {
@@ -131,16 +122,11 @@ export default function Driver() {
         if (navigator.geolocation && socket) {
           watchId.current = navigator.geolocation.watchPosition(
             (pos) => {
-              const acc = Math.round(pos.coords.accuracy || 10);
-              const speed = Math.round((pos.coords.speed || 0) * 3.6); // m/s to km/h
-              setGpsAccuracy(acc);
-              setSpeedKmh(speed);
-
               const payload = {
                 lat: pos.coords.latitude,
                 lng: pos.coords.longitude,
                 speed: pos.coords.speed || 0,
-                accuracy: Math.min(acc, 40),
+                accuracy: Math.min(pos.coords.accuracy || 10, 40),
                 timestamp: Date.now() / 1000,
                 bus_id: data.activeTripId,
               };
@@ -153,12 +139,10 @@ export default function Driver() {
                 setQueuedPoints(offlineQueue.current.length);
               }
             },
-            (err) => console.error("GPS Watch error:", err),
+            (err) => console.error(err),
             { enableHighAccuracy: true, maximumAge: 0 }
           );
         }
-      } else {
-        alert(data.error || "Unable to start trip on server");
       }
     } catch (err) {
       console.error(err);
@@ -168,7 +152,6 @@ export default function Driver() {
 
   const endTrip = async () => {
     setIsTracking(false);
-    setConfirmEnd(false);
     if (watchId.current && navigator.geolocation) {
       navigator.geolocation.clearWatch(watchId.current);
     }
@@ -191,235 +174,259 @@ export default function Driver() {
     setActiveTripId(null);
   };
 
-  const handleLogout = () => {
-    if (isTracking) {
-      alert("Please end your active trip before logging out.");
-      return;
-    }
-    setIsLoggedIn(false);
-  };
-
-  // LOGIN SCREEN
   if (!isLoggedIn) {
     return (
-      <div className="driver-login-container">
-        <div className="driver-login-card">
-          <div className="driver-login-icon">
-            <Smartphone size={32} />
+      <div className="home-screen bg-light" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+        <div style={{ width: '100%', maxWidth: '400px', background: 'white', borderRadius: '12px', padding: '24px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
+          <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+            <Key size={40} color="var(--teal-700)" style={{ marginBottom: '12px' }} />
+            <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--text-main)' }}>Driver Login</h1>
+            <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginTop: '8px' }}>Official Kadamba Transport Corporation access</p>
           </div>
-          <h1 className="driver-login-title">Driver Terminal</h1>
-          <p className="driver-login-sub">
-            Kadamba Transport Corporation &bull; Goa Fleet Telemetry
-          </p>
-
-          <form onSubmit={handleLogin}>
-            <div className="driver-input-field">
-              <label>Driver Identification Number</label>
+          
+          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', color: 'var(--text-main)', marginBottom: '8px' }}>DRIVER ID</label>
               <input 
                 type="text" 
                 placeholder="e.g. KTC-DRV-1042"
                 value={driverId}
                 onChange={(e) => setDriverId(e.target.value)}
+                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '16px' }}
                 required
               />
             </div>
-
-            <div className="driver-input-field">
-              <label>PIN Code / Password</label>
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', color: 'var(--text-main)', marginBottom: '8px' }}>PIN / PASSWORD</label>
               <input 
                 type="password" 
-                placeholder="Enter 4-digit PIN"
+                placeholder="****"
                 value={pin}
                 onChange={(e) => setPin(e.target.value)}
+                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '16px' }}
                 required
               />
             </div>
-
-            <div className="driver-input-field">
-              <label>Assigned Vehicle Registration</label>
-              <input 
-                type="text" 
-                placeholder="GA-03-X-0001"
-                value={busNumber}
-                onChange={(e) => setBusNumber(e.target.value)}
-                required
-              />
-            </div>
-
-            <button type="submit" className="driver-login-submit">
-              Sign In to In-Cab Terminal
-            </button>
+            <button type="submit" className="btn-primary" style={{ marginTop: '8px', width: '100%' }}>Login</button>
           </form>
+          
+          <div style={{ marginTop: '24px', fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center' }}>
+            Internal management interface.<br/>For public transit tracking, please return to the passenger app.
+          </div>
         </div>
       </div>
     );
   }
 
-  // ACTIVE IN-CAB CONSOLE
   return (
-    <div className="driver-portal-layout">
-      {/* TOP STATUS BAR */}
-      <div className="driver-top-bar">
-        <div className="driver-id-badge">
-          <div className="driver-avatar">KT</div>
-          <div className="driver-id-text">
-            <h2>{driverId}</h2>
-            <p>Vehicle: {busNumber}</p>
+    <div className="home-screen bg-light">
+      <div className="driver-content">
+        
+        <header className="driver-header">
+          <div className="dh-left">
+            <h1>Driver {driverId}</h1>
+            <p>Goa Kadamba &middot; GPS tracking</p>
           </div>
-        </div>
+          <HelpCircle size={24} color="var(--teal-700)" />
+        </header>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div className={`driver-socket-pill ${isConnected ? 'connected' : 'disconnected'}`}>
-            <span className="live-dot" style={{ width: '6px', height: '6px', borderRadius: '50%', background: isConnected ? '#10B981' : '#EF4444' }}></span>
-            <span>{isConnected ? "Server Online" : "Reconnecting"}</span>
-          </div>
-
-          <button 
-            type="button" 
-            onClick={handleLogout}
-            title="Log Out"
-            style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer', padding: '6px' }}
-          >
-            <LogOut size={18} />
-          </button>
-        </div>
-      </div>
-
-      <div className="driver-main-screen">
-        {/* TRIP CONTROL CARD */}
-        <div className={`driver-trip-card ${isTracking ? 'active-run' : ''}`}>
-          <div className="dt-card-head">
-            <span className={`dt-status-pill ${isTracking ? 'broadcasting' : 'ready'}`}>
-              {isTracking ? "● BROADCASTING GPS" : "READY FOR DISPATCH"}
-            </span>
-            <span className="dt-bus-num">{busNumber}</span>
-          </div>
-
-          {/* Route Info / Picker */}
-          {!isTracking ? (
-            <div className="dt-route-picker">
-              <label style={{ fontSize: '11px', fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase' }}>
-                Assigned Route &amp; Timetable
-              </label>
-              <select 
-                className="dt-route-select"
-                value={selectedTripId} 
-                onChange={(e) => setSelectedTripId(e.target.value)}
-              >
-                {upcomingTrips.length === 0 ? (
-                  <option value="">Default Kadamba Corridor</option>
-                ) : (
-                  upcomingTrips.map(r => (
-                    <option key={r.tripId} value={r.tripId}>
-                      {r.routeId} &bull; {r.start_time} - {r.end_time}
-                    </option>
-                  ))
-                )}
-              </select>
-            </div>
-          ) : (
-            <div>
-              <div style={{ fontSize: '11px', fontWeight: 800, color: '#A7F3D0', textTransform: 'uppercase' }}>
-                ACTIVE DISPATCH TRIP
+        {!isTracking ? (
+          <>
+            {/* Ready to start Banner */}
+            <div className="trip-inactive-banner">
+              <div className="tib-top">
+                <span className="tib-title">Ready to start</span>
+                <span className="tib-status">NOT STARTED</span>
               </div>
-              <h2 style={{ fontSize: '20px', fontWeight: 800, margin: '4px 0', color: '#FFFFFF' }}>
-                {activeTrip?.routeId || "Route Active"}
-              </h2>
-              <p style={{ fontSize: '13px', color: '#E2E8F0', margin: 0 }}>
-                Trip ID: {activeTripId} &bull; Scheduled {activeTrip?.start_time || 'Now'}
+              
+              <div className="tib-middle">
+                <div className="bus-badge">{activeTrip?.routeId}</div>
+                <div className="tib-route">
+                  <span className="tr-from">KADAMBA &middot; LIVE ROUTE</span>
+                  <span className="tr-to">{activeTrip?.tripId}</span>
+                </div>
+                <div style={{ position: 'relative' }}>
+                  <select 
+                    value={selectedTripId} 
+                    onChange={(e) => setSelectedTripId(e.target.value)}
+                    style={{ position: 'absolute', top: 0, left: '-100px', opacity: 0, width: '120px', height: '100%', cursor: 'pointer' }}
+                  >
+                    {upcomingTrips.map(r => (
+                      <option key={r.tripId} value={r.tripId}>{r.routeId} - {r.start_time}</option>
+                    ))}
+                  </select>
+                  <ChevronDown size={20} color="var(--text-light)" style={{ pointerEvents: 'none' }} />
+                </div>
+              </div>
+
+              <div className="tib-bottom">
+                <span className="teal-text fw-bold">Select or change route (Tap chevron)</span>
+                <span className="gray-text">Time: {activeTrip?.start_time} - {activeTrip?.end_time}</span>
+              </div>
+            </div>
+
+            {/* Location Sharing Box (Inactive) */}
+            <div className="loc-share-box inactive">
+              <div className="lsb-header">
+                <div className="lsb-h-icon">
+                  <Radio size={24} color="var(--text-light)" />
+                </div>
+                <div className="lsb-h-text">
+                  <h3>Location sharing is off</h3>
+                  <p>No location is being sent</p>
+                </div>
+                <div className="off-pill">OFF</div>
+              </div>
+
+              <p className="lsb-desc">
+                This phone is the bus GPS. Sharing begins when you start the trip and stops when you end it.
               </p>
+
+              <div className="lsb-divider"></div>
+
+              <div className="lsb-rows">
+                <div className="lsb-row">
+                  <div className="lsb-row-left">
+                    <MapPin size={18} color="var(--text-light)" />
+                    <span>GPS</span>
+                  </div>
+                  <div className="lsb-row-right teal">
+                    <span className="dot teal"></span> Good &middot; &plusmn;8 m
+                  </div>
+                </div>
+                <div className="lsb-row">
+                  <div className="lsb-row-left">
+                    <Wifi size={18} color="var(--text-light)" />
+                    <span>Network</span>
+                  </div>
+                  <div className="lsb-row-right teal">
+                    <span className="dot teal"></span> Connected
+                  </div>
+                </div>
+              </div>
+
+              <div className="lsb-divider"></div>
+
+              <div className="lsb-footer">
+                <span className="gray-text">Driver's smartphone GPS</span>
+                <span className="gray-text">Battery 78%</span>
+              </div>
             </div>
-          )}
 
-          {/* TELEMETRY HUD */}
-          <div className="driver-telemetry-hud">
-            <div className="d-hud-stat">
-              <span className="d-hud-label">GPS STATUS</span>
-              <span className={`d-hud-val ${isTracking ? 'good' : ''}`}>
-                {isTracking ? `${lastSent}s ago` : "Standby"}
-              </span>
+            {/* Warning Box */}
+            <div className="driver-warning">
+              <ShieldAlert size={20} color="var(--amber-700)" className="dw-icon" />
+              <div className="dw-text">
+                <strong>Start only when safely parked</strong>
+                <p>Check your route before starting. Keep GPS, mobile data and your phone charged.</p>
+              </div>
             </div>
 
-            <div className="d-hud-stat">
-              <span className="d-hud-label">ACCURACY</span>
-              <span className="d-hud-val">
-                {gpsAccuracy !== null ? `±${gpsAccuracy} m` : "Calibrating"}
-              </span>
-            </div>
-
-            <div className="d-hud-stat">
-              <span className="d-hud-label">SPEED</span>
-              <span className="d-hud-val">
-                {speedKmh} km/h
-              </span>
-            </div>
-
-            <div className="d-hud-stat">
-              <span className="d-hud-label">OFFLINE QUEUE</span>
-              <span className={`d-hud-val ${queuedPoints > 0 ? 'stale' : 'good'}`}>
-                {queuedPoints} pts
-              </span>
-            </div>
-          </div>
-
-          {/* SAFETY ADVISORY */}
-          <div className="driver-safety-box">
-            <ShieldAlert size={20} color="#F59E0B" style={{ flexShrink: 0 }} />
-            <span>
-              {isTracking 
-                ? "Maintain safe driving. Telemetry broadcasts automatically in background." 
-                : "Confirm assigned route before departure. Ensure device GPS is active."}
-            </span>
-          </div>
-
-          {/* BIG ACTION BUTTONS */}
-          {!isTracking ? (
-            <button 
-              type="button" 
-              className="driver-start-btn" 
-              onClick={startTracking}
-            >
-              <Play size={20} />
-              <span>START DISPATCH TRIP</span>
+            {/* Start Trip */}
+            <button className="btn-primary w-full start-trip-btn" onClick={startTracking}>
+              <Play size={18} /> START TRIP
             </button>
-          ) : confirmEnd ? (
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button 
-                type="button" 
-                className="driver-end-btn" 
-                onClick={endTrip}
-                style={{ flex: 1 }}
-              >
-                CONFIRM END
-              </button>
-              <button 
-                type="button" 
-                onClick={() => setConfirmEnd(false)}
-                style={{
-                  background: '#334155',
-                  color: '#FFFFFF',
-                  border: 'none',
-                  borderRadius: '16px',
-                  padding: '20px 24px',
-                  fontWeight: 700,
-                  cursor: 'pointer'
-                }}
-              >
-                CANCEL
-              </button>
+            
+            <div className="driver-footer-note left-align">
+              <p>Route locks after starting. Use controls only when safely parked.</p>
+              <p>Demo data &middot; No official KTC integration</p>
             </div>
-          ) : (
-            <button 
-              type="button" 
-              className="driver-end-btn" 
-              onClick={() => setConfirmEnd(true)}
-            >
-              <Square size={18} />
-              <span>END TRIP</span>
+          </>
+        ) : (
+          <>
+            {/* Active Trip Banner */}
+            <div className="trip-active-banner">
+              <div className="tab-top">
+                <span className="tab-title">Trip in progress</span>
+                <span className="tab-status"><span className="dot amber"></span> ACTIVE</span>
+              </div>
+              
+              <div className="tab-middle">
+                <div className="bus-badge dark-text">{activeTrip?.routeId}</div>
+                <div className="tab-route">
+                  <span className="tr-from">{activeTrip?.start_time}</span>
+                  <span className="tr-to">&rarr; {activeTrip?.end_time}</span>
+                </div>
+              </div>
+
+              <div className="tab-bottom">
+                <span>Driver's phone is GPS</span>
+                <span>Started tracking</span>
+              </div>
+            </div>
+
+            {/* Location Sharing Box */}
+            <div className="loc-share-box">
+              <div className="lsb-header">
+                <Radio size={24} color="var(--teal-700)" />
+                <div className="lsb-h-text">
+                  <h3>Location sharing is on</h3>
+                  <p>Passengers can track this bus</p>
+                </div>
+              </div>
+
+              <p className="lsb-desc">
+                This phone is the bus GPS. Location is shared only while this trip is active.
+              </p>
+
+              <div className="lsb-divider"></div>
+
+              <div className="lsb-stats">
+                <div className="lsb-stat-col">
+                  <span className="stat-label">LAST SENT</span>
+                  <span className="stat-value">{lastSent} sec ago</span>
+                </div>
+                <div className="lsb-stat-col text-right">
+                  <span className="stat-label">GPS ACCURACY</span>
+                  <span className="stat-value teal">Good &middot; &plusmn;8 m</span>
+                </div>
+              </div>
+
+              <div className="lsb-divider"></div>
+
+              <div className="lsb-footer">
+                <span className="teal-text">Network &middot; Connected</span>
+                <span className="gray-text">Battery 78%</span>
+              </div>
+            </div>
+
+            {/* Timeline */}
+            <div className="driver-timeline">
+              <div className="dt-row past">
+                <div className="dt-icon"><span className="dot gray"></span></div>
+                <div className="dt-text">Started Trip</div>
+              </div>
+              
+              <div className="dt-connector"></div>
+
+              <div className="dt-row current">
+                <div className="dt-icon"><MapPin size={20} color="var(--teal-700)" /></div>
+                <div className="dt-info">
+                  <span className="dt-label">CURRENT TRIP</span>
+                  <h4>{activeTrip?.tripId}</h4>
+                </div>
+              </div>
+            </div>
+
+            {/* Warning Box */}
+            <div className="driver-warning">
+              <ShieldAlert size={20} color="var(--amber-700)" className="dw-icon" />
+              <div className="dw-text">
+                <strong>Keep GPS and mobile data on</strong>
+                <p>Keep your phone charged. Use controls only when safely parked.</p>
+              </div>
+            </div>
+
+            {/* End Trip */}
+            <button className="end-trip-btn" onClick={endTrip}>
+              <Square size={16} /> END TRIP
             </button>
-          )}
-        </div>
+            
+            <p className="driver-footer-note">Route locked during trip &middot; Demo data</p>
+          </>
+        )}
       </div>
     </div>
   );
 }
+

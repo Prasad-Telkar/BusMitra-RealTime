@@ -16,13 +16,11 @@ import BusDetail from "./pages/BusDetail";
 import Offline from "./pages/Offline";
 import Admin from "./pages/Admin";
 import PassengerLayout from "./components/PassengerLayout";
-import SplashScreen from "./components/SplashScreen";
 import "./App.css";
 
 export default function App() {
   return (
     <BrowserRouter>
-      <SplashScreen />
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />

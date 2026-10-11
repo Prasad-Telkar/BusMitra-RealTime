@@ -243,34 +243,16 @@ export default function FareCalculator() {
     setFareResult(null);
   };
 
-  const resolveGtfsStopId = async (stop) => {
-    if (!stop) return null;
-    const sid = String(stop.stopId || stop.id || "");
-    if (sid && !sid.startsWith("KTCL-")) {
-      return sid;
-    }
-    // Try resolving GTFS stopId from backend by name
-    try {
-      const q = stop.name || "";
-      const res = await fetch(`${API_BASE}/api/search/stops?q=${encodeURIComponent(q)}&limit=1`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data && data.length > 0 && data[0].stopId) {
-          return String(data[0].stopId);
-        }
-      }
-    } catch (e) {
-      console.warn("Could not resolve GTFS stop id for:", stop.name, e);
-    }
-    return sid;
-  };
+  const calculateFare = async () => {
+    const originId = fromStop?.stopId;
+    const destId = toStop?.stopId;
 
-  const calculateFare = async (fStop = fromStop, tStop = toStop, cat = passengerType) => {
-    const activeFrom = fStop || (fromQuery ? { name: fromQuery } : null);
-    const activeTo = tStop || (toQuery ? { name: toQuery } : null);
-
-    if (!activeFrom || !activeTo) {
+    if (!originId || !destId) {
       setError("Please select both stops from the search dropdown.");
+      return;
+    }
+    if (originId === destId) {
+      setError("Starting point and destination are the same.");
       return;
     }
 
@@ -279,20 +261,6 @@ export default function FareCalculator() {
     setFareResult(null);
 
     try {
-      const originId = await resolveGtfsStopId(activeFrom);
-      const destId = await resolveGtfsStopId(activeTo);
-
-      if (!originId || !destId) {
-        setError("Please select both stops from the search dropdown.");
-        setIsLoading(false);
-        return;
-      }
-      if (originId === destId) {
-        setError("Starting point and destination are the same.");
-        setIsLoading(false);
-        return;
-      }
-
       const url = `${API_BASE}/api/fare/calculate?originStopId=${originId}&destinationStopId=${destId}&passengerCategory=${passengerType}`;
       console.log("FareCalc Request URL:", url);
       
@@ -328,13 +296,10 @@ export default function FareCalculator() {
 
   return (
     <div className="fc-container">
-      <div className="fc-layout-wrapper">
-        <div className="fc-header">
-          <span className="fc-header-badge">Tariff Estimator</span>
-          <h1>Fare Calculator</h1>
-          <p>Instant official Kadamba Transport Corporation (KTCL) bus fare estimates.</p>
-        </div>
-
+      <div className="fc-header">
+        <h1>Fare Calculator</h1>
+        <p>Check your Goa bus fare</p>
+      </div>
 
       <div className="fc-card">
         {/* FROM INPUT */}
@@ -373,28 +338,13 @@ export default function FareCalculator() {
                     <div 
                       key={stop.stopId} 
                       className="fc-autocomplete-item"
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        setFromStop(stop);
-                        setFromQuery(stop.name);
-                        setFromResults([]);
-                        setIsFromOpen(false);
-                        setFareResult(null);
-                      }}
                       onPointerDown={(e) => {
                         e.preventDefault();
                         setFromStop(stop);
                         setFromQuery(stop.name);
                         setFromResults([]);
                         setIsFromOpen(false);
-                        setFareResult(null);
-                      }}
-                      onClick={() => {
-                        setFromStop(stop);
-                        setFromQuery(stop.name);
-                        setFromResults([]);
-                        setIsFromOpen(false);
-                        setFareResult(null);
+                        setFareResult(null); // Clear fare result on selection
                       }}
                     >
                       <MapPin size={16} style={{ flexShrink: 0 }} /> 
@@ -464,28 +414,13 @@ export default function FareCalculator() {
                     <div 
                       key={stop.stopId} 
                       className="fc-autocomplete-item"
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        setToStop(stop);
-                        setToQuery(stop.name);
-                        setToResults([]);
-                        setIsToOpen(false);
-                        setFareResult(null);
-                      }}
                       onPointerDown={(e) => {
                         e.preventDefault();
                         setToStop(stop);
                         setToQuery(stop.name);
                         setToResults([]);
                         setIsToOpen(false);
-                        setFareResult(null);
-                      }}
-                      onClick={() => {
-                        setToStop(stop);
-                        setToQuery(stop.name);
-                        setToResults([]);
-                        setIsToOpen(false);
-                        setFareResult(null);
+                        setFareResult(null); // Clear fare result on selection
                       }}
                     >
                       <MapPin size={16} style={{ flexShrink: 0 }} /> 
@@ -512,48 +447,8 @@ export default function FareCalculator() {
           )}
         </div>
 
-        {/* POPULAR CORRIDORS QUICK CHIPS */}
-        <div style={{ margin: '14px 0 6px 0' }}>
-          <div style={{ fontSize: '11px', fontWeight: 700, color: '#6b7280', letterSpacing: '0.06em', marginBottom: '8px' }}>
-            POPULAR TRANSIT CORRIDORS
-          </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-            {[
-              { from: { name: 'Panaji KTC Bus Stand', stopId: '1' }, to: { name: 'Margao KTC Bus Stand', stopId: '195' }, label: 'Panaji ↔ Margao' },
-              { from: { name: 'Panaji KTC Bus Stand', stopId: '1' }, to: { name: 'Mapusa KTC Bus Stand', stopId: '20' }, label: 'Panaji ↔ Mapusa' },
-              { from: { name: 'Margao KTC Bus Stand', stopId: '195' }, to: { name: 'Vasco KTC Bus Stand', stopId: '42' }, label: 'Margao ↔ Vasco' }
-            ].map((corridor, idx) => (
-              <button
-                key={idx}
-                type="button"
-                className="fc-corridor-chip"
-                style={{
-                  background: '#f1f5f9',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '999px',
-                  padding: '6px 12px',
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  color: '#1e3a8a',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease'
-                }}
-                onClick={() => {
-                  setFromStop(corridor.from);
-                  setFromQuery(corridor.from.name);
-                  setToStop(corridor.to);
-                  setToQuery(corridor.to.name);
-                  calculateFare(corridor.from, corridor.to);
-                }}
-              >
-                {corridor.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
         {/* PASSENGER TYPE */}
-        <div className="fc-input-group" style={{ marginTop: '16px' }}>
+        <div className="fc-input-group" style={{ marginTop: '24px' }}>
           <label>PASSENGER TYPE</label>
           <div className="fc-type-selector">
             {['GENERAL', 'STUDENT', 'SENIOR CITIZEN'].map(type => (
@@ -645,6 +540,5 @@ export default function FareCalculator() {
         )}
       </div>
     </div>
-  </div>
-);
+  );
 }

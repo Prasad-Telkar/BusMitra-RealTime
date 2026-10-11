@@ -1,14 +1,9 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { 
-  Bus, MapPin, Search, Crosshair, ArrowUpDown, Clock, X, 
-  ChevronRight, ArrowLeft, Navigation, AlertTriangle, CheckCircle2,
-  Footprints, ShieldCheck, CornerDownRight, RotateCcw
-} from "lucide-react";
+import { Bus, MapPin, Search, Crosshair, ArrowUpDown, Clock, X, ChevronRight, ArrowLeft, Navigation } from "lucide-react";
 import LiveMap from "../components/LiveMap";
 import { getTransitJourney } from "../services/routingService";
 import { formatTime } from "../utils/timeFormat";
-import ktcStops from "../data/stops.json";
 import "./JourneyPlanner.css";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "https://busmitra-goa.onrender.com";
@@ -18,10 +13,6 @@ export default function JourneyPlanner() {
   const [toQuery, setToQuery] = useState("");
   const [toId, setToId] = useState(null);
   
-  const [fromSuggestions, setFromSuggestions] = useState([]);
-  const [toSuggestions, setToSuggestions] = useState([]);
-  const [activeDropdown, setActiveDropdown] = useState(null); // 'from' | 'to' | null
-
   const [journeys, setJourneys] = useState([]);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
@@ -31,22 +22,9 @@ export default function JourneyPlanner() {
   const [passengerPos, setPassengerPos] = useState(null);
   const [activeJourney, setActiveJourney] = useState(false);
   const [gpsWatchId, setGpsWatchId] = useState(null);
-  const [locating, setLocating] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
-  const dropdownRef = useRef(null);
-
-  // Close suggestions when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setActiveDropdown(null);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   // Parse query parameters
   useEffect(() => {
@@ -55,28 +33,25 @@ export default function JourneyPlanner() {
     const toIdParam = params.get("toId");
     
     if (toParam) {
-      const decodedTo = decodeURIComponent(toParam);
-      setToQuery(decodedTo);
+      setToQuery(decodeURIComponent(toParam));
       if (toIdParam) setToId(toIdParam);
       
       // Auto-set origin to current location and plan journey if permission granted
       if ("geolocation" in navigator) {
-        setLocating(true);
-        setFromQuery("Locating current position...");
+        setFromQuery("Locating...");
         navigator.geolocation.getCurrentPosition(
           (pos) => {
-            setLocating(false);
             const { latitude, longitude, accuracy, speed, heading } = pos.coords;
             setPassengerPos({ lat: latitude, lng: longitude, accuracy, timestamp: pos.timestamp, speed, heading });
             setMapCenter([latitude, longitude]);
-            setFromQuery("📍 Current Location");
+            setFromQuery("📍 Your current location");
             
             // Auto search
-            executeSearch({ lat: latitude, lng: longitude }, decodedTo);
+            executeSearch({ lat: latitude, lng: longitude }, toParam);
           },
           (err) => {
-            setLocating(false);
             console.warn("Location error:", err);
+            // Default to panaji if location fails
             setFromQuery("");
           },
           { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
@@ -91,79 +66,30 @@ export default function JourneyPlanner() {
     };
   }, [gpsWatchId]);
 
-  // Suggestions filter
-  const filterStops = (text) => {
-    if (!text || text.length < 2) return [];
-    const lower = text.toLowerCase();
-    return ktcStops
-      .filter(s => s.name.toLowerCase().includes(lower))
-      .slice(0, 5);
-  };
-
-  const handleFromChange = (e) => {
-    const val = e.target.value;
-    setFromQuery(val);
-    if (val.trim().length >= 2 && !val.startsWith("📍")) {
-      setFromSuggestions(filterStops(val));
-      setActiveDropdown("from");
-    } else {
-      setFromSuggestions([]);
-      setActiveDropdown(null);
-    }
-  };
-
-  const handleToChange = (e) => {
-    const val = e.target.value;
-    setToQuery(val);
-    if (val.trim().length >= 2) {
-      setToSuggestions(filterStops(val));
-      setActiveDropdown("to");
-    } else {
-      setToSuggestions([]);
-      setActiveDropdown(null);
-    }
-  };
-
-  const selectStop = (field, stop) => {
-    if (field === "from") {
-      setFromQuery(stop.name);
-      setFromSuggestions([]);
-    } else {
-      setToQuery(stop.name);
-      setToSuggestions([]);
-    }
-    setActiveDropdown(null);
-  };
-
   const requestLocation = () => {
-    setLocating(true);
     setFromQuery("Locating...");
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          setLocating(false);
           const { latitude, longitude, accuracy, speed, heading } = pos.coords;
           setPassengerPos({ lat: latitude, lng: longitude, accuracy, timestamp: pos.timestamp, speed, heading });
           setMapCenter([latitude, longitude]);
-          setFromQuery("📍 Current Location");
-          setActiveDropdown(null);
+          setFromQuery("📍 Your current location");
         },
         (err) => {
-          setLocating(false);
           console.warn("Location error:", err);
-          if (err.code === 1) {
-             alert("Location access is turned off. Please allow location access to use your current location.");
-          } else if (err.code === 2) {
-             alert("GPS signal is temporarily unavailable. Please try again.");
-          } else {
-             alert("Could not get your location. Please check your network and try again.");
+          if (err.code === 1) { // PERMISSION_DENIED
+             alert("Location access is turned off. Enable location permission in your browser settings to use your current location.");
+          } else if (err.code === 2) { // POSITION_UNAVAILABLE
+             alert("Getting your location... GPS is temporarily unavailable. Please try again.");
+          } else { // TIMEOUT or other
+             alert("Could not get your location. Please check your signal and try again.");
           }
           setFromQuery("");
         },
         { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
       );
     } else {
-      setLocating(false);
       alert("Geolocation is not supported by your browser.");
       setFromQuery("");
     }
@@ -202,7 +128,6 @@ export default function JourneyPlanner() {
     const temp = fromQuery;
     setFromQuery(toQuery);
     setToQuery(temp);
-    setActiveDropdown(null);
   };
 
   const executeSearch = async (origin, dest) => {
@@ -211,18 +136,15 @@ export default function JourneyPlanner() {
     setLoading(true);
     setHasSearched(true);
     setSelectedJourney(null);
-    setActiveDropdown(null);
     try {
+      // Pass origin and dest directly to getTransitJourney
+      // getTransitJourney will resolve strings or use coordinates directly
       const results = await getTransitJourney(origin, dest);
       if (results && results.error) {
         setJourneys([]);
         setSearchError(results.error);
       } else {
-        const found = results.journeys || [];
-        setJourneys(found);
-        if (found.length > 0 && !selectedJourney) {
-          setSelectedJourney(found[0]);
-        }
+        setJourneys(results.journeys || []);
         if (results.isScheduleExpired) {
           setSearchError("SCHEDULE_EXPIRED_WARNING");
         } else {
@@ -231,468 +153,289 @@ export default function JourneyPlanner() {
       }
     } catch (err) {
       console.error("Failed to fetch journeys", err);
-      setSearchError("Unable to reach journey planner service");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSearch = (e) => {
-    if (e) e.preventDefault();
+  const handleSearch = () => {
     if (!fromQuery || !toQuery) return;
-    const isCurrentLocation = fromQuery.includes("Current Location") || fromQuery === "📍 Your current location";
+    const isCurrentLocation = fromQuery === "📍 Your current location" || fromQuery === "My Current Location";
     executeSearch(isCurrentLocation ? passengerPos : fromQuery, toQuery);
   };
 
+  // Reset if manually cleared
+  useEffect(() => {
+    if (fromQuery === "" && toQuery === "") {
+      setHasSearched(false);
+      setJourneys([]);
+      setSelectedJourney(null);
+      setSearchError(null);
+    }
+  }, [fromQuery, toQuery]);
+
   return (
-    <div className="jp-layout">
-      {/* SIDEBAR PANEL (Desktop Left Sidebar / Mobile Overlay Bottom Sheet) */}
-      <div className="jp-panel" ref={dropdownRef}>
-        <div className="jp-panel-header">
-          <div className="jp-panel-title-row">
-            <h1 className="jp-panel-title">Transit Journey Planner</h1>
-            <span className="jp-brand-badge">KTCL Official Network</span>
-          </div>
-          <p className="jp-panel-sub">
-            Fast, multi-modal bus connections across North &amp; South Goa.
-          </p>
-        </div>
-
-        {/* SEARCH FORM */}
-        <form className="jp-form-card" onSubmit={handleSearch}>
-          <div className="jp-form-inputs">
-            {/* Visual Route Connector */}
-            <div className="jp-route-indicator">
-              <span className="jp-indicator-dot origin"></span>
-              <span className="jp-indicator-line"></span>
-              <span className="jp-indicator-dot dest"></span>
-            </div>
-
-            <div className="jp-fields-col">
-              {/* Origin */}
-              <div className="jp-field-wrapper">
-                <label className="jp-field-label">ORIGIN (START)</label>
-                <div className="jp-input-row">
-                  <input
-                    type="text"
-                    className="jp-input"
-                    placeholder="Enter bus stop or location"
-                    value={fromQuery}
-                    onChange={handleFromChange}
-                    onFocus={() => fromSuggestions.length > 0 && setActiveDropdown("from")}
-                  />
-                  {fromQuery ? (
-                    <button type="button" className="jp-icon-btn" onClick={() => setFromQuery("")} title="Clear">
-                      <X size={16} />
-                    </button>
-                  ) : (
-                    <button 
-                      type="button" 
-                      className={`jp-icon-btn ${locating ? 'spinning' : ''}`} 
-                      onClick={requestLocation} 
-                      title="Use Current Location"
-                    >
-                      <Crosshair size={16} />
-                    </button>
-                  )}
-                </div>
-
-                {/* Suggestions Dropdown */}
-                {activeDropdown === "from" && fromSuggestions.length > 0 && (
-                  <div className="jp-suggestions-box">
-                    {fromSuggestions.map(stop => (
-                      <button
-                        key={stop.id}
-                        type="button"
-                        className="jp-suggestion-item"
-                        onClick={() => selectStop("from", stop)}
-                      >
-                        <MapPin size={14} className="jp-sugg-icon" />
-                        <div>
-                          <div className="jp-sugg-name">{stop.name}</div>
-                          <div className="jp-sugg-meta">{stop.id}</div>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Destination */}
-              <div className="jp-field-wrapper">
-                <label className="jp-field-label">DESTINATION</label>
-                <div className="jp-input-row">
-                  <input
-                    type="text"
-                    className="jp-input"
-                    placeholder="Where are you going?"
-                    value={toQuery}
-                    onChange={handleToChange}
-                    onFocus={() => toSuggestions.length > 0 && setActiveDropdown("to")}
-                  />
-                  {toQuery && (
-                    <button type="button" className="jp-icon-btn" onClick={() => setToQuery("")} title="Clear">
-                      <X size={16} />
-                    </button>
-                  )}
-                </div>
-
-                {/* Suggestions Dropdown */}
-                {activeDropdown === "to" && toSuggestions.length > 0 && (
-                  <div className="jp-suggestions-box">
-                    {toSuggestions.map(stop => (
-                      <button
-                        key={stop.id}
-                        type="button"
-                        className="jp-suggestion-item"
-                        onClick={() => selectStop("to", stop)}
-                      >
-                        <MapPin size={14} className="jp-sugg-icon" />
-                        <div>
-                          <div className="jp-sugg-name">{stop.name}</div>
-                          <div className="jp-sugg-meta">{stop.id}</div>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Swap Button */}
-            <button 
-              type="button" 
-              className="jp-swap-action" 
-              onClick={handleSwap} 
-              title="Swap Origin and Destination"
-            >
-              <ArrowUpDown size={18} />
-            </button>
-          </div>
-
-          {/* Action Row */}
-          <div className="jp-form-bottom">
-            <button 
-              type="button" 
-              className="jp-curr-loc-btn" 
-              onClick={requestLocation}
-            >
-              <Navigation size={13} />
-              <span>Use My Location</span>
-            </button>
-
-            <button
-              type="submit"
-              className="jp-submit-btn"
-              disabled={loading || !fromQuery || !toQuery}
-            >
-              {loading ? (
-                <>Searching Connections...</>
-              ) : (
-                <>
-                  <Search size={16} />
-                  <span>Find Routes</span>
-                </>
-              )}
-            </button>
-          </div>
-        </form>
-
-        {/* RESULTS & ITINERARY CONTENT */}
-        <div className="jp-results-scroll">
-          {activeJourney && selectedJourney ? (
-            /* ACTIVE IN-TRANSIT NAVIGATION */
-            <div className="jp-active-box">
-              <div className="jp-active-badge">
-                <span className="live-dot pulse"></span>
-                <span>JOURNEY IN PROGRESS</span>
-              </div>
-              
-              <h2 className="jp-active-title">Heading to {toQuery}</h2>
-              <p className="jp-active-meta">
-                Estimated duration: ~{selectedJourney.totalDuration} min
-              </p>
-
-              <div className="jp-timeline-steps">
-                {selectedJourney.segments?.map((seg, idx) => (
-                  <div key={idx} className="jp-step-row">
-                    <div className="jp-step-icon">
-                      {seg.type === 'WALK' ? <Footprints size={18} /> : <Bus size={18} />}
-                    </div>
-                    <div className="jp-step-info">
-                      <div className="jp-step-title">
-                        {seg.type === 'WALK' 
-                          ? `Walk ${seg.duration} min (~${Math.round(seg.distance || 0)}m)` 
-                          : `Board Route ${seg.routeNumber || 'Bus'}`}
-                      </div>
-                      <div className="jp-step-desc">
-                        {seg.type === 'WALK' ? `To ${seg.to}` : `${seg.routeName || ''} → Get off at ${seg.to}`}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="jp-active-actions">
-                {passengerPos && (
-                  <button 
-                    type="button" 
-                    className="jp-recenter-btn" 
-                    onClick={() => setMapCenter([passengerPos.lat, passengerPos.lng])}
-                  >
-                    <Crosshair size={16} />
-                    <span>Center On Me</span>
-                  </button>
-                )}
-                <button type="button" className="jp-end-btn" onClick={endJourney}>
-                  End Journey
-                </button>
-              </div>
-            </div>
-          ) : selectedJourney && hasSearched ? (
-            /* SELECTED JOURNEY DETAILS (EXPANDED ITINERARY) */
-            <div className="jp-itinerary-box">
-              <button 
-                type="button" 
-                className="jp-back-list-btn" 
-                onClick={() => setSelectedJourney(null)}
-              >
-                <ArrowLeft size={16} />
-                <span>All Route Options ({journeys.length})</span>
-              </button>
-
-              <div className="jp-itin-header">
-                <div>
-                  <div className="jp-itin-times">
-                    {formatTime(selectedJourney.departureTime)} &rarr; {formatTime(selectedJourney.arrivalTime)}
-                  </div>
-                  <div className="jp-itin-sub">
-                    Total Duration: <strong>{selectedJourney.totalDuration} minutes</strong>
-                  </div>
-                </div>
-
-                <span className={`jp-status-pill ${selectedJourney.isLive ? 'live' : 'scheduled'}`}>
-                  {selectedJourney.isLive ? "LIVE TRACKING" : "SCHEDULED"}
-                </span>
-              </div>
-
-              {/* Step By Step Timeline */}
-              <div className="jp-timeline">
-                {selectedJourney.segments?.map((seg, idx) => {
-                  const isLast = idx === selectedJourney.segments.length - 1;
-                  return (
-                    <div key={idx} className="jp-timeline-item">
-                      <div className="jp-timeline-left">
-                        <div className={`jp-timeline-icon ${seg.type === 'WALK' ? 'walk' : 'bus'}`}>
-                          {seg.type === 'WALK' ? <Footprints size={16} /> : <Bus size={16} />}
-                        </div>
-                        {!isLast && <div className="jp-timeline-connector"></div>}
-                      </div>
-
-                      <div className="jp-timeline-right">
-                        <div className="jp-timeline-segment-head">
-                          {seg.type === 'WALK' ? (
-                            <span className="jp-segment-badge walk">WALKING</span>
-                          ) : (
-                            <span className="jp-segment-badge bus">BUS {seg.routeNumber}</span>
-                          )}
-                          <span className="jp-segment-duration">{seg.duration} min</span>
-                        </div>
-
-                        <div className="jp-timeline-instruction">
-                          {seg.type === 'WALK' ? (
-                            <>Walk to <strong>{seg.to}</strong> (~{Math.round(seg.distance || 0)}m)</>
-                          ) : (
-                            <>
-                              Board <strong>{seg.routeName || `Route ${seg.routeNumber}`}</strong>
-                              <div className="jp-timeline-subtext">Alight at {seg.to}</div>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="jp-itin-actions">
-                <button type="button" className="jp-start-btn" onClick={startJourney}>
-                  <CheckCircle2 size={18} />
-                  <span>Start Live Journey</span>
-                </button>
-              </div>
-            </div>
-          ) : hasSearched ? (
-            /* SEARCH RESULTS LIST */
-            <div className="jp-results-list">
-              {searchError === "SCHEDULE_EXPIRED_WARNING" && !loading && (
-                <div className="jp-alert-warning">
-                  <AlertTriangle size={18} className="jp-alert-icon" />
-                  <div>
-                    <strong>Timetable Advisory</strong>
-                    <p>Timetable grounded in official KTCL transit schedule. Verify with local bus terminal for holiday adjustments.</p>
-                  </div>
-                </div>
-              )}
-
-              {loading ? (
-                <div className="jp-skeletons">
-                  {[1, 2, 3].map(i => (
-                    <div key={i} className="jp-card-skeleton"></div>
-                  ))}
-                </div>
-              ) : searchError && searchError !== "SCHEDULE_EXPIRED_WARNING" ? (
-                <div className="jp-error-state">
-                  <AlertTriangle size={32} color="#DC2626" />
-                  <h3>No Direct Route Found</h3>
-                  <p>We could not find scheduled buses matching "{fromQuery}" to "{toQuery}". Try searching major stands like Panaji KTC or Margao KTC.</p>
-                </div>
-              ) : journeys.length === 0 ? (
-                <div className="jp-empty-state">
-                  <Bus size={36} color="#94A3B8" />
-                  <h3>No Trips Found</h3>
-                  <p>No bus trips currently scheduled for this route combination. Try adjusting your start or end stop.</p>
-                </div>
-              ) : (
-                <div className="jp-cards-container">
-                  <div className="jp-results-count">
-                    <span>{journeys.length} ROUTE OPTION{journeys.length > 1 ? 'S' : ''} FOUND</span>
-                  </div>
-
-                  {journeys.map((journey, i) => {
-                    const isDirect = (journey.segments || []).filter(s => s.type === 'BUS').length <= 1;
-                    return (
-                      <div 
-                        key={i} 
-                        className={`jp-card ${selectedJourney === journey ? 'active' : ''}`}
-                        onClick={() => setSelectedJourney(journey)}
-                      >
-                        <div className="jp-card-header">
-                          <div className="jp-card-segments">
-                            {journey.segments?.map((seg, idx) => (
-                              <div key={idx} className="jp-seg-pill">
-                                {seg.type === 'WALK' ? (
-                                  <span className="jp-seg-walk">🚶 {seg.duration}m</span>
-                                ) : (
-                                  <span className="jp-seg-bus">🚌 {seg.routeNumber || "BUS"}</span>
-                                )}
-                                {idx < (journey.segments.length - 1) && (
-                                  <span className="jp-seg-arrow">&rarr;</span>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-
-                          <span className={`jp-transfer-badge ${isDirect ? 'direct' : 'transfer'}`}>
-                            {isDirect ? "Direct Route" : "1 Transfer"}
-                          </span>
-                        </div>
-
-                        <div className="jp-card-body">
-                          <div className="jp-card-times">
-                            <strong>{formatTime(journey.departureTime)}</strong>
-                            <span className="jp-time-divider">&rarr;</span>
-                            <strong>{formatTime(journey.arrivalTime)}</strong>
-                          </div>
-                          <div className="jp-card-duration">
-                            <Clock size={13} />
-                            <span>{journey.totalDuration} min</span>
-                          </div>
-                        </div>
-
-                        <div className="jp-card-footer">
-                          <span className={`jp-status-chip ${journey.isLive ? 'live' : 'scheduled'}`}>
-                            {journey.isLive ? "● LIVE" : "SCHEDULED"}
-                          </span>
-                          <span className="jp-view-btn">
-                            <span>View Itinerary</span>
-                            <ChevronRight size={15} />
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          ) : (
-            /* PRE-SEARCH STATE */
-            <div className="jp-idle-box">
-              <div className="jp-idle-icon">
-                <Bus size={32} />
-              </div>
-              <h3>Explore Goa Transit</h3>
-              <p>
-                Enter your departure point and destination above to see direct and transfer routes with estimated travel times.
-              </p>
-
-              <div className="jp-quick-pairs">
-                <div className="jp-quick-label">POPULAR TRIPS</div>
-                <button 
-                  type="button" 
-                  className="jp-quick-pair-btn"
-                  onClick={() => {
-                    setFromQuery("Panaji KTC Bus Stand");
-                    setToQuery("Margao KTC Bus Stand");
-                    executeSearch("Panaji KTC Bus Stand", "Margao KTC Bus Stand");
-                  }}
-                >
-                  <span>Panaji KTC</span>
-                  <span className="arrow">&rarr;</span>
-                  <span>Margao KTC</span>
-                </button>
-
-                <button 
-                  type="button" 
-                  className="jp-quick-pair-btn"
-                  onClick={() => {
-                    setFromQuery("Panaji KTC Bus Stand");
-                    setToQuery("Mapusa KTC Bus Stand");
-                    executeSearch("Panaji KTC Bus Stand", "Mapusa KTC Bus Stand");
-                  }}
-                >
-                  <span>Panaji KTC</span>
-                  <span className="arrow">&rarr;</span>
-                  <span>Mapusa KTC</span>
-                </button>
-
-                <button 
-                  type="button" 
-                  className="jp-quick-pair-btn"
-                  onClick={() => {
-                    setFromQuery("Margao KTC Bus Stand");
-                    setToQuery("Vasco KTC Bus Stand");
-                    executeSearch("Margao KTC Bus Stand", "Vasco KTC Bus Stand");
-                  }}
-                >
-                  <span>Margao KTC</span>
-                  <span className="arrow">&rarr;</span>
-                  <span>Vasco KTC</span>
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
+    <div className="journey-planner-mobile-container">
+      {/* HEADER (Floating over map) */}
+      <div className="jp-mobile-header">
+        <button className="jp-back-button" onClick={() => navigate(-1)}>
+          <ArrowLeft size={20} />
+        </button>
+        <h1 className="jp-mobile-title">Journey Planner</h1>
       </div>
 
-      {/* MAP AREA (Desktop Right Side / Mobile Base) */}
-      <div className="jp-map-section">
+      {/* MAP AREA (Full Background) */}
+      <div className="jp-map-container">
         <LiveMap 
           center={mapCenter} 
           passengerPosition={passengerPos} 
           journeySegments={selectedJourney ? selectedJourney.segments : null}
         />
-
+        {passengerPos && passengerPos.accuracy > 50 && (
+          <div style={{
+            position: 'absolute', top: '80px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000,
+            background: 'rgba(255, 255, 255, 0.9)', padding: '6px 12px', borderRadius: '16px',
+            fontSize: '12px', color: '#854d0e', border: '1px solid #fef08a', fontWeight: 'bold', boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          }}>
+            Location accuracy is low
+          </div>
+        )}
+        {/* Recenter Button */}
         {passengerPos && (
           <button 
-            type="button"
-            className="jp-map-recenter-btn"
             onClick={() => setMapCenter([passengerPos.lat, passengerPos.lng])}
-            title="Recenter Map"
+            style={{
+              position: 'absolute', top: '80px', right: '16px', zIndex: 1000,
+              background: 'white', border: 'none', borderRadius: '50%', width: '44px', height: '44px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: 'var(--teal-800)', cursor: 'pointer'
+            }}
           >
             <Navigation size={20} />
           </button>
         )}
+      </div>
+
+      {/* BOTTOM SHEET */}
+      <div className="jp-bottom-sheet">
+        <div className="jp-sheet-handle-wrap">
+          <div className="jp-sheet-handle"></div>
+        </div>
+        
+        <div className="jp-sheet-content">
+          {/* VIEW JOURNEY DETAILS */}
+          {activeJourney ? (
+            <div className="jp-details">
+              <h2 className="jp-sheet-title">Journey in Progress</h2>
+              
+              <div className="jp-segments-list" style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
+                {selectedJourney.segments.map((seg, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ fontSize: '20px' }}>{seg.icon}</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: '14px', fontWeight: 'bold' }}>{seg.type === 'WALK' ? `Walk ${seg.duration} min` : `Route ${seg.routeNumber}`}</div>
+                      <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>To {seg.to}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className={`jp-status-banner ${selectedJourney.isLive ? 'live' : 'scheduled'}`}>
+                {selectedJourney.isLive ? (
+                  <><span className="live-dot"></span> LIVE — Follow journey progress</>
+                ) : (
+                  "SCHEDULED — Live tracking unavailable"
+                )}
+              </div>
+              <button className="jp-plan-btn" onClick={() => setMapCenter([passengerPos.lat, passengerPos.lng])} style={{ marginBottom: '12px', background: '#f1f5f9', color: '#333' }}>
+                ◎ Recenter
+              </button>
+              <button className="jp-track-btn" onClick={endJourney} style={{ background: '#be185d' }}>
+                End Journey
+              </button>
+            </div>
+          ) : selectedJourney ? (
+            <div className="jp-details">
+              <div className="jp-details-header" style={{ marginBottom: '16px' }}>
+                <button className="icon-btn" onClick={() => setSelectedJourney(null)} style={{ background: 'none', border: 'none', color: 'var(--teal-800)', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 'bold' }}>
+                  <ArrowLeft size={16} /> Back to results
+                </button>
+              </div>
+              
+              <div style={{ marginBottom: '16px' }}>
+                <h3 style={{ margin: '0 0 8px 0' }}>Journey Details</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {selectedJourney.segments.map((seg, idx) => (
+                    <div key={idx} style={{ display: 'flex', gap: '12px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '24px' }}>
+                        <div style={{ fontSize: '18px' }}>{seg.icon}</div>
+                        {idx !== selectedJourney.segments.length - 1 && (
+                          <div style={{ width: '2px', flex: 1, background: '#e2e8f0', margin: '4px 0' }}></div>
+                        )}
+                      </div>
+                      <div style={{ flex: 1, paddingBottom: idx !== selectedJourney.segments.length - 1 ? '16px' : '0' }}>
+                        <div style={{ fontWeight: '600', fontSize: '15px' }}>
+                          {seg.type === 'WALK' ? `Walk ${seg.duration} min (${Math.round(seg.distance)}m)` : `Board Route ${seg.routeNumber}`}
+                        </div>
+                        {seg.type === 'BUS' && (
+                          <div style={{ fontSize: '13px', color: 'var(--text-main)', marginTop: '4px' }}>{seg.routeName}</div>
+                        )}
+                        <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                          {seg.type === 'WALK' ? `To ${seg.to}` : `Get off at ${seg.to}`}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className={`jp-status-banner ${selectedJourney.isLive ? 'live' : 'scheduled'}`}>
+                {selectedJourney.isLive ? (
+                  <>
+                    <span className="live-dot"></span> LIVE — ETA {formatTime(selectedJourney.arrivalTime)}
+                  </>
+                ) : (
+                  "SCHEDULED — Live tracking unavailable"
+                )}
+              </div>
+
+              <button className="jp-track-btn" onClick={startJourney}>
+                Start Journey
+              </button>
+            </div>
+          ) : (
+            <>
+              {/* SEARCH BOX */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h2 className="jp-sheet-title" style={{ margin: 0 }}>Where are you going?</h2>
+                <button 
+                  onClick={requestLocation}
+                  style={{ background: 'none', border: 'none', color: 'var(--teal-800)', fontSize: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}
+                >
+                  <Navigation size={14} /> My Location
+                </button>
+              </div>
+              <div className="jp-search-card">
+                <div className="jp-search-inputs">
+                  <div className="jp-search-icons">
+                    <div className="jp-dot origin"></div>
+                    <div className="jp-line"></div>
+                    <div className="jp-dot destination"></div>
+                  </div>
+                  <div className="jp-search-fields">
+                    <div className="jp-field">
+                      <label>FROM</label>
+                      <div className="jp-input-row">
+                        <input 
+                          type="text" 
+                          placeholder="Choose Origin" 
+                          value={fromQuery}
+                          onChange={(e) => setFromQuery(e.target.value)}
+                        />
+                        <Crosshair size={18} className="icon-btn" onClick={requestLocation} style={{ cursor: 'pointer' }} />
+                      </div>
+                    </div>
+                    <div className="jp-divider"></div>
+                    <div className="jp-field">
+                      <label>TO</label>
+                      <div className="jp-input-row">
+                        <input 
+                          type="text" 
+                          placeholder="Choose Destination" 
+                          value={toQuery}
+                          onChange={(e) => setToQuery(e.target.value)}
+                        />
+                        {toQuery && <X size={18} className="icon-btn" onClick={() => setToQuery("")} style={{ cursor: 'pointer' }} />}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="jp-swap-btn" onClick={handleSwap}>
+                    <ArrowUpDown size={20} />
+                  </div>
+                </div>
+                
+                <button 
+                  className="jp-plan-btn"
+                  onClick={handleSearch}
+                  disabled={loading || (!fromQuery || !toQuery)}
+                >
+                  {loading ? "Searching..." : "Plan Journey"}
+                </button>
+              </div>
+
+              {/* JOURNEY RESULTS */}
+              <div className="jp-results-area">
+                {!hasSearched ? (
+                  <div className="jp-recent">
+                    <div className="jp-recent-list">
+                      {/* Optional recent searches can go here */}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="jp-results">
+                    {searchError === "SCHEDULE_EXPIRED_WARNING" && !loading && (
+                      <div className="jp-schedule-warning" style={{ color: '#854d0e', padding: '12px 16px', background: '#fef9c3', borderRadius: '8px', border: '1px solid #fef08a', margin: '0 16px 16px 16px' }}>
+                        <strong>⚠️ Schedule Data May Be Outdated</strong>
+                        <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#713f12' }}>
+                          Schedule based on the latest available official GTFS. Verify current timings with KTCL.
+                        </p>
+                      </div>
+                    )}
+                    {loading ? (
+                      <div className="jp-journey-list">
+                        {[1, 2, 3].map(i => (
+                          <div key={i} className="jp-journey-card" style={{ opacity: 0.6, padding: '16px' }}>
+                            <div style={{ height: '24px', background: '#E2E8F0', borderRadius: '4px', width: '60%', marginBottom: '16px' }} />
+                            <div style={{ height: '16px', background: '#E2E8F0', borderRadius: '4px', width: '80%', marginBottom: '8px' }} />
+                            <div style={{ height: '16px', background: '#E2E8F0', borderRadius: '4px', width: '40%' }} />
+                          </div>
+                        ))}
+                      </div>
+                    ) : searchError && searchError !== "SCHEDULE_EXPIRED_WARNING" ? (
+                      <p className="jp-no-results">Error: {searchError}</p>
+                    ) : journeys.length === 0 ? (
+                      <p className="jp-no-results">No routes found matching your search.</p>
+                    ) : (
+                      <div className="jp-journey-list">
+                        {journeys.map((journey, i) => (
+                          <div key={i} className="jp-journey-card" onClick={() => setSelectedJourney(journey)}>
+                            <div className="jp-card-header">
+                              {/* Display multiple segments graphically */}
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                {journey.segments.map((seg, idx) => (
+                                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    {seg.type === 'WALK' ? (
+                                      <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>🚶 {seg.duration}m</span>
+                                    ) : (
+                                      <div className="bus-badge">{seg.routeNumber || "BUS"}</div>
+                                    )}
+                                    {idx !== journey.segments.length - 1 && <ChevronRight size={14} color="#cbd5e1" />}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                            <div className="jp-card-times" style={{ marginTop: '12px' }}>
+                              <div>
+                                <strong>{formatTime(journey.departureTime)}</strong> &rarr; <strong>{formatTime(journey.arrivalTime)}</strong>
+                              </div>
+                              <div className="jp-card-duration">{journey.totalDuration} min</div>
+                            </div>
+                            <div className="jp-card-footer" style={{ marginTop: '8px' }}>
+                              <span className={`jp-card-status ${journey.isLive ? 'live' : 'scheduled'}`}>
+                                {journey.isLive ? "LIVE" : "SCHEDULED"}
+                              </span>
+                              <span className="jp-view-action">View Journey <ChevronRight size={16} /></span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
